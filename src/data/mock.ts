@@ -203,10 +203,14 @@ export interface DeletedCert {
   isRevoked: boolean;
   isExpired: boolean;
   validTo: string;
+  associatedKeyId: string;
+  associatedKeyName: string;
 }
 export const DELETED_CERTS: DeletedCert[] = [
-  { id: "dc1", certKeyId: "UC-2025-099", certType: "User", deletedOn: "2026-05-18 11:30:00", deletedBy: "admin@appviewx.com", reason: "User offboarded", lastKnownEndpoints: ["192.168.223.51"], isRevoked: false, isExpired: false, validTo: "2026-09-01" },
-  { id: "dc2", certKeyId: "UC-2025-088", certType: "User", deletedOn: "2026-05-10 09:00:00", deletedBy: "sysadmin@appviewx.com", reason: "Certificate compromised", lastKnownEndpoints: ["10.0.1.50"], isRevoked: true, isExpired: false, validTo: "2026-07-01" },
+  { id: "dc1", certKeyId: "UC-2025-099", certType: "User", deletedOn: "2026-05-18 11:30:00", deletedBy: "admin@appviewx.com", reason: "User offboarded", lastKnownEndpoints: ["192.168.223.51"], isRevoked: false, isExpired: false, validTo: "2026-09-01", associatedKeyId: "uk1", associatedKeyName: "appviewxkey" },
+  { id: "dc2", certKeyId: "UC-2025-088", certType: "User", deletedOn: "2026-05-10 09:00:00", deletedBy: "sysadmin@appviewx.com", reason: "Certificate compromised", lastKnownEndpoints: ["10.0.1.50"], isRevoked: true, isExpired: false, validTo: "2026-07-01", associatedKeyId: "uk9", associatedKeyName: "FetchKey_devops_prod01" },
+  { id: "dc3", certKeyId: "UC-2025-077", certType: "User", deletedOn: "2026-04-22 14:00:00", deletedBy: "admin@appviewx.com", reason: "Expired and unused", lastKnownEndpoints: ["10.0.2.10"], isRevoked: false, isExpired: true, validTo: "2026-03-15", associatedKeyId: "uk10", associatedKeyName: "FetchKey_svc_jenkins" },
+  { id: "dc4", certKeyId: "UC-2025-066", certType: "User", deletedOn: "2026-05-02 09:30:00", deletedBy: "devops@appviewx.com", reason: "Key decommissioned", lastKnownEndpoints: ["10.0.5.20"], isRevoked: false, isExpired: false, validTo: "2026-10-01", associatedKeyId: "uk-deleted-99", associatedKeyName: "legacy-prod-key-2024" },
 ];
 
 // ---------- DELETED / ROTATED KEYS ----------
