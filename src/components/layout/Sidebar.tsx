@@ -67,6 +67,13 @@ const SECTIONS: Section[] = [
     ],
   },
   {
+    header: "AI AGENT",
+    defaultOpen: true,
+    children: [
+      { label: "MCP Console", to: "/agent/mcp" },
+    ],
+  },
+  {
     header: "POLICIES",
     defaultOpen: false,
     children: [
@@ -80,6 +87,7 @@ const SECTIONS: Section[] = [
     children: [
       { label: "Device Management", to: "/administration/devices" },
       { label: "Certificate Authority", to: "/administration/ca" },
+      { label: "MCP Tools", to: "/administration/mcp" },
       { label: "Advanced Settings", to: "/administration/settings" },
       { label: "Tags", to: "/administration/tags" },
     ],
