@@ -16,31 +16,49 @@ export const Route = createFileRoute("/_app/inventory/keys/rotated")({
           </Button>
         }
       />
-      <div className="bg-surface border border-border rounded-md overflow-hidden">
-        <table className="w-full text-[13px]">
-          <thead className="bg-muted/50 text-[11px] uppercase-tracking text-muted-foreground">
-            <tr>
-              <th className="text-left px-3 py-2">Key Name</th>
-              <th className="text-left px-3 py-2">Encryption</th>
-              <th className="text-left px-3 py-2">Length</th>
-              <th className="text-left px-3 py-2">Rotated On</th>
-              <th className="text-left px-3 py-2">Rotated By</th>
-              <th className="text-left px-3 py-2">Endpoint(s)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ROTATED_KEYS.map((k) => (
-              <tr key={k.id} className="border-t border-border">
-                <td className="px-3 py-2 font-medium">{k.name}</td>
-                <td className="px-3 py-2">{k.encryption}</td>
-                <td className="px-3 py-2">{k.length}</td>
-                <td className="px-3 py-2">{k.rotatedOn}</td>
-                <td className="px-3 py-2">{k.rotatedBy}</td>
-                <td className="px-3 py-2 font-mono text-[12px]">{k.endpoints.join(", ") || "—"}</td>
+      <div className="inv-frame inv-frame--standalone">
+        <div className="inv-scroll">
+          <table className="inv-table">
+            <thead>
+              <tr>
+                <th className="sl" style={{ left: 0, minWidth: 240, maxWidth: 240 }}>Key Name</th>
+                <th>Encryption</th>
+                <th>Length</th>
+                <th>Rotated On</th>
+                <th>Rotated By</th>
+                <th>Endpoint(s)</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {ROTATED_KEYS.map((k) => (
+                <tr key={k.id}>
+                  <td className="sl" style={{ left: 0, minWidth: 240, maxWidth: 240 }} title={k.name}>
+                    <span className="truncate-inner font-medium">{k.name}</span>
+                  </td>
+                  <td>{k.encryption}</td>
+                  <td>{k.length}</td>
+                  <td>{k.rotatedOn}</td>
+                  <td>{k.rotatedBy}</td>
+                  <td className="font-mono text-[12px]" title={k.endpoints.join(", ")}>
+                    <span className="truncate-inner">{k.endpoints.join(", ") || "—"}</span>
+                  </td>
+                </tr>
+              ))}
+              {ROTATED_KEYS.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ height: "auto", whiteSpace: "normal", textAlign: "center", padding: "48px", color: "var(--color-muted-foreground)", maxWidth: "none" }}>
+                    No recently rotated keys.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="inv-pagination">
+          <span>
+            {ROTATED_KEYS.length === 0 ? 0 : 1} to {ROTATED_KEYS.length} of {ROTATED_KEYS.length}
+          </span>
+        </div>
       </div>
     </div>
   ),
