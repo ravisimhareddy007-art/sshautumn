@@ -90,6 +90,10 @@
     border-radius: 0 0 6px 6px;
     overflow: hidden;
   }
+  .inv-frame.inv-frame--standalone {
+    border-top: 1px solid var(--color-border);
+    border-radius: 6px;
+  }
   .inv-scroll { overflow-x: auto; overflow-y: visible; }
   .inv-table {
     width: 100%;
