@@ -17,6 +17,7 @@ import { CertDetailDrawer } from "@/components/cert/CertDetailDrawer";
 import { AssociatedKeyLink } from "@/components/cert/AssociatedKeyLink";
 import { RevokeCertDialog } from "@/components/cert/RevokeCertDialog";
 import { RotateCertDialog } from "@/components/cert/RotateCertDialog";
+import { DeleteCertDialog } from "@/components/cert/DeleteCertDialog";
 import type { SshCert } from "@/data/mock";
 import { ChevronDown, RefreshCw, Search, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ export function CertInventoryPage({
   const [drawerCert, setDrawerCert] = useState<SshCert | null>(null);
   const [revokeCert, setRevokeCert] = useState<SshCert | null>(null);
   const [rotateCert, setRotateCert] = useState<SshCert | null>(null);
+  const [deleteCert, setDeleteCert] = useState<SshCert | null>(null);
 
   const expired = certs.filter((c) => c.status === "Expired").length;
   const expiring = certs.filter((c) => c.status === "Active" && c.expiresInDays > 0 && c.expiresInDays <= 30).length;
@@ -153,6 +155,12 @@ export function CertInventoryPage({
                 Download Certificate
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Status updated.")}>Change Status</DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-risk-red focus:text-risk-red focus:bg-risk-red/10"
+                onClick={() => setDeleteCert(selected[0])}
+              >
+                Delete Certificate
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button size="sm" variant="ghost" title="Refresh">
@@ -303,6 +311,15 @@ export function CertInventoryPage({
             expiresInDays: 90,
           })
         }
+      />
+
+      <DeleteCertDialog
+        cert={deleteCert}
+        onClose={() => setDeleteCert(null)}
+        onDeleted={(c) => {
+          setCerts((cs) => cs.filter((x) => x.id !== c.id));
+          setSelectedIds((ids) => ids.filter((id) => id !== c.id));
+        }}
       />
     </div>
   );
