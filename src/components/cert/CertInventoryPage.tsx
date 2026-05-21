@@ -155,6 +155,12 @@ export function CertInventoryPage({
                 Download Certificate
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Status updated.")}>Change Status</DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-risk-red focus:text-risk-red focus:bg-risk-red/10"
+                onClick={() => setDeleteCert(selected[0])}
+              >
+                Delete Certificate
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button size="sm" variant="ghost" title="Refresh">
