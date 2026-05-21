@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import type { RotatedCert } from "@/data/mock";
 import { USER_KEYS, HOST_KEYS } from "@/data/mock";
-import { Check, X } from "lucide-react";
+import { Check, X, AlertTriangle } from "lucide-react";
 import { ProgressModal } from "@/components/common/ProgressModal";
 import { toast } from "sonner";
 
