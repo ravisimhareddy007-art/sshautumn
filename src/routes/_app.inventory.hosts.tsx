@@ -24,45 +24,54 @@ function Page() {
           </>
         }
       />
-      <div className="bg-surface border border-border rounded-md overflow-hidden">
-        <table className="w-full text-[13px]">
-          <thead className="bg-muted/50 text-[11px] uppercase-tracking text-muted-foreground">
-            <tr>
-              <th className="text-left px-3 py-2">Device Name</th>
-              <th className="text-left px-3 py-2">FQDN / IP</th>
-              <th className="text-left px-3 py-2">Host Name</th>
-              <th className="text-left px-3 py-2">Group</th>
-              <th className="text-left px-3 py-2">Host Status</th>
-              <th className="text-left px-3 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {hosts.map((h) => (
-              <tr key={h.id} className="border-t border-border">
-                <td className="px-3 py-2 font-mono">{h.deviceName}</td>
-                <td className="px-3 py-2 font-mono">{h.fqdn}</td>
-                <td className="px-3 py-2 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-risk-green inline-block" />
-                  {h.hostName}
-                </td>
-                <td className="px-3 py-2">{h.group}</td>
-                <td className="px-3 py-2">
-                  <Badge variant="outline" className="bg-risk-green/15 text-risk-green border-risk-green/30">
-                    {h.hostStatus}
-                  </Badge>
-                </td>
-                <td className="px-3 py-2 flex gap-1">
-                  <Button size="sm" variant="ghost" onClick={() => toast.success(`Fetching keys from ${h.deviceName}…`)}>
-                    Fetch Keys
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => toast.info(`User: ${h.username} · Port: ${h.port}`)}>
-                    Credentials
-                  </Button>
-                </td>
+      <div className="inv-frame inv-frame--standalone">
+        <div className="inv-scroll">
+          <table className="inv-table">
+            <thead>
+              <tr>
+                <th className="sl" style={{ left: 0, minWidth: 200, maxWidth: 200 }}>Device Name</th>
+                <th>FQDN / IP</th>
+                <th>Host Name</th>
+                <th>Group</th>
+                <th>Host Status</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {hosts.map((h) => (
+                <tr key={h.id}>
+                  <td className="sl font-mono" style={{ left: 0, minWidth: 200, maxWidth: 200 }} title={h.deviceName}>{h.deviceName}</td>
+                  <td className="font-mono" title={h.fqdn}>{h.fqdn}</td>
+                  <td title={h.hostName}>
+                    <span className="inline-flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-risk-green inline-block" />
+                      {h.hostName}
+                    </span>
+                  </td>
+                  <td>{h.group}</td>
+                  <td>
+                    <Badge variant="outline" className="bg-risk-green/15 text-risk-green border-risk-green/30">
+                      {h.hostStatus}
+                    </Badge>
+                  </td>
+                  <td>
+                    <span className="inline-flex gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => toast.success(`Fetching keys from ${h.deviceName}…`)}>
+                        Fetch Keys
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => toast.info(`User: ${h.username} · Port: ${h.port}`)}>
+                        Credentials
+                      </Button>
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="inv-pagination">
+          <span>1 to {hosts.length} of {hosts.length}</span>
+        </div>
       </div>
     </div>
   );
