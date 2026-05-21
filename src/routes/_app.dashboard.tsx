@@ -137,63 +137,8 @@ function CertificateStatus() {
         badge="NEW · AUTUMN RELEASE"
         right={<Timestamp text="0m ago" />}
       />
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
-        <div className="lg:col-span-2"><CertStatusTile /></div>
-        <div className="lg:col-span-3"><CertExpiryTimeline /></div>
-      </div>
+      <CertExpiryTimeline />
     </Panel>
-  );
-}
-
-function CertStatusTile() {
-  const expiredUser = USER_CERTS.filter((c) => c.status === "Expired").length || 2;
-  const expiredHost = HOST_CERTS.filter((c) => c.status === "Expired").length || 1;
-  const expiringUser = USER_CERTS.filter(
-    (c) => c.status === "Active" && c.expiresInDays > 0 && c.expiresInDays <= 30,
-  ).length || 3;
-  const expiringHost = HOST_CERTS.filter(
-    (c) => c.status === "Active" && c.expiresInDays > 0 && c.expiresInDays <= 30,
-  ).length || 0;
-  const total = USER_CERTS.length + HOST_CERTS.length;
-
-  return (
-    <div className="h-full rounded-lg border border-border bg-white flex flex-col overflow-hidden">
-      <Link
-        to="/inventory/certificates/user"
-        search={{ status: "Expired" } as never}
-        className="block border-l-4 border-l-risk-red p-4 hover:bg-muted/40 transition-colors cursor-pointer"
-      >
-        <div className="flex items-start justify-between mb-1">
-          <div className="text-[11px] uppercase-tracking font-semibold text-muted-foreground">Expired Certs</div>
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase-tracking bg-[color:var(--color-risk-red)]/10 text-risk-red">
-            VIOLATION
-          </span>
-        </div>
-        <div className="text-[34px] font-bold leading-none text-risk-red">{expiredUser + expiredHost}</div>
-        <div className="text-[13px] text-muted-foreground mt-1.5">of {total} total certificates</div>
-        <div className="text-[12px] text-muted-foreground mt-1">
-          User: {expiredUser} <span className="mx-1">·</span> Host: {expiredHost}
-        </div>
-      </Link>
-      <div className="border-t border-border" />
-      <Link
-        to="/inventory/certificates/user"
-        search={{ filter: "expiring30" } as never}
-        className="block border-l-4 border-l-risk-amber p-4 hover:bg-muted/40 transition-colors cursor-pointer flex-1"
-      >
-        <div className="flex items-start justify-between mb-1">
-          <div className="text-[11px] uppercase-tracking font-semibold text-muted-foreground">Expiring in 30 Days</div>
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase-tracking bg-[color:var(--color-risk-amber)]/10 text-risk-amber">
-            WARNING
-          </span>
-        </div>
-        <div className="text-[34px] font-bold leading-none text-risk-amber">{expiringUser + expiringHost}</div>
-        <div className="text-[12px] text-muted-foreground mt-2">
-          User: {expiringUser} <span className="mx-1">·</span> Host: {expiringHost}
-        </div>
-      </Link>
-      <div className="px-4 py-2 text-[11px] text-text-muted border-t border-border">Updated just now</div>
-    </div>
   );
 }
 
