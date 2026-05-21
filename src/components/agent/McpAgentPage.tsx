@@ -326,7 +326,7 @@ function KeyTable({ keys }: { keys: SshKey[] }) {
               <td className="px-2 py-1.5 text-muted-foreground">{k.age}</td>
               <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[140px]">{k.associatedUsers.join(", ") || "—"}</td>
               <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[140px]">{k.hostEndpoints.join(", ") || "—"}</td>
-              <td className="px-2 py-1.5 text-muted-foreground">{k.hasCert ? `Yes (${k.certCount})` : "No"}</td>
+              <td className="px-2 py-1.5 text-muted-foreground">{k.hasCert ? "Yes (" + k.certCount + ")" : "No"}</td>
               <td className="px-2 py-1.5">
                 <span className={cn("inline-flex px-1.5 py-0.5 rounded border text-[10px]", riskClass(k.riskStatus))}>
                   {k.riskStatus}
@@ -433,12 +433,22 @@ export default function McpAgentPage() {
       id: "init",
       role: "agent",
       text: "MCP Agent ready. I have access to 6 SSH lifecycle tools. Ask me anything about your SSH keys or certificates — or use the suggested queries below to get started.",
-      ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      ts: "",
     },
   ]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === "init" && !m.ts
+          ? { ...m, ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
+          : m
+      )
+    );
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
