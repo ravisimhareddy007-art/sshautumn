@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  ReferenceLine, Legend, PieChart, Pie, Cell, LineChart, Line,
+  ReferenceLine, Legend, LineChart, Line,
 } from "recharts";
 
 export const Route = createFileRoute("/_app/dashboard")({
