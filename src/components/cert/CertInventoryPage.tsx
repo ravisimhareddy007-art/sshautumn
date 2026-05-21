@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { RiskTileBar, type RiskTileDef } from "@/components/common/RiskTileBar";
 import { FilterChips } from "@/components/common/FilterChips";
 import { CertDetailDrawer } from "@/components/cert/CertDetailDrawer";
+import { AssociatedKeyLink } from "@/components/cert/AssociatedKeyLink";
 import { RevokeCertDialog } from "@/components/cert/RevokeCertDialog";
 import { RotateCertDialog } from "@/components/cert/RotateCertDialog";
 import type { SshCert } from "@/data/mock";
@@ -192,13 +193,7 @@ export function CertInventoryPage({
                       </span>
                     </td>
                     <td onClick={(e) => e.stopPropagation()} title={c.associatedKeyName}>
-                      <Link
-                        to={scope === "user" ? "/inventory/keys/user" : "/inventory/keys/host"}
-                        search={{ highlight: c.associatedKeyId }}
-                        className="text-primary hover:underline"
-                      >
-                        {c.associatedKeyName}
-                      </Link>
+                      <AssociatedKeyLink scope={scope} keyId={c.associatedKeyId} keyName={c.associatedKeyName} />
                     </td>
                     {scope === "host" && <td title={c.hostname}>{c.hostname}</td>}
                     {scope === "user" && (
