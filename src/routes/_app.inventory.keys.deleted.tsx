@@ -29,6 +29,7 @@ export const Route = createFileRoute("/_app/inventory/keys/deleted")({
                 <th>Deleted On</th>
                 <th>Deleted By</th>
                 <th>Endpoint(s)</th>
+                <th style={{ width: 56 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -43,6 +44,20 @@ export const Route = createFileRoute("/_app/inventory/keys/deleted")({
                   <td>{k.deletedBy}</td>
                   <td className="font-mono text-[12px]" title={k.endpoints.join(", ")}>
                     <span className="truncate-inner">{k.endpoints.join(", ") || "—"}</span>
+                  </td>
+                  <td>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => toast.success("Exported to CSV.")}>
+                          Export Row
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))}
