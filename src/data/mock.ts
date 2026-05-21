@@ -185,10 +185,12 @@ export interface RotatedCert {
   endpoints: string[];
   rollbackAvailable: boolean;
   rollbackWindowExpiry: string;
+  associatedKeyId: string;
 }
 export const ROTATED_CERTS: RotatedCert[] = [
-  { id: "rc1", certKeyId: "UC-2026-000", certType: "User", rotatedOn: "2026-05-15 09:22:00", previousValidTo: "2026-05-20", newValidTo: "2026-08-20", rotatedBy: "admin@appviewx.com", endpoints: ["192.168.223.51"], rollbackAvailable: true, rollbackWindowExpiry: "2026-05-22" },
-  { id: "rc2", certKeyId: "HC-2026-000", certType: "Host", rotatedOn: "2026-05-10 14:05:00", previousValidTo: "2026-05-15", newValidTo: "2026-08-15", rotatedBy: "admin@appviewx.com", endpoints: ["192.168.223.50"], rollbackAvailable: false, rollbackWindowExpiry: "2026-05-17" },
+  { id: "rc1", certKeyId: "UC-2026-000", certType: "User", rotatedOn: "2026-05-15 09:22:00", previousValidTo: "2026-05-20", newValidTo: "2026-08-20", rotatedBy: "admin@appviewx.com", endpoints: ["192.168.223.51"], rollbackAvailable: true, rollbackWindowExpiry: "2026-05-22", associatedKeyId: "uk1" },
+  { id: "rc2", certKeyId: "HC-2026-000", certType: "Host", rotatedOn: "2026-05-10 14:05:00", previousValidTo: "2026-05-15", newValidTo: "2026-08-15", rotatedBy: "admin@appviewx.com", endpoints: ["192.168.223.50"], rollbackAvailable: false, rollbackWindowExpiry: "2026-05-17", associatedKeyId: "hk1" },
+  { id: "rc3", certKeyId: "UC-2026-007", certType: "User", rotatedOn: "2026-05-12 10:00:00", previousValidTo: "2026-06-01", newValidTo: "2026-09-01", rotatedBy: "admin@appviewx.com", endpoints: ["10.0.1.50"], rollbackAvailable: true, rollbackWindowExpiry: "2026-05-19", associatedKeyId: "uk-deleted-99" },
 ];
 
 // ---------- DELETED CERTS ----------
