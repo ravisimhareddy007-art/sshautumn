@@ -63,12 +63,12 @@ export function RotateKeyDialog({
   };
 
   // ---- Determine progress steps for the active flow ----
-  const isCoupledFlow =
-    (associatedCert?.status === "Active") ||
-    (associatedCert && associatedCert.status !== "Active" && expiredOption === "keyAndCert");
+  const isCoupledFlow = associatedCert
+    ? associatedCert.status === "Active" || expiredOption === "keyAndCert"
+    : false;
 
   const keyOnlyExpiredCleanup =
-    associatedCert && associatedCert.status !== "Active" && expiredOption === "keyOnly";
+    !!associatedCert && associatedCert.status !== "Active" && expiredOption === "keyOnly";
 
   const progressSteps: string[] = isCoupledFlow
     ? [
