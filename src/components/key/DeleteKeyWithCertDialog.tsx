@@ -1,12 +1,14 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect, useState } from "react";
-import type { SshKey, SshCert } from "@/data/mock";
+import { useEffect, useMemo, useState } from "react";
+import type { SshKey, SshCert, CertStatus } from "@/data/mock";
 import { USER_CERTS, HOST_CERTS } from "@/data/mock";
 import { AlertTriangle } from "lucide-react";
 import { ProgressModal } from "@/components/common/ProgressModal";
 import { toast } from "sonner";
+
+type FlowType = "krl" | "expired" | "revoked";
 
 export function DeleteKeyWithCertDialog({
   ssKey,
@@ -29,6 +31,55 @@ export function DeleteKeyWithCertDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ssKey?.id]);
 
+  const flow = useMemo<FlowType>(() => {
+    const selectedCerts = certsAll.filter((c) => selected.includes(c.id));
+    if (selectedCerts.some((c) => c.status === "Active")) return "krl";
+    if (selectedCerts.some((c) => c.status === "Expired")) return "expired";
+    return "revoked";
+  }, [certsAll, selected]);
+
+  const steps = useMemo(() => {
+    if (flow === "krl") {
+      const caName = certsAll.find((c) => selected.includes(c.id))?.caName ?? "CA";
+      return [
+        `Updating KRL — adding cert serial to revocation list for ${caName}`,
+        "Pushing updated KRL to all endpoints",
+        "Verifying KRL receipt on each endpoint",
+        "Removing certificate files from endpoints",
+        "Deleting key from all endpoints",
+        "Removing cert from AVX inventory",
+        "Removing key from AVX inventory",
+        "Writing deletion audit log",
+      ];
+    }
+    if (flow === "expired") {
+      return [
+        "Removing expired certificate files from endpoints",
+        "Deleting key from all endpoints",
+        "Removing cert from AVX inventory",
+        "Removing key from AVX inventory",
+        "Writing deletion audit log",
+      ];
+    }
+    return [
+      "Removing revoked certificate files from endpoints",
+      "Deleting key from all endpoints",
+      "Removing cert from AVX inventory",
+      "Removing key from AVX inventory",
+      "Writing deletion audit log",
+    ];
+  }, [flow, certsAll, selected]);
+
+  const infoText = useMemo(() => {
+    if (flow === "krl") {
+      return "Deleting the key will also revoke and remove the associated certificate from all endpoints. The KRL will be updated first to immediately invalidate the cert at the CA level.";
+    }
+    if (flow === "expired") {
+      return "This key has an expired certificate. The certificate is already invalid, so the KRL update will be skipped. Files will be removed directly from endpoints.";
+    }
+    return "This key has a revoked certificate. The certificate is already present in the KRL, so the KRL update will be skipped. Files will be removed directly from endpoints.";
+  }, [flow]);
+
   if (!ssKey) return null;
 
   const handleToggle = (id: string) => {
@@ -36,6 +87,28 @@ export function DeleteKeyWithCertDialog({
       setWarnUncheck(id);
     } else {
       setSelected([...selected, id]);
+    }
+  };
+
+  const certStatusLabel = (s: CertStatus) => {
+    switch (s) {
+      case "Active":
+        return "Active";
+      case "Expired":
+        return "Expired";
+      case "Revoked":
+        return "Revoked";
+    }
+  };
+
+  const certStatusColor = (s: CertStatus) => {
+    switch (s) {
+      case "Active":
+        return "text-risk-green";
+      case "Expired":
+        return "text-muted-foreground";
+      case "Revoked":
+        return "text-risk-red";
     }
   };
 
@@ -68,9 +141,12 @@ export function DeleteKeyWithCertDialog({
                       checked={selected.includes(c.id)}
                       onCheckedChange={() => handleToggle(c.id)}
                     />
-                    <span>
+                    <span className="flex-1">
                       {c.certKeyId} — {c.certName}{" "}
                       <span className="text-muted-foreground text-[11px]">(auto-selected)</span>
+                    </span>
+                    <span className={`text-[11px] font-medium ${certStatusColor(c.status)}`}>
+                      {certStatusLabel(c.status)}
                     </span>
                   </label>
                   {warnUncheck === c.id && (
@@ -108,11 +184,7 @@ export function DeleteKeyWithCertDialog({
 
           <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[12px] flex gap-2">
             <AlertTriangle className="h-4 w-4 text-risk-amber shrink-0 mt-0.5" />
-            <span>
-              Deleting the key will also revoke and remove the associated certificate from all
-              endpoints. The KRL will be updated first to immediately invalidate the cert at the
-              CA level.
-            </span>
+            <span>{infoText}</span>
           </div>
 
           <DialogFooter>
@@ -130,12 +202,7 @@ export function DeleteKeyWithCertDialog({
       <ProgressModal
         open={progress}
         title="Deleting key and certificate"
-        steps={[
-          "Updating KRL…",
-          "Pushing KRL to endpoints…",
-          "Removing cert from endpoints…",
-          "Deleting key from endpoints…",
-        ]}
+        steps={steps}
         onDone={() => {
           onDone(ssKey.id, selected);
           toast.success("Key and certificate deleted successfully.");
