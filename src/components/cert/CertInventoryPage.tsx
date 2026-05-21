@@ -5,6 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { RiskTileBar, type RiskTileDef } from "@/components/common/RiskTileBar";
 import { FilterChips } from "@/components/common/FilterChips";
@@ -125,12 +130,24 @@ export function CertInventoryPage({
               >
                 Revoke
               </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={selected[0]?.status !== "Active"}
-                onClick={() => setRotateCert(selected[0])}
-              >
-                Rotate Certificate
-              </DropdownMenuItem>
+              {selected[0]?.status === "Active" ? (
+                <DropdownMenuItem onClick={() => setRotateCert(selected[0])}>
+                  Rotate Certificate
+                </DropdownMenuItem>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuItem disabled>
+                      <span className="pointer-events-auto">Rotate Certificate</span>
+                    </DropdownMenuItem>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="max-w-xs text-xs">
+                    {selected[0]?.status === "Expired"
+                      ? "Expired certificates cannot be rotated. Go to Key Inventory and use Provision Key & Certificate to issue a new certificate for this key."
+                      : "Revoked certificates cannot be rotated. Go to Key Inventory and use Provision Key & Certificate to issue a new certificate for this key."}
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <DropdownMenuItem onClick={() => toast.success("Exported cert data to CSV.")}>Export</DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Certificate file download started.")}>
                 Download Certificate
