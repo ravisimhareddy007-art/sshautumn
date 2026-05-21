@@ -11,9 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppGroupsRouteImport } from './routes/_app.groups'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppPoliciesKeyRouteImport } from './routes/_app.policies.key'
+import { Route as AppPoliciesHostRouteImport } from './routes/_app.policies.host'
 import { Route as AppInventoryHostsRouteImport } from './routes/_app.inventory.hosts'
 import { Route as AppDiscoveryStatusRouteImport } from './routes/_app.discovery.status'
+import { Route as AppDiscoveryRunsRouteImport } from './routes/_app.discovery.runs'
+import { Route as AppDiscoveryProfilesRouteImport } from './routes/_app.discovery.profiles'
+import { Route as AppAdministrationTagsRouteImport } from './routes/_app.administration.tags'
+import { Route as AppAdministrationSettingsRouteImport } from './routes/_app.administration.settings'
+import { Route as AppAdministrationDevicesRouteImport } from './routes/_app.administration.devices'
 import { Route as AppAdministrationCaRouteImport } from './routes/_app.administration.ca'
 import { Route as AppInventoryKeysUserRouteImport } from './routes/_app.inventory.keys.user'
 import { Route as AppInventoryKeysRotatedRouteImport } from './routes/_app.inventory.keys.rotated'
@@ -33,9 +41,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppGroupsRoute = AppGroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPoliciesKeyRoute = AppPoliciesKeyRouteImport.update({
+  id: '/policies/key',
+  path: '/policies/key',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPoliciesHostRoute = AppPoliciesHostRouteImport.update({
+  id: '/policies/host',
+  path: '/policies/host',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInventoryHostsRoute = AppInventoryHostsRouteImport.update({
@@ -48,6 +71,33 @@ const AppDiscoveryStatusRoute = AppDiscoveryStatusRouteImport.update({
   path: '/discovery/status',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDiscoveryRunsRoute = AppDiscoveryRunsRouteImport.update({
+  id: '/discovery/runs',
+  path: '/discovery/runs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDiscoveryProfilesRoute = AppDiscoveryProfilesRouteImport.update({
+  id: '/discovery/profiles',
+  path: '/discovery/profiles',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdministrationTagsRoute = AppAdministrationTagsRouteImport.update({
+  id: '/administration/tags',
+  path: '/administration/tags',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdministrationSettingsRoute =
+  AppAdministrationSettingsRouteImport.update({
+    id: '/administration/settings',
+    path: '/administration/settings',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppAdministrationDevicesRoute =
+  AppAdministrationDevicesRouteImport.update({
+    id: '/administration/devices',
+    path: '/administration/devices',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppAdministrationCaRoute = AppAdministrationCaRouteImport.update({
   id: '/administration/ca',
   path: '/administration/ca',
@@ -101,9 +151,17 @@ const AppInventoryCertificatesDeletedRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
+  '/groups': typeof AppGroupsRoute
   '/administration/ca': typeof AppAdministrationCaRoute
+  '/administration/devices': typeof AppAdministrationDevicesRoute
+  '/administration/settings': typeof AppAdministrationSettingsRoute
+  '/administration/tags': typeof AppAdministrationTagsRoute
+  '/discovery/profiles': typeof AppDiscoveryProfilesRoute
+  '/discovery/runs': typeof AppDiscoveryRunsRoute
   '/discovery/status': typeof AppDiscoveryStatusRoute
   '/inventory/hosts': typeof AppInventoryHostsRoute
+  '/policies/host': typeof AppPoliciesHostRoute
+  '/policies/key': typeof AppPoliciesKeyRoute
   '/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
   '/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
   '/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
@@ -116,9 +174,17 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
+  '/groups': typeof AppGroupsRoute
   '/administration/ca': typeof AppAdministrationCaRoute
+  '/administration/devices': typeof AppAdministrationDevicesRoute
+  '/administration/settings': typeof AppAdministrationSettingsRoute
+  '/administration/tags': typeof AppAdministrationTagsRoute
+  '/discovery/profiles': typeof AppDiscoveryProfilesRoute
+  '/discovery/runs': typeof AppDiscoveryRunsRoute
   '/discovery/status': typeof AppDiscoveryStatusRoute
   '/inventory/hosts': typeof AppInventoryHostsRoute
+  '/policies/host': typeof AppPoliciesHostRoute
+  '/policies/key': typeof AppPoliciesKeyRoute
   '/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
   '/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
   '/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
@@ -133,9 +199,17 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/groups': typeof AppGroupsRoute
   '/_app/administration/ca': typeof AppAdministrationCaRoute
+  '/_app/administration/devices': typeof AppAdministrationDevicesRoute
+  '/_app/administration/settings': typeof AppAdministrationSettingsRoute
+  '/_app/administration/tags': typeof AppAdministrationTagsRoute
+  '/_app/discovery/profiles': typeof AppDiscoveryProfilesRoute
+  '/_app/discovery/runs': typeof AppDiscoveryRunsRoute
   '/_app/discovery/status': typeof AppDiscoveryStatusRoute
   '/_app/inventory/hosts': typeof AppInventoryHostsRoute
+  '/_app/policies/host': typeof AppPoliciesHostRoute
+  '/_app/policies/key': typeof AppPoliciesKeyRoute
   '/_app/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
   '/_app/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
   '/_app/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
@@ -150,9 +224,17 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/groups'
     | '/administration/ca'
+    | '/administration/devices'
+    | '/administration/settings'
+    | '/administration/tags'
+    | '/discovery/profiles'
+    | '/discovery/runs'
     | '/discovery/status'
     | '/inventory/hosts'
+    | '/policies/host'
+    | '/policies/key'
     | '/inventory/certificates/deleted'
     | '/inventory/certificates/host'
     | '/inventory/certificates/rotated'
@@ -165,9 +247,17 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/groups'
     | '/administration/ca'
+    | '/administration/devices'
+    | '/administration/settings'
+    | '/administration/tags'
+    | '/discovery/profiles'
+    | '/discovery/runs'
     | '/discovery/status'
     | '/inventory/hosts'
+    | '/policies/host'
+    | '/policies/key'
     | '/inventory/certificates/deleted'
     | '/inventory/certificates/host'
     | '/inventory/certificates/rotated'
@@ -181,9 +271,17 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/_app/dashboard'
+    | '/_app/groups'
     | '/_app/administration/ca'
+    | '/_app/administration/devices'
+    | '/_app/administration/settings'
+    | '/_app/administration/tags'
+    | '/_app/discovery/profiles'
+    | '/_app/discovery/runs'
     | '/_app/discovery/status'
     | '/_app/inventory/hosts'
+    | '/_app/policies/host'
+    | '/_app/policies/key'
     | '/_app/inventory/certificates/deleted'
     | '/_app/inventory/certificates/host'
     | '/_app/inventory/certificates/rotated'
@@ -215,11 +313,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/groups': {
+      id: '/_app/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof AppGroupsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/policies/key': {
+      id: '/_app/policies/key'
+      path: '/policies/key'
+      fullPath: '/policies/key'
+      preLoaderRoute: typeof AppPoliciesKeyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/policies/host': {
+      id: '/_app/policies/host'
+      path: '/policies/host'
+      fullPath: '/policies/host'
+      preLoaderRoute: typeof AppPoliciesHostRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/inventory/hosts': {
@@ -234,6 +353,41 @@ declare module '@tanstack/react-router' {
       path: '/discovery/status'
       fullPath: '/discovery/status'
       preLoaderRoute: typeof AppDiscoveryStatusRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/discovery/runs': {
+      id: '/_app/discovery/runs'
+      path: '/discovery/runs'
+      fullPath: '/discovery/runs'
+      preLoaderRoute: typeof AppDiscoveryRunsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/discovery/profiles': {
+      id: '/_app/discovery/profiles'
+      path: '/discovery/profiles'
+      fullPath: '/discovery/profiles'
+      preLoaderRoute: typeof AppDiscoveryProfilesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/administration/tags': {
+      id: '/_app/administration/tags'
+      path: '/administration/tags'
+      fullPath: '/administration/tags'
+      preLoaderRoute: typeof AppAdministrationTagsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/administration/settings': {
+      id: '/_app/administration/settings'
+      path: '/administration/settings'
+      fullPath: '/administration/settings'
+      preLoaderRoute: typeof AppAdministrationSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/administration/devices': {
+      id: '/_app/administration/devices'
+      path: '/administration/devices'
+      fullPath: '/administration/devices'
+      preLoaderRoute: typeof AppAdministrationDevicesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/administration/ca': {
@@ -304,9 +458,17 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
+  AppGroupsRoute: typeof AppGroupsRoute
   AppAdministrationCaRoute: typeof AppAdministrationCaRoute
+  AppAdministrationDevicesRoute: typeof AppAdministrationDevicesRoute
+  AppAdministrationSettingsRoute: typeof AppAdministrationSettingsRoute
+  AppAdministrationTagsRoute: typeof AppAdministrationTagsRoute
+  AppDiscoveryProfilesRoute: typeof AppDiscoveryProfilesRoute
+  AppDiscoveryRunsRoute: typeof AppDiscoveryRunsRoute
   AppDiscoveryStatusRoute: typeof AppDiscoveryStatusRoute
   AppInventoryHostsRoute: typeof AppInventoryHostsRoute
+  AppPoliciesHostRoute: typeof AppPoliciesHostRoute
+  AppPoliciesKeyRoute: typeof AppPoliciesKeyRoute
   AppInventoryCertificatesDeletedRoute: typeof AppInventoryCertificatesDeletedRoute
   AppInventoryCertificatesHostRoute: typeof AppInventoryCertificatesHostRoute
   AppInventoryCertificatesRotatedRoute: typeof AppInventoryCertificatesRotatedRoute
@@ -319,9 +481,17 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
+  AppGroupsRoute: AppGroupsRoute,
   AppAdministrationCaRoute: AppAdministrationCaRoute,
+  AppAdministrationDevicesRoute: AppAdministrationDevicesRoute,
+  AppAdministrationSettingsRoute: AppAdministrationSettingsRoute,
+  AppAdministrationTagsRoute: AppAdministrationTagsRoute,
+  AppDiscoveryProfilesRoute: AppDiscoveryProfilesRoute,
+  AppDiscoveryRunsRoute: AppDiscoveryRunsRoute,
   AppDiscoveryStatusRoute: AppDiscoveryStatusRoute,
   AppInventoryHostsRoute: AppInventoryHostsRoute,
+  AppPoliciesHostRoute: AppPoliciesHostRoute,
+  AppPoliciesKeyRoute: AppPoliciesKeyRoute,
   AppInventoryCertificatesDeletedRoute: AppInventoryCertificatesDeletedRoute,
   AppInventoryCertificatesHostRoute: AppInventoryCertificatesHostRoute,
   AppInventoryCertificatesRotatedRoute: AppInventoryCertificatesRotatedRoute,
