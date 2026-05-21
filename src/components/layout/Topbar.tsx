@@ -6,8 +6,7 @@ export function Topbar() {
       <button className="p-2 rounded hover:bg-muted" title="App switcher">
         <LayoutGrid className="h-4 w-4 text-muted-foreground" />
       </button>
-      <div className="ml-2 flex items-center gap-2">
-        <div className="h-5 w-5 rotate-45 bg-brand-accent" />
+      <div className="ml-2 flex items-center">
         <span className="font-semibold tracking-tight text-[15px]">
           AppViewX <span className="text-muted-foreground font-normal">| SSH</span>
         </span>
