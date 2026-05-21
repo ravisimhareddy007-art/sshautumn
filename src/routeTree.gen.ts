@@ -19,6 +19,7 @@ import { Route as AppInventoryHostsRouteImport } from './routes/_app.inventory.h
 import { Route as AppDiscoveryStatusRouteImport } from './routes/_app.discovery.status'
 import { Route as AppDiscoveryRunsRouteImport } from './routes/_app.discovery.runs'
 import { Route as AppDiscoveryProfilesRouteImport } from './routes/_app.discovery.profiles'
+import { Route as AppAgentMcpRouteImport } from './routes/_app.agent.mcp'
 import { Route as AppAdministrationTagsRouteImport } from './routes/_app.administration.tags'
 import { Route as AppAdministrationSettingsRouteImport } from './routes/_app.administration.settings'
 import { Route as AppAdministrationDevicesRouteImport } from './routes/_app.administration.devices'
@@ -79,6 +80,11 @@ const AppDiscoveryRunsRoute = AppDiscoveryRunsRouteImport.update({
 const AppDiscoveryProfilesRoute = AppDiscoveryProfilesRouteImport.update({
   id: '/discovery/profiles',
   path: '/discovery/profiles',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAgentMcpRoute = AppAgentMcpRouteImport.update({
+  id: '/agent/mcp',
+  path: '/agent/mcp',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAdministrationTagsRoute = AppAdministrationTagsRouteImport.update({
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/administration/devices': typeof AppAdministrationDevicesRoute
   '/administration/settings': typeof AppAdministrationSettingsRoute
   '/administration/tags': typeof AppAdministrationTagsRoute
+  '/agent/mcp': typeof AppAgentMcpRoute
   '/discovery/profiles': typeof AppDiscoveryProfilesRoute
   '/discovery/runs': typeof AppDiscoveryRunsRoute
   '/discovery/status': typeof AppDiscoveryStatusRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/administration/devices': typeof AppAdministrationDevicesRoute
   '/administration/settings': typeof AppAdministrationSettingsRoute
   '/administration/tags': typeof AppAdministrationTagsRoute
+  '/agent/mcp': typeof AppAgentMcpRoute
   '/discovery/profiles': typeof AppDiscoveryProfilesRoute
   '/discovery/runs': typeof AppDiscoveryRunsRoute
   '/discovery/status': typeof AppDiscoveryStatusRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/_app/administration/devices': typeof AppAdministrationDevicesRoute
   '/_app/administration/settings': typeof AppAdministrationSettingsRoute
   '/_app/administration/tags': typeof AppAdministrationTagsRoute
+  '/_app/agent/mcp': typeof AppAgentMcpRoute
   '/_app/discovery/profiles': typeof AppDiscoveryProfilesRoute
   '/_app/discovery/runs': typeof AppDiscoveryRunsRoute
   '/_app/discovery/status': typeof AppDiscoveryStatusRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/administration/devices'
     | '/administration/settings'
     | '/administration/tags'
+    | '/agent/mcp'
     | '/discovery/profiles'
     | '/discovery/runs'
     | '/discovery/status'
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/administration/devices'
     | '/administration/settings'
     | '/administration/tags'
+    | '/agent/mcp'
     | '/discovery/profiles'
     | '/discovery/runs'
     | '/discovery/status'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/_app/administration/devices'
     | '/_app/administration/settings'
     | '/_app/administration/tags'
+    | '/_app/agent/mcp'
     | '/_app/discovery/profiles'
     | '/_app/discovery/runs'
     | '/_app/discovery/status'
@@ -367,6 +379,13 @@ declare module '@tanstack/react-router' {
       path: '/discovery/profiles'
       fullPath: '/discovery/profiles'
       preLoaderRoute: typeof AppDiscoveryProfilesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/agent/mcp': {
+      id: '/_app/agent/mcp'
+      path: '/agent/mcp'
+      fullPath: '/agent/mcp'
+      preLoaderRoute: typeof AppAgentMcpRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/administration/tags': {
@@ -463,6 +482,7 @@ interface AppRouteChildren {
   AppAdministrationDevicesRoute: typeof AppAdministrationDevicesRoute
   AppAdministrationSettingsRoute: typeof AppAdministrationSettingsRoute
   AppAdministrationTagsRoute: typeof AppAdministrationTagsRoute
+  AppAgentMcpRoute: typeof AppAgentMcpRoute
   AppDiscoveryProfilesRoute: typeof AppDiscoveryProfilesRoute
   AppDiscoveryRunsRoute: typeof AppDiscoveryRunsRoute
   AppDiscoveryStatusRoute: typeof AppDiscoveryStatusRoute
@@ -486,6 +506,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdministrationDevicesRoute: AppAdministrationDevicesRoute,
   AppAdministrationSettingsRoute: AppAdministrationSettingsRoute,
   AppAdministrationTagsRoute: AppAdministrationTagsRoute,
+  AppAgentMcpRoute: AppAgentMcpRoute,
   AppDiscoveryProfilesRoute: AppDiscoveryProfilesRoute,
   AppDiscoveryRunsRoute: AppDiscoveryRunsRoute,
   AppDiscoveryStatusRoute: AppDiscoveryStatusRoute,
