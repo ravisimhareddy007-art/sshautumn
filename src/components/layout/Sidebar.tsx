@@ -87,6 +87,7 @@ const SECTIONS: Section[] = [
     children: [
       { label: "Device Management", to: "/administration/devices" },
       { label: "Certificate Authority", to: "/administration/ca" },
+      { label: "MCP Tools", to: "/administration/mcp" },
       { label: "Advanced Settings", to: "/administration/settings" },
       { label: "Tags", to: "/administration/tags" },
     ],
