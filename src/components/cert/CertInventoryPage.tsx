@@ -17,6 +17,7 @@ import { CertDetailDrawer } from "@/components/cert/CertDetailDrawer";
 import { AssociatedKeyLink } from "@/components/cert/AssociatedKeyLink";
 import { RevokeCertDialog } from "@/components/cert/RevokeCertDialog";
 import { RotateCertDialog } from "@/components/cert/RotateCertDialog";
+import { DeleteCertDialog } from "@/components/cert/DeleteCertDialog";
 import type { SshCert } from "@/data/mock";
 import { ChevronDown, RefreshCw, Search, Plus } from "lucide-react";
 import { toast } from "sonner";
