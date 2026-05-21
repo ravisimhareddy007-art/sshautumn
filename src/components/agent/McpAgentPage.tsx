@@ -226,7 +226,7 @@ function processQuery(input: string): AgentResponse {
     const certs = ALL_CERTS.filter((c) => c.type === "host");
     return { toolCall: { tool: "ssh_query_certificate_inventory", params: { type: "host" } }, summary: `Found ${certs.length} host certificate${certs.length !== 1 ? "s" : ""}.`, resultType: "cert-list", certs };
   }
-  if (q.includes("all cert") || q.includes("list cert") || q.includes("cert inventor") || q.includes("show cert") || (q.includes("cert") && (q.includes("list") || q.includes("all") || q.includes("show")))) {
+  if (q.includes("all cert") || q.includes("list cert") || q.includes("cert inventor") || q.includes("show cert") || (q.includes("cert") && (q.includes("list") || q.includes("all") || q.includes("show"))) {
     return { toolCall: { tool: "ssh_query_certificate_inventory", params: {} }, summary: `Found ${ALL_CERTS.length} certificates in inventory.`, resultType: "cert-list", certs: ALL_CERTS };
   }
 
@@ -252,7 +252,7 @@ function processQuery(input: string): AgentResponse {
     toolCall: { tool: "ssh_query_key_inventory", params: {} },
     summary: "",
     resultType: "error",
-    error: `I couldn't match your query to an MCP tool. Try one of the suggested queries, or be more specific — for example: "show rogue keys", "rotate key [name]", "certs expiring soon".",
+    error: `I couldn't match your query to an MCP tool. Try one of the suggested queries, or be more specific — for example: "show rogue keys", "rotate key [name]", "certs expiring soon.`",
   };
 }
 
