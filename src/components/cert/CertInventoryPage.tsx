@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { RiskTileBar, type RiskTileDef } from "@/components/common/RiskTileBar";
 import { FilterChips } from "@/components/common/FilterChips";
 import { CertDetailDrawer } from "@/components/cert/CertDetailDrawer";
+import { AssociatedKeyLink } from "@/components/cert/AssociatedKeyLink";
 import { RevokeCertDialog } from "@/components/cert/RevokeCertDialog";
 import { RotateCertDialog } from "@/components/cert/RotateCertDialog";
 import type { SshCert } from "@/data/mock";
