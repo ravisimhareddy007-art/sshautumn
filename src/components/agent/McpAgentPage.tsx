@@ -326,7 +326,7 @@ function KeyTable({ keys }: { keys: SshKey[] }) {
               <td className="px-2 py-1.5 text-muted-foreground">{k.age}</td>
               <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[140px]">{k.associatedUsers.join(", ") || "—"}</td>
               <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[140px]">{k.hostEndpoints.join(", ") || "—"}</td>
-              <td className="px-2 py-1.5 text-muted-foreground">{k.hasCert ? `Yes (${k.certCount})` : "No"}</td>
+              <td className="px-2 py-1.5 text-muted-foreground">{k.hasCert ? "Yes (" + k.certCount + ")" : "No"}</td>
               <td className="px-2 py-1.5">
                 <span className={cn("inline-flex px-1.5 py-0.5 rounded border text-[10px]", riskClass(k.riskStatus))}>
                   {k.riskStatus}
