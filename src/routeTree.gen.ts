@@ -22,6 +22,7 @@ import { Route as AppDiscoveryProfilesRouteImport } from './routes/_app.discover
 import { Route as AppAgentMcpRouteImport } from './routes/_app.agent.mcp'
 import { Route as AppAdministrationTagsRouteImport } from './routes/_app.administration.tags'
 import { Route as AppAdministrationSettingsRouteImport } from './routes/_app.administration.settings'
+import { Route as AppAdministrationMcpRouteImport } from './routes/_app.administration.mcp'
 import { Route as AppAdministrationDevicesRouteImport } from './routes/_app.administration.devices'
 import { Route as AppAdministrationCaRouteImport } from './routes/_app.administration.ca'
 import { Route as AppInventoryKeysUserRouteImport } from './routes/_app.inventory.keys.user'
@@ -98,6 +99,11 @@ const AppAdministrationSettingsRoute =
     path: '/administration/settings',
     getParentRoute: () => AppRoute,
   } as any)
+const AppAdministrationMcpRoute = AppAdministrationMcpRouteImport.update({
+  id: '/administration/mcp',
+  path: '/administration/mcp',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdministrationDevicesRoute =
   AppAdministrationDevicesRouteImport.update({
     id: '/administration/devices',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/groups': typeof AppGroupsRoute
   '/administration/ca': typeof AppAdministrationCaRoute
   '/administration/devices': typeof AppAdministrationDevicesRoute
+  '/administration/mcp': typeof AppAdministrationMcpRoute
   '/administration/settings': typeof AppAdministrationSettingsRoute
   '/administration/tags': typeof AppAdministrationTagsRoute
   '/agent/mcp': typeof AppAgentMcpRoute
@@ -184,6 +191,7 @@ export interface FileRoutesByTo {
   '/groups': typeof AppGroupsRoute
   '/administration/ca': typeof AppAdministrationCaRoute
   '/administration/devices': typeof AppAdministrationDevicesRoute
+  '/administration/mcp': typeof AppAdministrationMcpRoute
   '/administration/settings': typeof AppAdministrationSettingsRoute
   '/administration/tags': typeof AppAdministrationTagsRoute
   '/agent/mcp': typeof AppAgentMcpRoute
@@ -210,6 +218,7 @@ export interface FileRoutesById {
   '/_app/groups': typeof AppGroupsRoute
   '/_app/administration/ca': typeof AppAdministrationCaRoute
   '/_app/administration/devices': typeof AppAdministrationDevicesRoute
+  '/_app/administration/mcp': typeof AppAdministrationMcpRoute
   '/_app/administration/settings': typeof AppAdministrationSettingsRoute
   '/_app/administration/tags': typeof AppAdministrationTagsRoute
   '/_app/agent/mcp': typeof AppAgentMcpRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/administration/ca'
     | '/administration/devices'
+    | '/administration/mcp'
     | '/administration/settings'
     | '/administration/tags'
     | '/agent/mcp'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/administration/ca'
     | '/administration/devices'
+    | '/administration/mcp'
     | '/administration/settings'
     | '/administration/tags'
     | '/agent/mcp'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/_app/groups'
     | '/_app/administration/ca'
     | '/_app/administration/devices'
+    | '/_app/administration/mcp'
     | '/_app/administration/settings'
     | '/_app/administration/tags'
     | '/_app/agent/mcp'
@@ -402,6 +414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdministrationSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/administration/mcp': {
+      id: '/_app/administration/mcp'
+      path: '/administration/mcp'
+      fullPath: '/administration/mcp'
+      preLoaderRoute: typeof AppAdministrationMcpRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/administration/devices': {
       id: '/_app/administration/devices'
       path: '/administration/devices'
@@ -480,6 +499,7 @@ interface AppRouteChildren {
   AppGroupsRoute: typeof AppGroupsRoute
   AppAdministrationCaRoute: typeof AppAdministrationCaRoute
   AppAdministrationDevicesRoute: typeof AppAdministrationDevicesRoute
+  AppAdministrationMcpRoute: typeof AppAdministrationMcpRoute
   AppAdministrationSettingsRoute: typeof AppAdministrationSettingsRoute
   AppAdministrationTagsRoute: typeof AppAdministrationTagsRoute
   AppAgentMcpRoute: typeof AppAgentMcpRoute
@@ -504,6 +524,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsRoute: AppGroupsRoute,
   AppAdministrationCaRoute: AppAdministrationCaRoute,
   AppAdministrationDevicesRoute: AppAdministrationDevicesRoute,
+  AppAdministrationMcpRoute: AppAdministrationMcpRoute,
   AppAdministrationSettingsRoute: AppAdministrationSettingsRoute,
   AppAdministrationTagsRoute: AppAdministrationTagsRoute,
   AppAgentMcpRoute: AppAgentMcpRoute,
