@@ -319,13 +319,13 @@ function KeyTable({ keys }: { keys: SshKey[] }) {
         <tbody>
           {keys.map((k) => (
             <tr key={k.id} className="border-t border-border/30 hover:bg-muted/20">
-              <td className="px-2 py-1.5 font-mono text-foreground/90 truncate max-w-[180px]">{k.name}</td>
+              <td className="px-2 py-1.5 font-mono text-foreground/90 truncate">{k.name}</td>
               <td className="px-2 py-1.5 text-muted-foreground capitalize">{k.type}</td>
               <td className="px-2 py-1.5 text-muted-foreground">{k.encryption}</td>
               <td className="px-2 py-1.5 text-muted-foreground">{k.length}</td>
               <td className="px-2 py-1.5 text-muted-foreground">{k.age}</td>
-              <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[140px]">{k.associatedUsers.join(", ") || "—"}</td>
-              <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[140px]">{k.hostEndpoints.join(", ") || "—"}</td>
+              <td className="px-2 py-1.5 text-muted-foreground truncate">{k.associatedUsers.join(", ") || "—"}</td>
+              <td className="px-2 py-1.5 text-muted-foreground truncate">{k.hostEndpoints.join(", ") || "—"}</td>
               <td className="px-2 py-1.5 text-muted-foreground">{k.hasCert ? "Yes (" + k.certCount + ")" : "No"}</td>
               <td className="px-2 py-1.5">
                 <span className={cn("inline-flex px-1.5 py-0.5 rounded border text-[10px]", riskClass(k.riskStatus))}>
@@ -362,16 +362,16 @@ function CertTable({ certs }: { certs: SshCert[] }) {
         <tbody>
           {certs.map((c) => (
             <tr key={c.id} className="border-t border-border/30 hover:bg-muted/20">
-              <td className="px-2 py-1.5 font-mono text-foreground/90 truncate max-w-[180px]">{c.certName}</td>
+              <td className="px-2 py-1.5 font-mono text-foreground/90 truncate">{c.certName}</td>
               <td className="px-2 py-1.5 text-muted-foreground capitalize">{c.type}</td>
-              <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[140px]">{c.caName}</td>
+              <td className="px-2 py-1.5 text-muted-foreground truncate">{c.caName}</td>
               <td className="px-2 py-1.5 text-muted-foreground font-mono text-[10px]">{c.serialNumber}</td>
-              <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[120px]">{c.principals.join(", ") || "—"}</td>
+              <td className="px-2 py-1.5 text-muted-foreground truncate">{c.principals.join(", ") || "—"}</td>
               <td className="px-2 py-1.5 text-muted-foreground">{c.validFrom}</td>
               <td className="px-2 py-1.5 text-muted-foreground">
                 {c.expiresInDays < 0 ? `Expired ${Math.abs(c.expiresInDays)}d ago` : `${c.expiresInDays}d`}
               </td>
-              <td className="px-2 py-1.5 text-muted-foreground truncate max-w-[140px]">{c.endpoints.join(", ") || "—"}</td>
+              <td className="px-2 py-1.5 text-muted-foreground truncate">{c.endpoints.join(", ") || "—"}</td>
               <td className="px-2 py-1.5">
                 <span className={cn("inline-flex px-1.5 py-0.5 rounded border text-[10px]", certStatusClass(c.status))}>
                   {c.status}
@@ -494,7 +494,7 @@ export default function McpAgentPage() {
 
       <div className="rounded-lg border border-border bg-card/40 flex flex-col h-[calc(100vh-180px)]">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto overflow-x-auto p-4 space-y-4">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -509,7 +509,7 @@ export default function McpAgentPage() {
                 </div>
               )}
 
-              <div className={cn("max-w-[85%] min-w-0", msg.role === "user" ? "items-end" : "items-start")}>
+              <div className={cn("min-w-0", msg.role === "user" ? "items-end" : "items-start")}>
                 {msg.role === "user" ? (
                   <div className="rounded-lg bg-primary/15 border border-primary/30 px-3 py-2 text-[12.5px] text-foreground/95">
                     {msg.text}
