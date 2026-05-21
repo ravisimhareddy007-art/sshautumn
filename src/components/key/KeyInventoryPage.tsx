@@ -278,17 +278,115 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
             <Columns className="h-4 w-4" />
           </Button>
 
-          <div className="text-[12px] text-muted-foreground mx-2">
-            {(page - 1) * PAGE + 1} to {Math.min(page * PAGE, filtered.length)} of {filtered.length}
-          </div>
+          <Button size="sm" variant="ghost" onClick={refresh} title="Refresh">
+            <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
+          </Button>
+        </div>
+      </div>
+
+      <div className="inv-frame">
+        <div className="inv-scroll">
+          <table className="inv-table">
+            <thead>
+              <tr>
+                <th className="sl" style={{ left: 0, width: 36, minWidth: 36 }}></th>
+                <th className="sl" style={{ left: 36, width: 36, minWidth: 36 }}>
+                  <Checkbox
+                    checked={paged.length > 0 && selectedIds.length === paged.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </th>
+                {visibleCols.map((c, i) => {
+                  const sticky = i === 0;
+                  return (
+                    <th
+                      key={c.key}
+                      className={cn(sticky && "sl")}
+                      style={sticky ? { left: 72, minWidth: 240, maxWidth: 240 } : undefined}
+                    >
+                      {c.label}
+                      {c.mandatory && <span className="text-risk-red ml-0.5">*</span>}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {paged.map((k) => {
+                const isExpanded = !!expanded[k.id];
+                const isSelected = selectedIds.includes(k.id);
+                const isHighlighted = search.highlight === k.id;
+                return (
+                  <Row key={k.id}>
+                    <tr
+                      className={cn(
+                        isSelected && "row-selected",
+                        isHighlighted && "row-highlight",
+                      )}
+                    >
+                      <td className="sl" style={{ left: 0, width: 36, minWidth: 36 }}>
+                        <button
+                          className="p-0.5 hover:bg-muted rounded inline-flex"
+                          onClick={() => setExpanded((e) => ({ ...e, [k.id]: !e[k.id] }))}
+                        >
+                          {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                        </button>
+                      </td>
+                      <td className="sl" style={{ left: 36, width: 36, minWidth: 36 }}>
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(v) =>
+                            setSelectedIds((s) => (v ? [...s, k.id] : s.filter((x) => x !== k.id)))
+                          }
+                        />
+                      </td>
+                      {visibleCols.map((c, i) => {
+                        const sticky = i === 0;
+                        return (
+                          <td
+                            key={c.key}
+                            className={cn(sticky && "sl")}
+                            style={sticky ? { left: 72, minWidth: 240, maxWidth: 240 } : undefined}
+                            title={typeof k[c.key as keyof SshKey] === "string" ? String(k[c.key as keyof SshKey]) : undefined}
+                          >
+                            {renderCell(k, c.key, { onCertClick: () => setCertsForKey(k) })}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan={visibleCols.length + 2} style={{ height: "auto", whiteSpace: "normal", overflow: "visible", maxWidth: "none", background: "#F8FAFC", padding: "12px 48px" }}>
+                          <div className="grid grid-cols-3 gap-6 text-[12px]">
+                            <KV label="Fingerprint" value={<span className="font-mono break-all">{k.fingerprint}</span>} />
+                            <KV label="File Paths" value={k.filePaths.join(", ") || "—"} />
+                            <KV label="All Endpoints" value={[...k.clientEndpoints, ...k.hostEndpoints].join(", ") || "—"} />
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Row>
+                );
+              })}
+              {paged.length === 0 && (
+                <tr>
+                  <td colSpan={visibleCols.length + 2} style={{ height: "auto", whiteSpace: "normal", textAlign: "center", padding: "48px", color: "var(--color-muted-foreground)", maxWidth: "none" }}>
+                    No keys match the current filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="inv-pagination">
+          <span className="mr-2">
+            {filtered.length === 0 ? 0 : (page - 1) * PAGE + 1} to {Math.min(page * PAGE, filtered.length)} of {filtered.length}
+          </span>
           <Button size="sm" variant="ghost" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
             ‹
           </Button>
           <Button size="sm" variant="ghost" disabled={page >= pageCount} onClick={() => setPage((p) => Math.min(pageCount, p + 1))}>
             ›
-          </Button>
-          <Button size="sm" variant="ghost" onClick={refresh} title="Refresh">
-            <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
           </Button>
         </div>
       </div>
