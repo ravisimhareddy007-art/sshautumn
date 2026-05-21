@@ -46,6 +46,7 @@ export function CertInventoryPage({
   const [drawerCert, setDrawerCert] = useState<SshCert | null>(null);
   const [revokeCert, setRevokeCert] = useState<SshCert | null>(null);
   const [rotateCert, setRotateCert] = useState<SshCert | null>(null);
+  const [deleteCert, setDeleteCert] = useState<SshCert | null>(null);
 
   const expired = certs.filter((c) => c.status === "Expired").length;
   const expiring = certs.filter((c) => c.status === "Active" && c.expiresInDays > 0 && c.expiresInDays <= 30).length;
