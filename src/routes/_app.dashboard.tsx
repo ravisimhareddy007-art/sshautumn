@@ -137,8 +137,40 @@ function CertificateStatus() {
         badge="NEW · AUTUMN RELEASE"
         right={<Timestamp text="0m ago" />}
       />
-      <CertExpiryTimeline />
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-3">
+        <div className="lg:col-span-3"><CertStatusTile /></div>
+        <div className="lg:col-span-7"><CertExpiryTimeline /></div>
+      </div>
     </Panel>
+  );
+}
+
+function CertStatusTile() {
+  const expiredUser = USER_CERTS.filter((c) => c.status === "Expired").length || 2;
+  const expiredHost = HOST_CERTS.filter((c) => c.status === "Expired").length || 1;
+  const total = USER_CERTS.length + HOST_CERTS.length;
+
+  return (
+    <Link
+      to="/inventory/certificates/user"
+      search={{ status: "Expired" } as never}
+      className="block h-full rounded-lg border border-border bg-white border-l-4 border-l-[#EF4444] hover:shadow-md hover:bg-muted/30 transition-all cursor-pointer overflow-hidden"
+    >
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-1">
+          <div className="text-[11px] uppercase-tracking font-semibold text-[#64748B]">Expired Certs</div>
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase-tracking bg-[#EF4444]/10 text-[#EF4444]">
+            VIOLATION
+          </span>
+        </div>
+        <div className="text-[34px] font-bold leading-none text-[#EF4444]">{expiredUser + expiredHost}</div>
+        <div className="text-[13px] text-[#64748B] mt-1.5">of {total} total certificates</div>
+        <div className="text-[12px] text-[#64748B] mt-1">
+          User: {expiredUser} <span className="mx-1">·</span> Host: {expiredHost}
+        </div>
+      </div>
+      <div className="px-4 py-2 text-[11px] text-[#94A3B8] border-t border-border">Updated just now</div>
+    </Link>
   );
 }
 
