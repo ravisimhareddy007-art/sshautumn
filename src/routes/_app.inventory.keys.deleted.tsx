@@ -63,7 +63,7 @@ export const Route = createFileRoute("/_app/inventory/keys/deleted")({
               ))}
               {DELETED_KEYS.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ height: "auto", whiteSpace: "normal", textAlign: "center", padding: "48px", color: "var(--color-muted-foreground)", maxWidth: "none" }}>
+                  <td colSpan={7} style={{ height: "auto", whiteSpace: "normal", textAlign: "center", padding: "48px", color: "var(--color-muted-foreground)", maxWidth: "none" }}>
                     No recently deleted keys.
                   </td>
                 </tr>
