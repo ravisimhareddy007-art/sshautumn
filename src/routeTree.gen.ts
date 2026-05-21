@@ -12,10 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppInventoryHostsRouteImport } from './routes/_app.inventory.hosts'
+import { Route as AppDiscoveryStatusRouteImport } from './routes/_app.discovery.status'
+import { Route as AppAdministrationCaRouteImport } from './routes/_app.administration.ca'
 import { Route as AppInventoryKeysUserRouteImport } from './routes/_app.inventory.keys.user'
 import { Route as AppInventoryKeysRotatedRouteImport } from './routes/_app.inventory.keys.rotated'
 import { Route as AppInventoryKeysHostRouteImport } from './routes/_app.inventory.keys.host'
 import { Route as AppInventoryKeysDeletedRouteImport } from './routes/_app.inventory.keys.deleted'
+import { Route as AppInventoryCertificatesUserRouteImport } from './routes/_app.inventory.certificates.user'
+import { Route as AppInventoryCertificatesRotatedRouteImport } from './routes/_app.inventory.certificates.rotated'
+import { Route as AppInventoryCertificatesHostRouteImport } from './routes/_app.inventory.certificates.host'
+import { Route as AppInventoryCertificatesDeletedRouteImport } from './routes/_app.inventory.certificates.deleted'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -29,6 +36,21 @@ const IndexRoute = IndexRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryHostsRoute = AppInventoryHostsRouteImport.update({
+  id: '/inventory/hosts',
+  path: '/inventory/hosts',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDiscoveryStatusRoute = AppDiscoveryStatusRouteImport.update({
+  id: '/discovery/status',
+  path: '/discovery/status',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdministrationCaRoute = AppAdministrationCaRouteImport.update({
+  id: '/administration/ca',
+  path: '/administration/ca',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInventoryKeysUserRoute = AppInventoryKeysUserRouteImport.update({
@@ -51,10 +73,41 @@ const AppInventoryKeysDeletedRoute = AppInventoryKeysDeletedRouteImport.update({
   path: '/inventory/keys/deleted',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInventoryCertificatesUserRoute =
+  AppInventoryCertificatesUserRouteImport.update({
+    id: '/inventory/certificates/user',
+    path: '/inventory/certificates/user',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppInventoryCertificatesRotatedRoute =
+  AppInventoryCertificatesRotatedRouteImport.update({
+    id: '/inventory/certificates/rotated',
+    path: '/inventory/certificates/rotated',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppInventoryCertificatesHostRoute =
+  AppInventoryCertificatesHostRouteImport.update({
+    id: '/inventory/certificates/host',
+    path: '/inventory/certificates/host',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppInventoryCertificatesDeletedRoute =
+  AppInventoryCertificatesDeletedRouteImport.update({
+    id: '/inventory/certificates/deleted',
+    path: '/inventory/certificates/deleted',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
+  '/administration/ca': typeof AppAdministrationCaRoute
+  '/discovery/status': typeof AppDiscoveryStatusRoute
+  '/inventory/hosts': typeof AppInventoryHostsRoute
+  '/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
+  '/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
+  '/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
+  '/inventory/certificates/user': typeof AppInventoryCertificatesUserRoute
   '/inventory/keys/deleted': typeof AppInventoryKeysDeletedRoute
   '/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
@@ -63,6 +116,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
+  '/administration/ca': typeof AppAdministrationCaRoute
+  '/discovery/status': typeof AppDiscoveryStatusRoute
+  '/inventory/hosts': typeof AppInventoryHostsRoute
+  '/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
+  '/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
+  '/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
+  '/inventory/certificates/user': typeof AppInventoryCertificatesUserRoute
   '/inventory/keys/deleted': typeof AppInventoryKeysDeletedRoute
   '/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
@@ -73,6 +133,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/administration/ca': typeof AppAdministrationCaRoute
+  '/_app/discovery/status': typeof AppDiscoveryStatusRoute
+  '/_app/inventory/hosts': typeof AppInventoryHostsRoute
+  '/_app/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
+  '/_app/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
+  '/_app/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
+  '/_app/inventory/certificates/user': typeof AppInventoryCertificatesUserRoute
   '/_app/inventory/keys/deleted': typeof AppInventoryKeysDeletedRoute
   '/_app/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/_app/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
@@ -83,6 +150,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/administration/ca'
+    | '/discovery/status'
+    | '/inventory/hosts'
+    | '/inventory/certificates/deleted'
+    | '/inventory/certificates/host'
+    | '/inventory/certificates/rotated'
+    | '/inventory/certificates/user'
     | '/inventory/keys/deleted'
     | '/inventory/keys/host'
     | '/inventory/keys/rotated'
@@ -91,6 +165,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/administration/ca'
+    | '/discovery/status'
+    | '/inventory/hosts'
+    | '/inventory/certificates/deleted'
+    | '/inventory/certificates/host'
+    | '/inventory/certificates/rotated'
+    | '/inventory/certificates/user'
     | '/inventory/keys/deleted'
     | '/inventory/keys/host'
     | '/inventory/keys/rotated'
@@ -100,6 +181,13 @@ export interface FileRouteTypes {
     | '/'
     | '/_app'
     | '/_app/dashboard'
+    | '/_app/administration/ca'
+    | '/_app/discovery/status'
+    | '/_app/inventory/hosts'
+    | '/_app/inventory/certificates/deleted'
+    | '/_app/inventory/certificates/host'
+    | '/_app/inventory/certificates/rotated'
+    | '/_app/inventory/certificates/user'
     | '/_app/inventory/keys/deleted'
     | '/_app/inventory/keys/host'
     | '/_app/inventory/keys/rotated'
@@ -134,6 +222,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inventory/hosts': {
+      id: '/_app/inventory/hosts'
+      path: '/inventory/hosts'
+      fullPath: '/inventory/hosts'
+      preLoaderRoute: typeof AppInventoryHostsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/discovery/status': {
+      id: '/_app/discovery/status'
+      path: '/discovery/status'
+      fullPath: '/discovery/status'
+      preLoaderRoute: typeof AppDiscoveryStatusRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/administration/ca': {
+      id: '/_app/administration/ca'
+      path: '/administration/ca'
+      fullPath: '/administration/ca'
+      preLoaderRoute: typeof AppAdministrationCaRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/inventory/keys/user': {
       id: '/_app/inventory/keys/user'
       path: '/inventory/keys/user'
@@ -162,11 +271,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryKeysDeletedRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inventory/certificates/user': {
+      id: '/_app/inventory/certificates/user'
+      path: '/inventory/certificates/user'
+      fullPath: '/inventory/certificates/user'
+      preLoaderRoute: typeof AppInventoryCertificatesUserRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/certificates/rotated': {
+      id: '/_app/inventory/certificates/rotated'
+      path: '/inventory/certificates/rotated'
+      fullPath: '/inventory/certificates/rotated'
+      preLoaderRoute: typeof AppInventoryCertificatesRotatedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/certificates/host': {
+      id: '/_app/inventory/certificates/host'
+      path: '/inventory/certificates/host'
+      fullPath: '/inventory/certificates/host'
+      preLoaderRoute: typeof AppInventoryCertificatesHostRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/certificates/deleted': {
+      id: '/_app/inventory/certificates/deleted'
+      path: '/inventory/certificates/deleted'
+      fullPath: '/inventory/certificates/deleted'
+      preLoaderRoute: typeof AppInventoryCertificatesDeletedRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
+  AppAdministrationCaRoute: typeof AppAdministrationCaRoute
+  AppDiscoveryStatusRoute: typeof AppDiscoveryStatusRoute
+  AppInventoryHostsRoute: typeof AppInventoryHostsRoute
+  AppInventoryCertificatesDeletedRoute: typeof AppInventoryCertificatesDeletedRoute
+  AppInventoryCertificatesHostRoute: typeof AppInventoryCertificatesHostRoute
+  AppInventoryCertificatesRotatedRoute: typeof AppInventoryCertificatesRotatedRoute
+  AppInventoryCertificatesUserRoute: typeof AppInventoryCertificatesUserRoute
   AppInventoryKeysDeletedRoute: typeof AppInventoryKeysDeletedRoute
   AppInventoryKeysHostRoute: typeof AppInventoryKeysHostRoute
   AppInventoryKeysRotatedRoute: typeof AppInventoryKeysRotatedRoute
@@ -175,6 +319,13 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
+  AppAdministrationCaRoute: AppAdministrationCaRoute,
+  AppDiscoveryStatusRoute: AppDiscoveryStatusRoute,
+  AppInventoryHostsRoute: AppInventoryHostsRoute,
+  AppInventoryCertificatesDeletedRoute: AppInventoryCertificatesDeletedRoute,
+  AppInventoryCertificatesHostRoute: AppInventoryCertificatesHostRoute,
+  AppInventoryCertificatesRotatedRoute: AppInventoryCertificatesRotatedRoute,
+  AppInventoryCertificatesUserRoute: AppInventoryCertificatesUserRoute,
   AppInventoryKeysDeletedRoute: AppInventoryKeysDeletedRoute,
   AppInventoryKeysHostRoute: AppInventoryKeysHostRoute,
   AppInventoryKeysRotatedRoute: AppInventoryKeysRotatedRoute,
