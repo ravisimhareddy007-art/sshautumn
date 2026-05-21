@@ -312,6 +312,15 @@ export function CertInventoryPage({
           })
         }
       />
+
+      <DeleteCertDialog
+        cert={deleteCert}
+        onClose={() => setDeleteCert(null)}
+        onDeleted={(c) => {
+          setCerts((cs) => cs.filter((x) => x.id !== c.id));
+          setSelectedIds((ids) => ids.filter((id) => id !== c.id));
+        }}
+      />
     </div>
   );
 }
