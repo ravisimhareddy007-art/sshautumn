@@ -433,12 +433,22 @@ export default function McpAgentPage() {
       id: "init",
       role: "agent",
       text: "MCP Agent ready. I have access to 6 SSH lifecycle tools. Ask me anything about your SSH keys or certificates — or use the suggested queries below to get started.",
-      ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      ts: "",
     },
   ]);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === "init" && !m.ts
+          ? { ...m, ts: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
+          : m
+      )
+    );
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
