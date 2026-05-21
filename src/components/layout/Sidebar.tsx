@@ -121,7 +121,11 @@ function GroupNode({
 }) {
   const hasChildren = !!group.children?.length;
   const [open, setOpen] = useState(false);
-  const timerRef = useState<{ t: ReturnType<typeof setTimeout> | null }>({ t: null })[0];
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   if (!hasChildren && group.to) {
     return (
@@ -134,63 +138,92 @@ function GroupNode({
     );
   }
 
+  const childActive =
+    !!group.children?.some((c) => c.to && pathname === c.to);
+
   const openNow = () => {
-    if (timerRef.t) {
-      clearTimeout(timerRef.t);
-      timerRef.t = null;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (wrapRef.current) {
+      const r = wrapRef.current.getBoundingClientRect();
+      setCoords({ top: r.top, left: r.right });
     }
     setOpen(true);
   };
   const closeSoon = () => {
-    if (timerRef.t) clearTimeout(timerRef.t);
-    timerRef.t = setTimeout(() => setOpen(false), 120);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setOpen(false), 150);
   };
 
   return (
     <div
+      ref={wrapRef}
       className="relative"
       onMouseEnter={openNow}
       onMouseLeave={closeSoon}
     >
       <button
         type="button"
-        className="w-full flex items-center gap-2 px-4 py-2 text-[13px] text-nav-text/80 hover:bg-nav-hover hover:text-nav-text"
+        className={cn(
+          "relative w-full flex items-center gap-2 px-4 py-2 text-[13px] text-nav-text/80 hover:bg-nav-hover hover:text-nav-text",
+          childActive && "bg-nav-active text-nav-text",
+        )}
         style={{ paddingLeft: 16 + 16 }}
       >
+        {childActive && (
+          <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
+        )}
         <span className="truncate">{group.label}</span>
         <ChevronRight className="ml-auto h-3 w-3 opacity-70" />
       </button>
-      {open && group.children && (
-        <div
-          className="absolute top-0 left-full z-50 min-w-[240px] py-2"
-          style={{
-            background: "#1B2437",
-            borderRadius: "0 6px 6px 0",
-            boxShadow: "4px 0 12px rgba(0,0,0,0.2)",
-          }}
-          onMouseEnter={openNow}
-          onMouseLeave={closeSoon}
-        >
-          {group.children.map((c) =>
-            c.to ? (
-              <Link
-                key={c.to}
-                to={c.to}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "block text-[13px] transition-colors",
-                  pathname === c.to
-                    ? "text-white font-medium bg-nav-active"
-                    : "text-white/75 hover:text-white hover:bg-nav-hover",
-                )}
-                style={{ padding: "10px 20px" }}
-              >
-                {c.label}
-              </Link>
-            ) : null,
-          )}
-        </div>
-      )}
+      {open && coords && group.children && mounted &&
+        createPortal(
+          <div
+            className="fixed z-[100] min-w-[240px] py-2"
+            style={{
+              top: coords.top,
+              left: coords.left,
+              background: "#1B2437",
+              borderRadius: "0 6px 6px 0",
+              boxShadow: "4px 0 12px rgba(0,0,0,0.2)",
+            }}
+            onMouseEnter={openNow}
+            onMouseLeave={closeSoon}
+          >
+            {group.children.map((c) =>
+              c.to ? (
+                <Link
+                  key={c.to}
+                  to={c.to}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "block text-[13px] transition-colors",
+                    pathname === c.to
+                      ? "text-white font-medium"
+                      : "text-white/75 hover:text-white",
+                  )}
+                  style={{
+                    padding: "10px 20px",
+                    background:
+                      pathname === c.to ? "#243050" : "transparent",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#243050")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background =
+                      pathname === c.to ? "#243050" : "transparent")
+                  }
+                >
+                  {c.label}
+                </Link>
+              ) : null,
+            )}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
