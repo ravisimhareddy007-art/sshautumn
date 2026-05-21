@@ -1,5 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, ChevronRight, Search, Diamond } from "lucide-react";
 import { cn } from "@/lib/utils";
 
