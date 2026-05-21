@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppInventoryKeysUserRouteImport } from './routes/_app.inventory.keys.user'
+import { Route as AppInventoryKeysRotatedRouteImport } from './routes/_app.inventory.keys.rotated'
+import { Route as AppInventoryKeysHostRouteImport } from './routes/_app.inventory.keys.host'
+import { Route as AppInventoryKeysDeletedRouteImport } from './routes/_app.inventory.keys.deleted'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -27,27 +31,79 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInventoryKeysUserRoute = AppInventoryKeysUserRouteImport.update({
+  id: '/inventory/keys/user',
+  path: '/inventory/keys/user',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryKeysRotatedRoute = AppInventoryKeysRotatedRouteImport.update({
+  id: '/inventory/keys/rotated',
+  path: '/inventory/keys/rotated',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryKeysHostRoute = AppInventoryKeysHostRouteImport.update({
+  id: '/inventory/keys/host',
+  path: '/inventory/keys/host',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryKeysDeletedRoute = AppInventoryKeysDeletedRouteImport.update({
+  id: '/inventory/keys/deleted',
+  path: '/inventory/keys/deleted',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
+  '/inventory/keys/deleted': typeof AppInventoryKeysDeletedRoute
+  '/inventory/keys/host': typeof AppInventoryKeysHostRoute
+  '/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
+  '/inventory/keys/user': typeof AppInventoryKeysUserRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
+  '/inventory/keys/deleted': typeof AppInventoryKeysDeletedRoute
+  '/inventory/keys/host': typeof AppInventoryKeysHostRoute
+  '/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
+  '/inventory/keys/user': typeof AppInventoryKeysUserRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/inventory/keys/deleted': typeof AppInventoryKeysDeletedRoute
+  '/_app/inventory/keys/host': typeof AppInventoryKeysHostRoute
+  '/_app/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
+  '/_app/inventory/keys/user': typeof AppInventoryKeysUserRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/inventory/keys/deleted'
+    | '/inventory/keys/host'
+    | '/inventory/keys/rotated'
+    | '/inventory/keys/user'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard'
-  id: '__root__' | '/' | '/_app' | '/_app/dashboard'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/inventory/keys/deleted'
+    | '/inventory/keys/host'
+    | '/inventory/keys/rotated'
+    | '/inventory/keys/user'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/dashboard'
+    | '/_app/inventory/keys/deleted'
+    | '/_app/inventory/keys/host'
+    | '/_app/inventory/keys/rotated'
+    | '/_app/inventory/keys/user'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,15 +134,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/inventory/keys/user': {
+      id: '/_app/inventory/keys/user'
+      path: '/inventory/keys/user'
+      fullPath: '/inventory/keys/user'
+      preLoaderRoute: typeof AppInventoryKeysUserRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/keys/rotated': {
+      id: '/_app/inventory/keys/rotated'
+      path: '/inventory/keys/rotated'
+      fullPath: '/inventory/keys/rotated'
+      preLoaderRoute: typeof AppInventoryKeysRotatedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/keys/host': {
+      id: '/_app/inventory/keys/host'
+      path: '/inventory/keys/host'
+      fullPath: '/inventory/keys/host'
+      preLoaderRoute: typeof AppInventoryKeysHostRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/keys/deleted': {
+      id: '/_app/inventory/keys/deleted'
+      path: '/inventory/keys/deleted'
+      fullPath: '/inventory/keys/deleted'
+      preLoaderRoute: typeof AppInventoryKeysDeletedRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
+  AppInventoryKeysDeletedRoute: typeof AppInventoryKeysDeletedRoute
+  AppInventoryKeysHostRoute: typeof AppInventoryKeysHostRoute
+  AppInventoryKeysRotatedRoute: typeof AppInventoryKeysRotatedRoute
+  AppInventoryKeysUserRoute: typeof AppInventoryKeysUserRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
+  AppInventoryKeysDeletedRoute: AppInventoryKeysDeletedRoute,
+  AppInventoryKeysHostRoute: AppInventoryKeysHostRoute,
+  AppInventoryKeysRotatedRoute: AppInventoryKeysRotatedRoute,
+  AppInventoryKeysUserRoute: AppInventoryKeysUserRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -98,3 +190,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
