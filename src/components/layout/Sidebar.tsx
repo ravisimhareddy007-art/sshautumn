@@ -67,6 +67,13 @@ const SECTIONS: Section[] = [
     ],
   },
   {
+    header: "AI AGENT",
+    defaultOpen: true,
+    children: [
+      { label: "MCP Console", to: "/agent/mcp" },
+    ],
+  },
+  {
     header: "POLICIES",
     defaultOpen: false,
     children: [
