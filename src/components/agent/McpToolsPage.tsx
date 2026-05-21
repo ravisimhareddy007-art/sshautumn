@@ -129,9 +129,9 @@ export default function McpToolsPage() {
   return (
     <div>
       <PageHeader
+        breadcrumbs={["AI Agent", "MCP Tools"]}
         title="MCP Tools"
-        subtitle="Model Context Protocol tool manifest exposed to the agent runtime."
-        right={
+        actions={
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
             <Terminal className="w-3.5 h-3.5" />
             <span>MCP spec 2025-06-18</span>
