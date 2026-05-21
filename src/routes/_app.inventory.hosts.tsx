@@ -24,7 +24,7 @@ function Page() {
           </>
         }
       />
-      <div className="inv-frame">
+      <div className="inv-frame inv-frame--standalone">
         <div className="inv-scroll">
           <table className="inv-table">
             <thead>
