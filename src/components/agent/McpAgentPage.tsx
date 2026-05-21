@@ -252,7 +252,7 @@ function processQuery(input: string): AgentResponse {
     toolCall: { tool: "ssh_query_key_inventory", params: {} },
     summary: "",
     resultType: "error",
-    error: `I couldn't match your query to an MCP tool. Try one of the suggested queries, or be more specific — for example: "show rogue keys", "rotate key [name]", "certs expiring soon.`",
+      error: `I couldn't match your query to an MCP tool. Try one of the suggested queries, or be more specific â for example: "show rogue keys", "rotate key [name]", "certs expiring soon."`,
   };
 }
 
