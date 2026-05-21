@@ -137,128 +137,129 @@ export function CertInventoryPage({
               <DropdownMenuItem onClick={() => toast.success("Status updated.")}>Change Status</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <div className="text-[12px] text-muted-foreground mx-2">
-            1 to {filtered.length} of {filtered.length}
-          </div>
           <Button size="sm" variant="ghost" title="Refresh">
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="bg-surface border border-t-0 border-border rounded-b-md overflow-x-auto">
-        <table className="w-full text-[13px]">
-          <thead className="bg-muted/50 text-[11px] uppercase-tracking text-muted-foreground">
-            <tr>
-              <th className="w-8 px-2 py-2"></th>
-              <th className="text-left px-3 py-2">Cert Key ID / Name</th>
-              <th className="text-left px-3 py-2">{scope === "user" ? "Associated Key" : "Associated Host Key"}</th>
-              {scope === "host" && <th className="text-left px-3 py-2">Hostname / FQDN</th>}
-              {scope === "user" && <th className="text-left px-3 py-2">Principal(s)</th>}
-              <th className="text-left px-3 py-2">CA / Issuer</th>
-              <th className="text-left px-3 py-2">Valid From</th>
-              <th className="text-left px-3 py-2">Valid To</th>
-              <th className="text-left px-3 py-2">Expires In</th>
-              <th className="text-left px-3 py-2">Status</th>
-              <th className="text-left px-3 py-2">Endpoint(s)</th>
-              <th className="text-left px-3 py-2">Compliance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((c) => {
-              const isSel = selectedIds.includes(c.id);
-              const validToCls =
-                c.expiresInDays <= 0
-                  ? "text-risk-red bg-risk-red/10"
-                  : c.expiresInDays <= 30
-                    ? "text-risk-amber bg-risk-amber/10"
-                    : "";
-              return (
-                <tr
-                  key={c.id}
-                  onClick={() => setDrawerCert(c)}
-                  className={cn(
-                    "border-t border-border hover:bg-muted/40 cursor-pointer",
-                    isSel && "bg-row-selected",
-                  )}
-                >
-                  <td className="px-2 py-2" onClick={(e) => e.stopPropagation()}>
-                    <Checkbox
-                      checked={isSel}
-                      onCheckedChange={(v) =>
-                        setSelectedIds((s) => (v ? [...s, c.id] : s.filter((x) => x !== c.id)))
-                      }
-                    />
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="font-medium">{c.certKeyId}</div>
-                    <div className="text-[11px] text-muted-foreground">{c.certName}</div>
-                  </td>
-                  <td className="px-3 py-2" onClick={(e) => e.stopPropagation()}>
-                    <Link
-                      to={scope === "user" ? "/inventory/keys/user" : "/inventory/keys/host"}
-                      search={{ highlight: c.associatedKeyId }}
-                      className="text-primary hover:underline"
-                    >
-                      {c.associatedKeyName}
-                    </Link>
-                  </td>
-                  {scope === "host" && <td className="px-3 py-2">{c.hostname}</td>}
-                  {scope === "user" && (
-                    <td className="px-3 py-2">
-                      {c.principals[0] || "—"}
-                      {c.principals.length > 1 && (
-                        <Badge variant="outline" className="ml-1" title={c.principals.join(", ")}>
-                          +{c.principals.length - 1}
-                        </Badge>
-                      )}
+      <div className="inv-frame">
+        <div className="inv-scroll">
+          <table className="inv-table">
+            <thead>
+              <tr>
+                <th className="sl" style={{ left: 0, width: 36, minWidth: 36 }}></th>
+                <th className="sl" style={{ left: 36, minWidth: 240, maxWidth: 240 }}>Cert Key ID / Name</th>
+                <th>{scope === "user" ? "Associated Key" : "Associated Host Key"}</th>
+                {scope === "host" && <th>Hostname / FQDN</th>}
+                {scope === "user" && <th>Principal(s)</th>}
+                <th>CA / Issuer</th>
+                <th>Valid From</th>
+                <th>Valid To</th>
+                <th>Expires In</th>
+                <th>Status</th>
+                <th>Endpoint(s)</th>
+                <th>Compliance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c) => {
+                const isSel = selectedIds.includes(c.id);
+                const validToCls =
+                  c.expiresInDays <= 0
+                    ? "text-risk-red"
+                    : c.expiresInDays <= 30
+                      ? "text-risk-amber"
+                      : "";
+                return (
+                  <tr
+                    key={c.id}
+                    onClick={() => setDrawerCert(c)}
+                    className={cn("cursor-pointer", isSel && "row-selected")}
+                  >
+                    <td className="sl" style={{ left: 0, width: 36, minWidth: 36 }} onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSel}
+                        onCheckedChange={(v) =>
+                          setSelectedIds((s) => (v ? [...s, c.id] : s.filter((x) => x !== c.id)))
+                        }
+                      />
                     </td>
-                  )}
-                  <td className="px-3 py-2">{c.caName}</td>
-                  <td className="px-3 py-2">{c.validFrom}</td>
-                  <td className={cn("px-3 py-2 rounded", validToCls)}>{c.validTo}</td>
-                  <td className={cn("px-3 py-2", validToCls)}>{c.expiresIn}</td>
-                  <td className="px-3 py-2">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        c.status === "Active" && "bg-risk-green/15 text-risk-green border-risk-green/30",
-                        c.status === "Expired" && "bg-risk-red/15 text-risk-red border-risk-red/30",
-                        c.status === "Revoked" && "bg-muted text-muted-foreground border-border",
-                      )}
-                    >
-                      {c.status}
-                    </Badge>
-                  </td>
-                  <td className="px-3 py-2">
-                    <Badge variant="outline" title={c.endpoints.join(", ")}>
-                      {c.endpoints.length}
-                    </Badge>
-                  </td>
-                  <td className="px-3 py-2">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        c.complianceStatus === "Compliant"
-                          ? "bg-risk-green/15 text-risk-green border-risk-green/30"
-                          : "bg-risk-red/15 text-risk-red border-risk-red/30",
-                      )}
-                    >
-                      {c.complianceStatus}
-                    </Badge>
+                    <td className="sl" style={{ left: 36, minWidth: 240, maxWidth: 240 }} title={`${c.certKeyId} · ${c.certName}`}>
+                      <span className="truncate-inner">
+                        <span className="font-medium">{c.certKeyId}</span>
+                        <span className="text-[11px] text-muted-foreground ml-1">{c.certName}</span>
+                      </span>
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()} title={c.associatedKeyName}>
+                      <Link
+                        to={scope === "user" ? "/inventory/keys/user" : "/inventory/keys/host"}
+                        search={{ highlight: c.associatedKeyId }}
+                        className="text-primary hover:underline"
+                      >
+                        {c.associatedKeyName}
+                      </Link>
+                    </td>
+                    {scope === "host" && <td title={c.hostname}>{c.hostname}</td>}
+                    {scope === "user" && (
+                      <td title={c.principals.join(", ")}>
+                        {c.principals[0] || "—"}
+                        {c.principals.length > 1 && (
+                          <Badge variant="outline" className="ml-1">+{c.principals.length - 1}</Badge>
+                        )}
+                      </td>
+                    )}
+                    <td title={c.caName}>{c.caName}</td>
+                    <td>{c.validFrom}</td>
+                    <td className={validToCls}>{c.validTo}</td>
+                    <td className={validToCls}>{c.expiresIn}</td>
+                    <td>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          c.status === "Active" && "bg-risk-green/15 text-risk-green border-risk-green/30",
+                          c.status === "Expired" && "bg-risk-red/15 text-risk-red border-risk-red/30",
+                          c.status === "Revoked" && "bg-muted text-muted-foreground border-border",
+                        )}
+                      >
+                        {c.status}
+                      </Badge>
+                    </td>
+                    <td>
+                      <Badge variant="outline" title={c.endpoints.join(", ")}>
+                        {c.endpoints.length}
+                      </Badge>
+                    </td>
+                    <td>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          c.complianceStatus === "Compliant"
+                            ? "bg-risk-green/15 text-risk-green border-risk-green/30"
+                            : "bg-risk-red/15 text-risk-red border-risk-red/30",
+                        )}
+                      >
+                        {c.complianceStatus}
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={scope === "host" ? 11 : 11} style={{ height: "auto", whiteSpace: "normal", textAlign: "center", padding: "48px", color: "var(--color-muted-foreground)", maxWidth: "none" }}>
+                    No certificates match the current filters.
                   </td>
                 </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={11} className="px-3 py-12 text-center text-muted-foreground">
-                  No certificates match the current filters.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div className="inv-pagination">
+          <span>
+            {filtered.length === 0 ? 0 : 1} to {filtered.length} of {filtered.length}
+          </span>
+        </div>
       </div>
 
       <CertDetailDrawer
