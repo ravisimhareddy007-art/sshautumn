@@ -119,9 +119,9 @@ function GroupNode({
   pathname: string;
 }) {
   const hasChildren = !!group.children?.length;
-  const [open, setOpen] = useState(
-    () => !!group.children?.some((c) => c.to && pathname.startsWith(c.to)),
-  );
+  const [open, setOpen] = useState(false);
+  const timerRef = useState<{ t: ReturnType<typeof setTimeout> | null }>({ t: null })[0];
+
   if (!hasChildren && group.to) {
     return (
       <NavItem
@@ -132,29 +132,60 @@ function GroupNode({
       />
     );
   }
+
+  const openNow = () => {
+    if (timerRef.t) {
+      clearTimeout(timerRef.t);
+      timerRef.t = null;
+    }
+    setOpen(true);
+  };
+  const closeSoon = () => {
+    if (timerRef.t) clearTimeout(timerRef.t);
+    timerRef.t = setTimeout(() => setOpen(false), 120);
+  };
+
   return (
-    <div>
+    <div
+      className="relative"
+      onMouseEnter={openNow}
+      onMouseLeave={closeSoon}
+    >
       <button
-        onClick={() => setOpen((v) => !v)}
+        type="button"
         className="w-full flex items-center gap-2 px-4 py-2 text-[13px] text-nav-text/80 hover:bg-nav-hover hover:text-nav-text"
         style={{ paddingLeft: 16 + 16 }}
       >
         <span className="truncate">{group.label}</span>
-        <ChevronRight
-          className={cn("ml-auto h-3 w-3 transition-transform", open && "rotate-90")}
-        />
+        <ChevronRight className="ml-auto h-3 w-3 opacity-70" />
       </button>
       {open && group.children && (
-        <div>
+        <div
+          className="absolute top-0 left-full z-50 min-w-[240px] py-2"
+          style={{
+            background: "#1B2437",
+            borderRadius: "0 6px 6px 0",
+            boxShadow: "4px 0 12px rgba(0,0,0,0.2)",
+          }}
+          onMouseEnter={openNow}
+          onMouseLeave={closeSoon}
+        >
           {group.children.map((c) =>
             c.to ? (
-              <NavItem
+              <Link
                 key={c.to}
-                label={c.label}
                 to={c.to}
-                active={pathname === c.to}
-                depth={2}
-              />
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "block text-[13px] transition-colors",
+                  pathname === c.to
+                    ? "text-white font-medium bg-nav-active"
+                    : "text-white/75 hover:text-white hover:bg-nav-hover",
+                )}
+                style={{ padding: "10px 20px" }}
+              >
+                {c.label}
+              </Link>
             ) : null,
           )}
         </div>
