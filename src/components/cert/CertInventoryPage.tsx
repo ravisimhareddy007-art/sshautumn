@@ -193,13 +193,7 @@ export function CertInventoryPage({
                       </span>
                     </td>
                     <td onClick={(e) => e.stopPropagation()} title={c.associatedKeyName}>
-                      <Link
-                        to={scope === "user" ? "/inventory/keys/user" : "/inventory/keys/host"}
-                        search={{ highlight: c.associatedKeyId }}
-                        className="text-primary hover:underline"
-                      >
-                        {c.associatedKeyName}
-                      </Link>
+                      <AssociatedKeyLink scope={scope} keyId={c.associatedKeyId} keyName={c.associatedKeyName} />
                     </td>
                     {scope === "host" && <td title={c.hostname}>{c.hostname}</td>}
                     {scope === "user" && (
