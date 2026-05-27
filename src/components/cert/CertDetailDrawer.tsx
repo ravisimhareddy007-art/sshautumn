@@ -1,8 +1,11 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "@tanstack/react-router";
 import { USER_KEYS, HOST_KEYS, type SshCert } from "@/data/mock";
+import { certRotateAction, certRevokeAction } from "@/lib/clm-actions";
+import type { CertCombination } from "@/lib/clm-actions";
 import { cn } from "@/lib/utils";
 
 const statusVariant = (s: SshCert["status"]) =>
@@ -29,6 +32,10 @@ export function CertDetailDrawer({
       ? USER_KEYS.find((k) => k.id === cert.associatedKeyId)
       : HOST_KEYS.find((k) => k.id === cert.associatedKeyId));
 
+  const keyCombination: CertCombination = key?.combination ?? "cert_only";
+  const rotateA = cert ? certRotateAction(cert.status, keyCombination) : { show: false, enabled: false, tooltip: undefined };
+  const revokeA = cert ? certRevokeAction(cert.status) : { show: false, enabled: false, tooltip: undefined };
+
   return (
     <Sheet open={!!cert} onOpenChange={(v) => !v && onClose()}>
       <SheetContent side="right" className="w-[480px] sm:max-w-[480px] p-0 overflow-y-auto">
@@ -45,15 +52,33 @@ export function CertDetailDrawer({
                 </Badge>
               </div>
               <div className="flex gap-2 mt-3">
-                {cert.status === "Active" && (
-                  <>
-                    <Button size="sm" onClick={() => onRotate?.(cert)}>
-                      Rotate Certificate
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => onRevoke?.(cert)}>
-                      Revoke
-                    </Button>
-                  </>
+
+                {/* Rotate Certificate -- combination + status gated */}
+                {rotateA.show && (
+                  rotateA.enabled ? (
+                    <Button size="sm" onClick={() => onRotate?.(cert!)}>Rotate Certificate</Button>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="sm" disabled className="opacity-50 cursor-not-allowed">Rotate Certificate</Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs text-xs">{rotateA.tooltip}</TooltipContent>
+                    </Tooltip>
+                  )
+                )}
+
+                {/* Revoke -- status gated */}
+                {revokeA.show && (
+                  revokeA.enabled ? (
+                    <Button size="sm" variant="outline" onClick={() => onRevoke?.(cert!)}>Revoke</Button>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button size="sm" variant="outline" disabled className="opacity-50 cursor-not-allowed">Revoke</Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs text-xs">{revokeA.tooltip}</TooltipContent>
+                    </Tooltip>
+                  )
                 )}
               </div>
             </SheetHeader>
@@ -65,15 +90,7 @@ export function CertDetailDrawer({
               <Row
                 label="Valid To"
                 value={
-                  <span
-                    className={cn(
-                      cert.expiresInDays <= 0
-                        ? "text-risk-red"
-                        : cert.expiresInDays <= 30
-                          ? "text-risk-amber"
-                          : "text-foreground",
-                    )}
-                  >
+                  <span className={cn(cert.expiresInDays <= 0 ? "text-risk-red" : cert.expiresInDays <= 30 ? "text-risk-amber" : "text-foreground")}>
                     {cert.validTo}
                   </span>
                 }
@@ -83,11 +100,9 @@ export function CertDetailDrawer({
                 label="Principals"
                 value={
                   <div className="flex flex-wrap gap-1">
-                    {cert.principals.length === 0 && <span className="text-muted-foreground">—</span>}
+                    {cert.principals.length === 0 && <span className="text-muted-foreground">--</span>}
                     {cert.principals.map((p) => (
-                      <Badge key={p} variant="secondary" className="text-[11px]">
-                        {p}
-                      </Badge>
+                      <Badge key={p} variant="secondary" className="text-[11px]">{p}</Badge>
                     ))}
                   </div>
                 }
@@ -96,15 +111,9 @@ export function CertDetailDrawer({
                 label="Extensions"
                 value={
                   <div className="flex flex-wrap gap-1">
-                    {cert.extensions.length === 0 && <span className="text-muted-foreground">—</span>}
+                    {cert.extensions.length === 0 && <span className="text-muted-foreground">--</span>}
                     {cert.extensions.map((e) => (
-                      <Badge
-                        key={e}
-                        variant="outline"
-                        className="text-[11px] bg-risk-green/10 text-risk-green border-risk-green/30"
-                      >
-                        {e}
-                      </Badge>
+                      <Badge key={e} variant="outline" className="text-[11px] bg-risk-green/10 text-risk-green border-risk-green/30">{e}</Badge>
                     ))}
                   </div>
                 }
@@ -113,14 +122,7 @@ export function CertDetailDrawer({
               <Row
                 label="Compliance Status"
                 value={
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      cert.complianceStatus === "Compliant"
-                        ? "bg-risk-green/15 text-risk-green border-risk-green/30"
-                        : "bg-risk-red/15 text-risk-red border-risk-red/30",
-                    )}
-                  >
+                  <Badge variant="outline" className={cn(cert.complianceStatus === "Compliant" ? "bg-risk-green/15 text-risk-green border-risk-green/30" : "bg-risk-red/15 text-risk-red border-risk-red/30")}>
                     {cert.complianceStatus}
                   </Badge>
                 }
@@ -146,6 +148,9 @@ export function CertDetailDrawer({
                   <Row label="Encryption" value={key.encryption} />
                   <Row label="Length" value={String(key.length)} />
                   <Row label="Key Age" value={key.age} />
+                  <Row label="Combination" value={
+                    <Badge variant="outline" className="text-[11px]">{key.combination.replace("_", " + ")}</Badge>
+                  } />
                   <Row
                     label="Key Status"
                     value={
@@ -156,7 +161,9 @@ export function CertDetailDrawer({
                   />
                 </>
               ) : (
-                <div className="text-muted-foreground text-[12px]">Key not found</div>
+                <div className="text-muted-foreground text-[12px]">
+                  Private key not managed by AVX -- cert_only combination
+                </div>
               )}
             </Section>
 
@@ -165,9 +172,7 @@ export function CertDetailDrawer({
                 {cert.endpoints.map((e) => (
                   <li key={e} className="flex items-center justify-between text-[13px]">
                     <span className="font-mono">{e}</span>
-                    <Badge variant="outline" className="bg-risk-green/15 text-risk-green border-risk-green/30">
-                      ✓ Active
-                    </Badge>
+                    <Badge variant="outline" className="bg-risk-green/15 text-risk-green border-risk-green/30">✓ Active</Badge>
                   </li>
                 ))}
                 {cert.endpoints.length === 0 && (
