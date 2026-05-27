@@ -22,7 +22,7 @@ import { riskColor, GROUPS } from "@/data/mock";
 import { ChevronDown, ChevronRight, Columns, Link2, Plus, RefreshCw, Search, Shield, ClipboardList, SlidersHorizontal } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  rotateKeyAction, coupledRotateAction, provisionCertAction,
+  rotateKeyAction, provisionCertAction,
   certRevokeAction, COMBO_LABEL, COMBO_BADGE_CLASS,
 } from "@/lib/clm-actions";
 import { toast } from "sonner";
