@@ -10,14 +10,9 @@
  *   show: true, enabled: true           → Available — render and clickable
  */
 
-import type { SshCert } from "@/data/mock";
+import type { SshCert, KeyCombination } from "@/data/mock";
 
-export type KeyCombination =
-  | "private_public"
-  | "private_cert"
-  | "public_cert"
-  | "private_only"
-  | "public_only";
+export type { KeyCombination };
 
 export type CertCombination = KeyCombination | "cert_only";
 
