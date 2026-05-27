@@ -262,4 +262,35 @@ export function CertInventoryPage({
                   </td>
                 </tr>
               )}
-            </
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <CertDetailDrawer
+        cert={drawerCert}
+        onClose={() => setDrawerCert(null)}
+        onRevoke={(c) => setRevokeCert(c)}
+        onRotate={(c) => setRotateCert(c)}
+      />
+
+      <RevokeCertDialog
+        cert={revokeCert}
+        onClose={() => setRevokeCert(null)}
+        onRevoked={(cert) => { updateCert(cert.id, { status: "Revoked" }); toast.success("Certificate revoked."); }}
+      />
+
+      <RotateCertDialog
+        cert={rotateCert}
+        onClose={() => setRotateCert(null)}
+        onRotated={(cert) => { updateCert(cert.id, { status: "Active" }); toast.success("Certificate rotated."); }}
+      />
+
+      <DeleteCertDialog
+        cert={deleteCert}
+        onClose={() => setDeleteCert(null)}
+        onDeleted={(cert) => { setCerts((cs) => cs.filter((c) => c.id !== cert.id)); toast.success("Certificate deleted."); }}
+      />
+    </div>
+  );
+}
