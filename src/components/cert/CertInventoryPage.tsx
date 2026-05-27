@@ -261,6 +261,7 @@ export function CertInventoryPage({
                     No certificates match the current filters.
                   </td>
                 </tr>
+              )}
             </tbody>
           </table>
         </div>
