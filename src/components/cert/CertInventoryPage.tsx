@@ -269,26 +269,27 @@ export function CertInventoryPage({
 
       <CertDetailDrawer
         cert={drawerCert}
-        scope={scope}
         onClose={() => setDrawerCert(null)}
+        onRevoke={(c) => setRevokeCert(c)}
+        onRotate={(c) => setRotateCert(c)}
       />
 
       <RevokeCertDialog
         cert={revokeCert}
         onClose={() => setRevokeCert(null)}
-        onConfirm={(cert) => { updateCert(cert.id, { status: "Revoked" }); toast.success("Certificate revoked."); }}
+        onRevoked={(cert) => { updateCert(cert.id, { status: "Revoked" }); toast.success("Certificate revoked."); }}
       />
 
       <RotateCertDialog
         cert={rotateCert}
         onClose={() => setRotateCert(null)}
-        onConfirm={(cert) => { updateCert(cert.id, { status: "Active" }); toast.success("Certificate rotated."); }}
+        onRotated={(cert) => { updateCert(cert.id, { status: "Active" }); toast.success("Certificate rotated."); }}
       />
 
       <DeleteCertDialog
         cert={deleteCert}
         onClose={() => setDeleteCert(null)}
-        onConfirm={(cert) => { setCerts((cs) => cs.filter((c) => c.id !== cert.id)); toast.success("Certificate deleted."); }}
+        onDeleted={(cert) => { setCerts((cs) => cs.filter((c) => c.id !== cert.id)); toast.success("Certificate deleted."); }}
       />
     </div>
   );
