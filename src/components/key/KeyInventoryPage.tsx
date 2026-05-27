@@ -266,16 +266,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 return <DropdownMenuItem onClick={() => setRotateFor(selectedKeys[0])}>Rotate Key</DropdownMenuItem>;
               })()}
 
-              {/* Coupled Rotate -- private_cert only */}
-              {(() => {
-                const a = selectedKeys[0] ? coupledRotateAction(selectedKeys[0].combination) : { show: false, enabled: false };
-                if (!a.show) return null;
-                return (
-                  <DropdownMenuItem onClick={() => setRotateFor(selectedKeys[0])}>
-                    Coupled Rotate (Key + Cert)
-                  </DropdownMenuItem>
-                );
-              })()}
 
               {/* Revoke Cert -- only when cert exists on relevant combo */}
               {(() => {

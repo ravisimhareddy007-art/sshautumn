@@ -261,5 +261,34 @@ export function CertInventoryPage({
                     No certificates match the current filters.
                   </td>
                 </tr>
-              )}
-            </
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <CertDetailDrawer
+        cert={drawerCert}
+        scope={scope}
+        onClose={() => setDrawerCert(null)}
+      />
+
+      <RevokeCertDialog
+        cert={revokeCert}
+        onClose={() => setRevokeCert(null)}
+        onConfirm={(cert) => { updateCert(cert.id, { status: "Revoked" }); toast.success("Certificate revoked."); }}
+      />
+
+      <RotateCertDialog
+        cert={rotateCert}
+        onClose={() => setRotateCert(null)}
+        onConfirm={(cert) => { updateCert(cert.id, { status: "Active" }); toast.success("Certificate rotated."); }}
+      />
+
+      <DeleteCertDialog
+        cert={deleteCert}
+        onClose={() => setDeleteCert(null)}
+        onConfirm={(cert) => { setCerts((cs) => cs.filter((c) => c.id !== cert.id)); toast.success("Certificate deleted."); }}
+      />
+    </div>
+  );
+}
