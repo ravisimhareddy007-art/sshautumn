@@ -10,7 +10,14 @@
  *   show: true, enabled: true           → Available — render and clickable
  */
 
-import type { KeyCombination, SshCert } from "@/data/mock";
+import type { SshCert } from "@/data/mock";
+
+export type KeyCombination =
+  | "private_public"
+  | "private_cert"
+  | "public_cert"
+  | "private_only"
+  | "public_only";
 
 export type CertCombination = KeyCombination | "cert_only";
 
@@ -37,6 +44,8 @@ export function rotateKeyAction(combo: KeyCombination): ActionAvailability {
       };
     case "public_cert":
     case "public_only":
+      return { show: false, enabled: false };
+    default:
       return { show: false, enabled: false };
   }
 }
@@ -68,6 +77,8 @@ export function provisionCertAction(combo: KeyCombination): ActionAvailability {
       };
     case "private_cert":
     case "public_cert":
+      return { show: false, enabled: false };
+    default:
       return { show: false, enabled: false };
   }
 }
