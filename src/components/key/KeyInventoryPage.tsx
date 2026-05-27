@@ -485,8 +485,8 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
   switch (col) {
     case "name":
       return (
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="font-medium">{k.name}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="font-medium truncate max-w-[140px]" title={k.name}>{k.name}</span>
           {k.hasCert && (
             <button onClick={opts.onCertClick} className="p-0.5 rounded hover:bg-primary/10 text-primary" title={`${k.certCount} certificate(s)`}>
               <Link2 className="h-3.5 w-3.5" />
