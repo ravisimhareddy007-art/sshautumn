@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/common/Placeholder";
+import { KeyPolicyPage } from "@/components/policy/KeyPolicyPage";
 
 export const Route = createFileRoute("/_app/policies/key")({
-  component: () => <Placeholder breadcrumbs={["POLICIES", "Key Policy"]} title="Key Policy" />,
+  component: KeyPolicyPage,
 });
