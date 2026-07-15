@@ -1,22 +1,12 @@
 // Mock data for AVX SSH prototype
 
 export type RiskStatus = "None" | "Suspicious" | "Rogue" | "Misplaced" | "Weak" | "Shared";
-export type KeyCombination =
-  | "private_public" // Private key + Public key — standard managed pair, no cert
-  | "private_cert" // Private key + Certificate — fully managed, primary CLM path
-  | "public_cert" // Public key + Certificate — private key NOT in AVX
-  | "private_only" // Private key only discovered — public key / endpoints unknown
-  | "public_only"; // Public key only in authorized_keys — private NOT in AVX
+export type KeyCombination = "private_public" | "private_cert" | "public_cert" | "private_only" | "public_only";
 export type ComplianceStatus = "Compliant" | "Non-Compliant";
 export type KeyStatus = "Active" | "Inactive" | "Revoked";
 export type CertStatus = "Active" | "Expired" | "Revoked";
 
-// Migration lifecycle states for a key-host pair
-export type MigrationStatus =
-  | "in_coexistence" // Cert issued, both key and cert active, window running
-  | "awaiting_confirmation" // Coexistence window closed, admin must confirm decommission
-  | "decommissioned" // Original authorized_keys entry removed, cert is sole auth path
-  | "rolled_back"; // Decommission reversed, original key entry restored
+export type MigrationStatus = "in_coexistence" | "awaiting_confirmation" | "decommissioned" | "rolled_back";
 
 export interface SshKey {
   id: string;
@@ -38,16 +28,14 @@ export interface SshKey {
   hasCert: boolean;
   certCount: number;
   combination: KeyCombination;
-
-  // Migration fields — only present when a migration has been initiated
   migrationStatus?: MigrationStatus;
-  migrationIssuedAt?: string; // ISO date cert was issued
-  migrationWindowDays?: number; // Snapshot of policy at migration time
-  migrationPostWindowAction?: "manual" | "auto"; // Snapshot of policy at migration time
-  migrationHostEndpoint?: string; // Which host this migration is for
-  migrationCertId?: string; // Links to the cert in USER_CERTS / HOST_CERTS
-  migrationRollbackStoredLine?: string; // Verbatim authorized_keys line stored for rollback
-  neverDecommission?: boolean; // Break-glass flag — forces Manual Confirmation, blocks auto-remove
+  migrationIssuedAt?: string;
+  migrationWindowDays?: number;
+  migrationPostWindowAction?: "manual" | "auto";
+  migrationHostEndpoint?: string;
+  migrationCertId?: string;
+  migrationRollbackStoredLine?: string;
+  neverDecommission?: boolean;
 }
 
 export interface SshCert {
@@ -70,7 +58,7 @@ export interface SshCert {
   extensions: string[];
   hostComplianceGroup?: string;
   complianceStatus: ComplianceStatus;
-  origin?: "provision" | "migration"; // Migration certs carry this for inventory distinction
+  origin?: "provision" | "migration";
 }
 
 // ─── Migration helpers ────────────────────────────────────────────────────────
@@ -89,31 +77,24 @@ export function migrationWindowExpired(issuedAt: string, windowDays: number): bo
   return migrationDaysElapsed(issuedAt) >= windowDays;
 }
 
-// Returns true when a decommissioned key's migration cert is expired — critical lockout state
 export function isMigrationCertExpired(key: SshKey, certs: SshCert[]): boolean {
   if (key.migrationStatus !== "decommissioned" || !key.migrationCertId) return false;
   const cert = certs.find((c) => c.id === key.migrationCertId);
   return cert?.status === "Expired" || (cert?.expiresInDays !== undefined && cert.expiresInDays <= 0);
 }
 
-// Returns true when a cert is within N days of expiry — warning state for decommissioned keys
 export function isMigrationCertExpiringSoon(key: SshKey, certs: SshCert[], warningDays = 14): boolean {
   if (key.migrationStatus !== "decommissioned" || !key.migrationCertId) return false;
   const cert = certs.find((c) => c.id === key.migrationCertId);
   return cert?.status === "Active" && cert.expiresInDays > 0 && cert.expiresInDays <= warningDays;
 }
 
-// ─── Seeded migration states (relative to prototype today: 2026-07-15) ───────
-// uk6  → in_coexistence    (issued 2026-07-12, day 3 of 14, manual confirm)
-// uk2  → awaiting_confirmation (window closed 2026-06-29, 16 days overdue)
-// uk9  → decommissioned    (cert active, migration complete, cert valid)
-// uk10 → decommissioned    (CRITICAL: cert expired, potential lockout)
-// uk11 → rolled_back       (migration attempted and reversed)
-
 const fp = (s: string) => s.padEnd(24, "x").slice(0, 24) + "...";
 
 // ---------- USER KEYS ----------
+// Named keys: most are healthy for demo. Only 4 risky, 5 with migration states.
 const namedUserKeys: SshKey[] = [
+  // ── Healthy clean keys (good for demo migration flow) ──────────────────────
   {
     id: "uk1",
     name: "appviewxkey",
@@ -126,17 +107,16 @@ const namedUserKeys: SshKey[] = [
     hostEndpoints: ["192.168.223.51"],
     fingerprint: fp("gNQHf69je9hPssY1NV"),
     status: "Active",
-    riskStatus: "Suspicious",
-    complianceStatus: "Non-Compliant",
+    riskStatus: "None",
+    complianceStatus: "Compliant",
     filePaths: ["/home/appviewx/.ssh/id_ed25519"],
     comment: "",
     keyComplianceGroup: "Default",
-    hasCert: true,
-    certCount: 1,
-    combination: "private_cert",
+    hasCert: false,
+    certCount: 0,
+    combination: "private_public",
   },
   {
-    // awaiting_confirmation — window closed June 29, admin has not acted
     id: "uk2",
     name: "SSHnewkey",
     type: "user",
@@ -164,6 +144,7 @@ const namedUserKeys: SshKey[] = [
     migrationCertId: "uc-mig-2",
     migrationRollbackStoredLine: `from="192.168.223.0/24" ssh-ed25519 ${fp("3FgGK1qnfw6OLTiG36")} admin@corp.com`,
   },
+  // ── Risky keys (for tile demo) ─────────────────────────────────────────────
   {
     id: "uk3",
     name: "Test",
@@ -192,19 +173,19 @@ const namedUserKeys: SshKey[] = [
     encryption: "ECDSA",
     length: 256,
     age: "12 days",
-    associatedUsers: ["appviewx"],
+    associatedUsers: ["admin"],
     clientEndpoints: ["192.168.223.51"],
     hostEndpoints: ["192.168.223.51"],
     fingerprint: fp("6Y6dZCt7MAEIf9Ik5dE"),
     status: "Active",
-    riskStatus: "Suspicious",
-    complianceStatus: "Non-Compliant",
+    riskStatus: "None",
+    complianceStatus: "Compliant",
     filePaths: ["/home/admin/.ssh/"],
     comment: "",
     keyComplianceGroup: "Default",
-    hasCert: true,
-    certCount: 2,
-    combination: "private_cert",
+    hasCert: false,
+    certCount: 0,
+    combination: "private_public",
   },
   {
     id: "uk5",
@@ -213,7 +194,7 @@ const namedUserKeys: SshKey[] = [
     encryption: "ECDSA",
     length: 256,
     age: "12 days",
-    associatedUsers: ["appviewx"],
+    associatedUsers: ["admin2"],
     clientEndpoints: ["192.168.223.51"],
     hostEndpoints: ["192.168.223.51"],
     fingerprint: fp("kz2BiD+BIO1XqLlnLCof"),
@@ -228,7 +209,7 @@ const namedUserKeys: SshKey[] = [
     combination: "private_only",
   },
   {
-    // in_coexistence — issued 2026-07-12 (day 3 of 14), manual confirm
+    // in_coexistence — day 3 of 14
     id: "uk6",
     name: "FetchKey_admin_1778565c",
     type: "user",
@@ -262,20 +243,20 @@ const namedUserKeys: SshKey[] = [
     type: "user",
     encryption: "RSA",
     length: 2048,
-    age: "—",
-    associatedUsers: [],
+    age: "14 days",
+    associatedUsers: ["devops"],
     clientEndpoints: ["192.168.223.51"],
-    hostEndpoints: [],
+    hostEndpoints: ["10.0.1.50"],
     fingerprint: fp("7zYCqzr8NBIV49xSo07"),
     status: "Active",
-    riskStatus: "Rogue",
-    complianceStatus: "Non-Compliant",
-    filePaths: [],
+    riskStatus: "None",
+    complianceStatus: "Compliant",
+    filePaths: ["/home/devops/.ssh/"],
     comment: "",
     keyComplianceGroup: "Default",
     hasCert: false,
     certCount: 0,
-    combination: "public_only",
+    combination: "private_public",
   },
   {
     id: "uk8",
@@ -284,22 +265,22 @@ const namedUserKeys: SshKey[] = [
     encryption: "ECDSA",
     length: 256,
     age: "12 days",
-    associatedUsers: ["key1"],
+    associatedUsers: ["svcuser"],
     clientEndpoints: ["192.168.223.51"],
-    hostEndpoints: [],
+    hostEndpoints: ["10.0.1.51"],
     fingerprint: fp("kbaVhZ2KQcsrBAzDDX"),
     status: "Active",
-    riskStatus: "Suspicious",
-    complianceStatus: "Non-Compliant",
-    filePaths: [],
+    riskStatus: "None",
+    complianceStatus: "Compliant",
+    filePaths: ["/home/svcuser/.ssh/"],
     comment: "",
     keyComplianceGroup: "Default",
-    hasCert: true,
-    certCount: 1,
-    combination: "public_cert",
+    hasCert: false,
+    certCount: 0,
+    combination: "private_public",
   },
   {
-    // decommissioned — migration complete, cert is active and is sole auth path
+    // decommissioned — migration complete, cert active
     id: "uk9",
     name: "FetchKey_devops_prod01",
     type: "user",
@@ -328,8 +309,7 @@ const namedUserKeys: SshKey[] = [
     migrationRollbackStoredLine: `ssh-ed25519 ${fp("aB3xKp9mLqRsT7vU2w")} devops@corp.com`,
   },
   {
-    // CRITICAL EDGE CASE: decommissioned + migration cert is EXPIRED
-    // Original key entry was removed. Cert expired. Jenkins may be locked out of 10.0.2.20.
+    // CRITICAL EDGE CASE: decommissioned + migration cert expired
     id: "uk10",
     name: "FetchKey_svc_jenkins",
     type: "user",
@@ -358,7 +338,7 @@ const namedUserKeys: SshKey[] = [
     migrationRollbackStoredLine: `ssh-rsa ${fp("cD4yLr0nMtSuV8wX3z")} jenkins@corp.com`,
   },
   {
-    // rolled_back — migration attempted March 15, reversed March 20, key restored
+    // rolled_back
     id: "uk11",
     name: "FetchKey_admin_backup01",
     type: "user",
@@ -385,7 +365,7 @@ const namedUserKeys: SshKey[] = [
     migrationHostEndpoint: "192.168.1.101",
   },
   {
-    // Shared key — blocked from migration
+    // Shared key
     id: "uk12",
     name: "FetchKey_shared_deploy",
     type: "user",
@@ -408,23 +388,12 @@ const namedUserKeys: SshKey[] = [
   },
 ];
 
+// Generated keys — all healthy for demo
 const generated: SshKey[] = [];
 const encs: SshKey["encryption"][] = ["ED25519", "RSA", "ECDSA"];
 const lens = { ED25519: 256, RSA: 2048, ECDSA: 256 } as const;
-const remainingRisks: RiskStatus[] = [
-  "Rogue",
-  "Misplaced",
-  "Misplaced",
-  "Suspicious",
-  "Suspicious",
-  "Suspicious",
-  "Suspicious",
-  "Suspicious",
-  ...(Array(55).fill("None") as RiskStatus[]),
-];
 for (let i = 0; i < 63; i++) {
   const enc = encs[i % 3];
-  const risk = remainingRisks[i] ?? "None";
   generated.push({
     id: `uk${i + 13}`,
     name: `FetchKey_user_${(1000 + i).toString(16)}`,
@@ -432,13 +401,13 @@ for (let i = 0; i < 63; i++) {
     encryption: enc,
     length: lens[enc],
     age: `${20 + ((i * 17) % 600)} days`,
-    associatedUsers: i % 4 === 0 ? [`user${i}`] : [],
-    clientEndpoints: i % 3 === 0 ? [`10.0.${(i % 6) + 1}.${(i * 7) % 250}`] : [],
-    hostEndpoints: i % 5 === 0 ? [`10.0.${(i % 6) + 1}.${(i * 11) % 250}`] : [],
+    associatedUsers: i % 3 === 0 ? [`user${i % 10}`] : [],
+    clientEndpoints: i % 2 === 0 ? [`10.0.${(i % 6) + 1}.${(i * 7) % 250}`] : [],
+    hostEndpoints: i % 2 === 0 ? [`10.0.${(i % 6) + 1}.${(i * 11) % 250}`] : [],
     fingerprint: fp(`gen${i}HashValue${i * 3}`),
     status: "Active",
-    riskStatus: risk,
-    complianceStatus: risk === "None" ? "Compliant" : "Non-Compliant",
+    riskStatus: "None",
+    complianceStatus: "Compliant",
     filePaths: [],
     comment: "",
     keyComplianceGroup: i % 7 === 0 ? "Prod_Group" : "Default",
@@ -450,7 +419,7 @@ for (let i = 0; i < 63; i++) {
 
 export const USER_KEYS: SshKey[] = [...namedUserKeys, ...generated];
 
-// ---------- HOST KEYS (23) ----------
+// ---------- HOST KEYS ----------
 const namedHostKeys: SshKey[] = [
   {
     id: "hk1",
@@ -652,9 +621,9 @@ export const USER_CERTS: SshCert[] = [
     serialNumber: "498271635748",
     status: "Active",
     validFrom: "2026-05-01",
-    validTo: "2026-06-01",
-    expiresIn: "11 days",
-    expiresInDays: 11,
+    validTo: "2026-08-01",
+    expiresIn: "47 days",
+    expiresInDays: 47,
     endpoints: ["192.168.223.51", "10.0.1.50"],
     extensions: ["port-forwarding", "agent-forwarding", "pty"],
     complianceStatus: "Compliant",
@@ -672,9 +641,9 @@ export const USER_CERTS: SshCert[] = [
     serialNumber: "512748361920",
     status: "Active",
     validFrom: "2026-04-15",
-    validTo: "2026-05-31",
-    expiresIn: "10 days",
-    expiresInDays: 10,
+    validTo: "2026-07-31",
+    expiresIn: "46 days",
+    expiresInDays: 46,
     endpoints: ["192.168.223.51"],
     extensions: ["pty", "port-forwarding"],
     complianceStatus: "Compliant",
@@ -687,16 +656,16 @@ export const USER_CERTS: SshCert[] = [
     type: "user",
     associatedKeyId: "uk8",
     associatedKeyName: "FetchKey_admin_1778565e",
-    principals: ["key1", "devteam"],
+    principals: ["svcuser"],
     caName: "Default-Infra-CA",
     serialNumber: "623817492038",
     status: "Active",
     validFrom: "2026-05-10",
     validTo: "2026-08-10",
-    expiresIn: "81 days",
-    expiresInDays: 81,
+    expiresIn: "26 days",
+    expiresInDays: 26,
     endpoints: ["192.168.223.51"],
-    extensions: ["X11 forwarding", "pty"],
+    extensions: ["pty"],
     complianceStatus: "Compliant",
     origin: "provision",
   },
@@ -707,7 +676,7 @@ export const USER_CERTS: SshCert[] = [
     type: "user",
     associatedKeyId: "uk9",
     associatedKeyName: "FetchKey_devops_prod01",
-    principals: ["devops", "deploy"],
+    principals: ["devops"],
     caName: "Prod-CA",
     serialNumber: "mig-20260520-005",
     status: "Active",
@@ -721,31 +690,11 @@ export const USER_CERTS: SshCert[] = [
     origin: "migration",
   },
   {
-    id: "uc6",
-    certKeyId: "UC-2026-006",
-    certName: "cert-svc-deploy-old",
-    type: "user",
-    associatedKeyId: "uk6",
-    associatedKeyName: "FetchKey_admin_1778565c",
-    principals: ["svc-deploy"],
-    caName: "Default-Infra-CA",
-    serialNumber: "845039614258",
-    status: "Expired",
-    validFrom: "2026-03-01",
-    validTo: "2026-04-01",
-    expiresIn: "-75 days",
-    expiresInDays: -75,
-    endpoints: ["10.0.2.10"],
-    extensions: ["pty"],
-    complianceStatus: "Non-Compliant",
-    origin: "provision",
-  },
-  {
     id: "uc7",
     certKeyId: "UC-2026-007",
     certName: "cert-orphaned-svcbatch",
     type: "user",
-    associatedKeyId: "unmanaged-external-key",
+    associatedKeyId: "unmanaged",
     associatedKeyName: "external-unmanaged-key",
     principals: ["svc-batch"],
     caName: "Default-Infra-CA",
@@ -753,15 +702,13 @@ export const USER_CERTS: SshCert[] = [
     status: "Active",
     validFrom: "2026-04-01",
     validTo: "2026-07-01",
-    expiresIn: "41 days",
-    expiresInDays: 41,
+    expiresIn: "0 days",
+    expiresInDays: 0,
     endpoints: ["10.0.5.30"],
     extensions: ["pty"],
     complianceStatus: "Non-Compliant",
     origin: "provision",
   },
-
-  // Migration certs
   {
     id: "uc-mig-1",
     certKeyId: "avx|src:ieruDqV4|host:192.168.223.51|op:admin@corp|ts:20260712|pol:Default",
@@ -872,7 +819,7 @@ export const HOST_CERTS: SshCert[] = [
   },
 ];
 
-// ---------- ROTATED CERTS ----------
+// ---------- ROTATED / DELETED ----------
 export interface RotatedCert {
   id: string;
   certKeyId: string;
@@ -913,22 +860,8 @@ export const ROTATED_CERTS: RotatedCert[] = [
     rollbackWindowExpiry: "2026-05-17",
     associatedKeyId: "hk1",
   },
-  {
-    id: "rc3",
-    certKeyId: "UC-2026-007",
-    certType: "User",
-    rotatedOn: "2026-05-12 10:00:00",
-    previousValidTo: "2026-06-01",
-    newValidTo: "2026-09-01",
-    rotatedBy: "admin@appviewx.com",
-    endpoints: ["10.0.1.50"],
-    rollbackAvailable: true,
-    rollbackWindowExpiry: "2026-05-19",
-    associatedKeyId: "uk-deleted-99",
-  },
 ];
 
-// ---------- DELETED CERTS ----------
 export interface DeletedCert {
   id: string;
   certKeyId: string;
@@ -972,37 +905,8 @@ export const DELETED_CERTS: DeletedCert[] = [
     associatedKeyId: "uk9",
     associatedKeyName: "FetchKey_devops_prod01",
   },
-  {
-    id: "dc3",
-    certKeyId: "UC-2025-077",
-    certType: "User",
-    deletedOn: "2026-04-22 14:00:00",
-    deletedBy: "admin@appviewx.com",
-    reason: "Expired and unused",
-    lastKnownEndpoints: ["10.0.2.10"],
-    isRevoked: false,
-    isExpired: true,
-    validTo: "2026-03-15",
-    associatedKeyId: "uk10",
-    associatedKeyName: "FetchKey_svc_jenkins",
-  },
-  {
-    id: "dc4",
-    certKeyId: "UC-2025-066",
-    certType: "User",
-    deletedOn: "2026-05-02 09:30:00",
-    deletedBy: "devops@appviewx.com",
-    reason: "Key decommissioned",
-    lastKnownEndpoints: ["10.0.5.20"],
-    isRevoked: false,
-    isExpired: false,
-    validTo: "2026-10-01",
-    associatedKeyId: "uk-deleted-99",
-    associatedKeyName: "legacy-prod-key-2024",
-  },
 ];
 
-// ---------- DELETED / ROTATED KEYS ----------
 export interface DeletedKey {
   id: string;
   name: string;
@@ -1021,15 +925,6 @@ export const DELETED_KEYS: DeletedKey[] = [
     deletedOn: "2026-05-19 10:15:00",
     deletedBy: "admin@appviewx.com",
     endpoints: ["192.168.223.51"],
-  },
-  {
-    id: "dk2",
-    name: "test-key-expired",
-    encryption: "ECDSA",
-    length: 256,
-    deletedOn: "2026-05-15 08:00:00",
-    deletedBy: "devops@appviewx.com",
-    endpoints: [],
   },
 ];
 
@@ -1062,7 +957,6 @@ export const CAS = [
 
 export const GROUPS = ["All Groups", "Default", "Default_Host_Group", "Prod_Group", "Service_Group"];
 
-// ---------- Risk color helper ----------
 export const riskColor = (r: RiskStatus): string => {
   switch (r) {
     case "Rogue":
@@ -1077,7 +971,6 @@ export const riskColor = (r: RiskStatus): string => {
   }
 };
 
-// ---------- Migration status helpers ----------
 export const migrationStatusColor = (s: MigrationStatus): string => {
   switch (s) {
     case "in_coexistence":
@@ -1093,7 +986,7 @@ export const migrationStatusColor = (s: MigrationStatus): string => {
 
 export const migrationStatusLabel: Record<MigrationStatus, string> = {
   in_coexistence: "In Migration",
-  awaiting_confirmation: "Awaiting Confirmation",
+  awaiting_confirmation: "Awaiting Confirm",
   decommissioned: "Migrated",
   rolled_back: "Rolled Back",
 };
