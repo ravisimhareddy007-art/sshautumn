@@ -4,7 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
+} from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { RiskTileBar, type RiskTileDef } from "@/components/common/RiskTileBar";
@@ -20,11 +29,25 @@ import { CertDetailDrawer } from "@/components/cert/CertDetailDrawer";
 import { usePersistedState } from "@/hooks/use-persisted-state";
 import type { SshKey, SshCert, RiskStatus } from "@/data/mock";
 import { riskColor, GROUPS } from "@/data/mock";
-import { ChevronDown, ChevronRight, Columns, Link2, Plus, RefreshCw, Search, Shield, ClipboardList, SlidersHorizontal } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Columns,
+  Link2,
+  Plus,
+  RefreshCw,
+  Search,
+  Shield,
+  ClipboardList,
+  SlidersHorizontal,
+} from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  rotateKeyAction, provisionCertAction,
-  certRevokeAction, COMBO_LABEL, COMBO_BADGE_CLASS,
+  rotateKeyAction,
+  provisionCertAction,
+  certRevokeAction,
+  COMBO_LABEL,
+  COMBO_BADGE_CLASS,
 } from "@/lib/clm-actions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -172,14 +195,22 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
 
       <div className="flex items-center gap-2 bg-surface border border-border rounded-t-md px-3 py-2">
         <span className="text-[12px] text-muted-foreground">Groups</span>
-        <Select value={group} onValueChange={(v) => { setGroup(v); setPage(1); }}>
+        <Select
+          value={group}
+          onValueChange={(v) => {
+            setGroup(v);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="h-8 w-[160px] text-[13px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All Keys">All Keys</SelectItem>
             {GROUPS.filter((g) => g !== "All Groups").map((g) => (
-              <SelectItem key={g} value={g}>{g}</SelectItem>
+              <SelectItem key={g} value={g}>
+                {g}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -190,7 +221,10 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
             className="pl-7 pr-8 h-8 text-[13px]"
             placeholder="Type your search and press Enter…"
             value={search_}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
           <button
             className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted"
@@ -217,12 +251,16 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-
               {/* Combination label */}
               {selectedKeys[0] && (
                 <div className="px-2 py-1.5 mb-1 border-b border-border">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Combination</span>
-                  <div className={cn("mt-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded border inline-block", COMBO_BADGE_CLASS[selectedKeys[0].combination])}>
+                  <div
+                    className={cn(
+                      "mt-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded border inline-block",
+                      COMBO_BADGE_CLASS[selectedKeys[0].combination],
+                    )}
+                  >
                     {COMBO_LABEL[selectedKeys[0].combination]}
                   </div>
                 </div>
@@ -230,58 +268,86 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
 
               {/* Always available */}
               <DropdownMenuItem onClick={() => toast.success("Key updated.")}>Modify</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => { setStatusChangeFor(selectedKeys[0]); setStatusNew(selectedKeys[0].status === "Active" ? "Inactive" : "Active"); }}>
+              <DropdownMenuItem
+                onClick={() => {
+                  setStatusChangeFor(selectedKeys[0]);
+                  setStatusNew(selectedKeys[0].status === "Active" ? "Inactive" : "Active");
+                }}
+              >
                 Change Status
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success(`Exported ${selectedKeys.length} key(s) to CSV.`)}>Export</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success(`Exported ${selectedKeys.length} key(s) to CSV.`)}>
+                Export
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Key file download started.")}>Download</DropdownMenuItem>
 
               {/* Provision Certificate -- combo-aware */}
               {(() => {
-                const a = selectedKeys[0] ? provisionCertAction(selectedKeys[0].combination) : { show: false, enabled: false };
+                const a = selectedKeys[0]
+                  ? provisionCertAction(selectedKeys[0].combination)
+                  : { show: false, enabled: false };
                 if (!a.show) return null;
                 if (!a.enabled)
                   return (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <DropdownMenuItem disabled><span className="pointer-events-auto">Provision Certificate</span></DropdownMenuItem>
+                        <DropdownMenuItem disabled>
+                          <span className="pointer-events-auto">Provision Certificate</span>
+                        </DropdownMenuItem>
                       </TooltipTrigger>
-                      <TooltipContent side="left" className="max-w-xs text-xs">{a.tooltip}</TooltipContent>
+                      <TooltipContent side="left" className="max-w-xs text-xs">
+                        {a.tooltip}
+                      </TooltipContent>
                     </Tooltip>
                   );
-                return <DropdownMenuItem onClick={() => setProvisionFor(selectedKeys[0])}>Provision Certificate</DropdownMenuItem>;
+                return (
+                  <DropdownMenuItem onClick={() => setProvisionFor(selectedKeys[0])}>
+                    Provision Certificate
+                  </DropdownMenuItem>
+                );
               })()}
 
               {/* Rotate Key -- combo-aware */}
               {(() => {
-                const a = selectedKeys[0] ? rotateKeyAction(selectedKeys[0].combination) : { show: false, enabled: false };
+                const a = selectedKeys[0]
+                  ? rotateKeyAction(selectedKeys[0].combination)
+                  : { show: false, enabled: false };
                 if (!a.show) return null;
                 if (!a.enabled)
                   return (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <DropdownMenuItem disabled><span className="pointer-events-auto">Rotate Key</span></DropdownMenuItem>
+                        <DropdownMenuItem disabled>
+                          <span className="pointer-events-auto">Rotate Key</span>
+                        </DropdownMenuItem>
                       </TooltipTrigger>
-                      <TooltipContent side="left" className="max-w-xs text-xs">{a.tooltip}</TooltipContent>
+                      <TooltipContent side="left" className="max-w-xs text-xs">
+                        {a.tooltip}
+                      </TooltipContent>
                     </Tooltip>
                   );
                 return <DropdownMenuItem onClick={() => setRotateFor(selectedKeys[0])}>Rotate Key</DropdownMenuItem>;
               })()}
-
 
               {/* Revoke Cert -- only when cert exists on relevant combo */}
               {(() => {
                 const combo = selectedKeys[0]?.combination;
                 const hasCert = selectedKeys[0]?.hasCert;
                 if (!hasCert || (combo !== "private_cert" && combo !== "public_cert")) return null;
-                const a = selectedKeys[0] ? certRevokeAction(selectedKeys[0].status === "Revoked" ? "Revoked" : "Active") : { show: false, enabled: false };
+                const a = selectedKeys[0]
+                  ? certRevokeAction(selectedKeys[0].status === "Revoked" ? "Revoked" : "Active")
+                  : { show: false, enabled: false };
                 if (!a.enabled)
                   return (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <DropdownMenuItem disabled><span className="pointer-events-auto">Revoke Certificate</span></DropdownMenuItem>
+                        <DropdownMenuItem disabled>
+                          <span className="pointer-events-auto">Revoke Certificate</span>
+                        </DropdownMenuItem>
                       </TooltipTrigger>
-                      <TooltipContent side="left" className="max-w-xs text-xs">{a.tooltip}</TooltipContent>
+                      <TooltipContent side="left" className="max-w-xs text-xs">
+                        {a.tooltip}
+                      </TooltipContent>
                     </Tooltip>
                   );
                 return (
@@ -293,18 +359,27 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
 
               <DropdownMenuItem disabled>Rollback</DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => setMigrateFor(selectedKeys[0])}>
-                <span className="flex items-center gap-2">
-                  Migrate to Certificate
-                  <Badge variant="outline" className="h-4 px-1 text-[9px] bg-primary/10 text-primary border-primary/30">NEW</Badge>
-                </span>
+              {/* Migrate to Certificate */}
+              <DropdownMenuItem
+                onClick={() => setMigrateFor(selectedKeys[0])}
+                className="font-medium text-primary focus:text-primary"
+              >
+                Migrate to Certificate
+                <Badge
+                  variant="outline"
+                  className="ml-auto text-[9px] h-4 px-1 text-primary border-primary/30 bg-primary/10"
+                >
+                  NEW
+                </Badge>
               </DropdownMenuItem>
 
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Delete</DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => setConfirmDeleteOnly(selectedKeys[0])}>Delete Key Only</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setConfirmDeleteOnly(selectedKeys[0])}>
+                      Delete Key Only
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       disabled={!selectedKeys[0]?.hasCert}
                       onClick={() => setDeleteWithCertFor(selectedKeys[0])}
@@ -315,7 +390,9 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 </DropdownMenuPortal>
               </DropdownMenuSub>
 
-              <DropdownMenuItem onClick={() => toast.success("Tags uploaded successfully.")}>Upload Bulk Tags</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success("Tags uploaded successfully.")}>
+                Upload Bulk Tags
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Key group updated.")}>Change Key Group</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -370,7 +447,11 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                           className="p-0.5 hover:bg-muted rounded inline-flex"
                           onClick={() => setExpanded((e) => ({ ...e, [k.id]: !e[k.id] }))}
                         >
-                          {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                          {isExpanded ? (
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          ) : (
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          )}
                         </button>
                       </td>
                       <td className="sl" style={{ left: 36, width: 36, minWidth: 36 }}>
@@ -388,7 +469,11 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                             key={c.key}
                             className={cn(sticky && "sl")}
                             style={sticky ? { left: 72, minWidth: 240, maxWidth: 240 } : undefined}
-                            title={typeof k[c.key as keyof SshKey] === "string" ? String(k[c.key as keyof SshKey]) : undefined}
+                            title={
+                              typeof k[c.key as keyof SshKey] === "string"
+                                ? String(k[c.key as keyof SshKey])
+                                : undefined
+                            }
                           >
                             {renderCell(k, c.key, { onCertClick: () => setCertsForKey(k) })}
                           </td>
@@ -397,11 +482,27 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                     </tr>
                     {isExpanded && (
                       <tr>
-                        <td colSpan={visibleCols.length + 2} style={{ height: "auto", whiteSpace: "normal", overflow: "visible", maxWidth: "none", background: "#F8FAFC", padding: "12px 48px" }}>
+                        <td
+                          colSpan={visibleCols.length + 2}
+                          style={{
+                            height: "auto",
+                            whiteSpace: "normal",
+                            overflow: "visible",
+                            maxWidth: "none",
+                            background: "#F8FAFC",
+                            padding: "12px 48px",
+                          }}
+                        >
                           <div className="grid grid-cols-3 gap-6 text-[12px]">
-                            <KV label="Fingerprint" value={<span className="font-mono break-all">{k.fingerprint}</span>} />
+                            <KV
+                              label="Fingerprint"
+                              value={<span className="font-mono break-all">{k.fingerprint}</span>}
+                            />
                             <KV label="File Paths" value={k.filePaths.join(", ") || "--"} />
-                            <KV label="All Endpoints" value={[...k.clientEndpoints, ...k.hostEndpoints].join(", ") || "--"} />
+                            <KV
+                              label="All Endpoints"
+                              value={[...k.clientEndpoints, ...k.hostEndpoints].join(", ") || "--"}
+                            />
                           </div>
                         </td>
                       </tr>
@@ -411,7 +512,17 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
               })}
               {paged.length === 0 && (
                 <tr>
-                  <td colSpan={visibleCols.length + 2} style={{ height: "auto", whiteSpace: "normal", textAlign: "center", padding: "48px", color: "var(--color-muted-foreground)", maxWidth: "none" }}>
+                  <td
+                    colSpan={visibleCols.length + 2}
+                    style={{
+                      height: "auto",
+                      whiteSpace: "normal",
+                      textAlign: "center",
+                      padding: "48px",
+                      color: "var(--color-muted-foreground)",
+                      maxWidth: "none",
+                    }}
+                  >
                     No keys match the current filters.
                   </td>
                 </tr>
@@ -421,44 +532,97 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
         </div>
         <div className="inv-pagination">
           <span className="mr-2">
-            {filtered.length === 0 ? 0 : (page - 1) * PAGE + 1} to {Math.min(page * PAGE, filtered.length)} of {filtered.length}
+            {filtered.length === 0 ? 0 : (page - 1) * PAGE + 1} to {Math.min(page * PAGE, filtered.length)} of{" "}
+            {filtered.length}
           </span>
-          <Button size="sm" variant="ghost" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>‹</Button>
-          <Button size="sm" variant="ghost" disabled={page >= pageCount} onClick={() => setPage((p) => Math.min(pageCount, p + 1))}>›</Button>
+          <Button size="sm" variant="ghost" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+            ‹
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={page >= pageCount}
+            onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+          >
+            ›
+          </Button>
         </div>
       </div>
 
-      <ColumnPicker open={colPickerOpen} onClose={() => setColPickerOpen(false)} columns={ALL_COLUMNS} selected={cols} onSave={setCols} />
+      <ColumnPicker
+        open={colPickerOpen}
+        onClose={() => setColPickerOpen(false)}
+        columns={ALL_COLUMNS}
+        selected={cols}
+        onSave={setCols}
+      />
 
       <CertificatesOfKeyModal
         ssKey={certsForKey}
         onClose={() => setCertsForKey(null)}
-        onSelectCert={(c) => { setCertsForKey(null); setDrawerCert(c); }}
+        onSelectCert={(c) => {
+          setCertsForKey(null);
+          setDrawerCert(c);
+        }}
       />
 
       <CertDetailDrawer cert={drawerCert} onClose={() => setDrawerCert(null)} />
 
-      <ProvisionDialog ssKey={provisionFor} onClose={() => setProvisionFor(null)} onProvisioned={(id) => updateKey(id, { hasCert: true, certCount: 1 })} />
-      <MigrateToCertDialog ssKey={migrateFor} onClose={() => setMigrateFor(null)} onMigrated={(id) => { const k = keys.find((x) => x.id === id); if (k) updateKey(id, { hasCert: true, certCount: k.certCount + 1 }); }} />
-      <RotateKeyDialog ssKey={rotateFor} onClose={() => setRotateFor(null)} onDone={(id) => updateKey(id, { age: "0 days" })} />
-      <DeleteKeyWithCertDialog ssKey={deleteWithCertFor} onClose={() => setDeleteWithCertFor(null)} onDone={(id) => removeKey(id)} />
+      <ProvisionDialog
+        ssKey={provisionFor}
+        onClose={() => setProvisionFor(null)}
+        onProvisioned={(id) => updateKey(id, { hasCert: true, certCount: 1 })}
+      />
+      <RotateKeyDialog
+        ssKey={rotateFor}
+        onClose={() => setRotateFor(null)}
+        onDone={(id) => updateKey(id, { age: "0 days" })}
+      />
+      <DeleteKeyWithCertDialog
+        ssKey={deleteWithCertFor}
+        onClose={() => setDeleteWithCertFor(null)}
+        onDone={(id) => removeKey(id)}
+      />
+
+      <MigrateToCertDialog
+        ssKey={migrateFor}
+        onClose={() => setMigrateFor(null)}
+        onMigrated={(id) => {
+          updateKey(id, { hasCert: true, certCount: (keys.find((k) => k.id === id)?.certCount ?? 0) + 1 });
+          setMigrateFor(null);
+        }}
+      />
 
       <ConfirmDialog
         open={!!confirmDeleteOnly}
         title={`Delete ${confirmDeleteOnly?.name ?? ""}?`}
         description="This will remove the key from AVX inventory and all endpoints."
-        destructive confirmLabel="Yes"
+        destructive
+        confirmLabel="Yes"
         onClose={() => setConfirmDeleteOnly(null)}
-        onConfirm={() => { if (confirmDeleteOnly) { removeKey(confirmDeleteOnly.id); toast.success(`Key "${confirmDeleteOnly.name}" deleted.`); } setConfirmDeleteOnly(null); }}
+        onConfirm={() => {
+          if (confirmDeleteOnly) {
+            removeKey(confirmDeleteOnly.id);
+            toast.success(`Key "${confirmDeleteOnly.name}" deleted.`);
+          }
+          setConfirmDeleteOnly(null);
+        }}
       />
 
       <ConfirmDialog
         open={!!confirmRevoke}
         title="Revoke SSH Key"
         description={`Are you sure you want to revoke "${confirmRevoke?.name ?? ""}"? This action cannot be undone.`}
-        destructive confirmLabel="Yes, Revoke"
+        destructive
+        confirmLabel="Yes, Revoke"
         onClose={() => setConfirmRevoke(null)}
-        onConfirm={() => { if (confirmRevoke) { updateKey(confirmRevoke.id, { status: "Revoked" }); toast.success(`Key "${confirmRevoke.name}" revoked.`); } setConfirmRevoke(null); }}
+        onConfirm={() => {
+          if (confirmRevoke) {
+            updateKey(confirmRevoke.id, { status: "Revoked" });
+            toast.success(`Key "${confirmRevoke.name}" revoked.`);
+          }
+          setConfirmRevoke(null);
+        }}
       />
 
       <ConfirmDialog
@@ -466,13 +630,24 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
         title={`Change status of ${statusChangeFor?.name ?? ""}`}
         description={
           <div className="space-y-2 pt-2">
-            <label className="flex items-center gap-2 text-[13px]"><input type="radio" checked={statusNew === "Active"} onChange={() => setStatusNew("Active")} /> Active</label>
-            <label className="flex items-center gap-2 text-[13px]"><input type="radio" checked={statusNew === "Inactive"} onChange={() => setStatusNew("Inactive")} /> Inactive</label>
+            <label className="flex items-center gap-2 text-[13px]">
+              <input type="radio" checked={statusNew === "Active"} onChange={() => setStatusNew("Active")} /> Active
+            </label>
+            <label className="flex items-center gap-2 text-[13px]">
+              <input type="radio" checked={statusNew === "Inactive"} onChange={() => setStatusNew("Inactive")} />{" "}
+              Inactive
+            </label>
           </div>
         }
         confirmLabel="Save"
         onClose={() => setStatusChangeFor(null)}
-        onConfirm={() => { if (statusChangeFor) { updateKey(statusChangeFor.id, { status: statusNew }); toast.success("Status updated."); } setStatusChangeFor(null); }}
+        onConfirm={() => {
+          if (statusChangeFor) {
+            updateKey(statusChangeFor.id, { status: statusNew });
+            toast.success("Status updated.");
+          }
+          setStatusChangeFor(null);
+        }}
       />
     </div>
   );
@@ -496,43 +671,83 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
     case "name":
       return (
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="font-medium truncate max-w-[140px]" title={k.name}>{k.name}</span>
+          <span className="font-medium truncate max-w-[140px]" title={k.name}>
+            {k.name}
+          </span>
           {k.hasCert && (
-            <button onClick={opts.onCertClick} className="p-0.5 rounded hover:bg-primary/10 text-primary" title={`${k.certCount} certificate(s)`}>
+            <button
+              onClick={opts.onCertClick}
+              className="p-0.5 rounded hover:bg-primary/10 text-primary"
+              title={`${k.certCount} certificate(s)`}
+            >
               <Link2 className="h-3.5 w-3.5" />
             </button>
           )}
           <Shield className="h-3 w-3 text-muted-foreground" />
           <ClipboardList className="h-3 w-3 text-muted-foreground" />
-          <Badge variant="outline" className={cn("text-[10px] h-4 px-1", COMBO_BADGE_CLASS[k.combination])} title="Discovered combination">
+          <Badge
+            variant="outline"
+            className={cn("text-[10px] h-4 px-1", COMBO_BADGE_CLASS[k.combination])}
+            title="Discovered combination"
+          >
             {COMBO_LABEL[k.combination]}
           </Badge>
         </div>
       );
-    case "associatedUsers": return <Truncated items={k.associatedUsers} />;
-    case "clientEndpoints": return <Truncated items={k.clientEndpoints} mono />;
-    case "hostEndpoints":   return <Truncated items={k.hostEndpoints} mono />;
-    case "age":             return <span>{k.age || "--"}</span>;
-    case "encryption":      return <Badge variant="outline">{k.encryption}</Badge>;
-    case "length":          return <span>{k.length}</span>;
-    case "fingerprint":     return <span className="font-mono text-[11px]">{k.fingerprint.slice(0, 18)}…</span>;
-    case "comment":         return <span className="text-muted-foreground">{k.comment || "--"}</span>;
-    case "keyComplianceGroup": return <Badge variant="outline">{k.keyComplianceGroup}</Badge>;
+    case "associatedUsers":
+      return <Truncated items={k.associatedUsers} />;
+    case "clientEndpoints":
+      return <Truncated items={k.clientEndpoints} mono />;
+    case "hostEndpoints":
+      return <Truncated items={k.hostEndpoints} mono />;
+    case "age":
+      return <span>{k.age || "--"}</span>;
+    case "encryption":
+      return <Badge variant="outline">{k.encryption}</Badge>;
+    case "length":
+      return <span>{k.length}</span>;
+    case "fingerprint":
+      return <span className="font-mono text-[11px]">{k.fingerprint.slice(0, 18)}…</span>;
+    case "comment":
+      return <span className="text-muted-foreground">{k.comment || "--"}</span>;
+    case "keyComplianceGroup":
+      return <Badge variant="outline">{k.keyComplianceGroup}</Badge>;
     case "status":
       return (
-        <Badge variant="outline" className={cn(k.status === "Active" && "bg-risk-green/15 text-risk-green border-risk-green/30", k.status === "Inactive" && "bg-muted text-muted-foreground", k.status === "Revoked" && "bg-muted text-muted-foreground border-border")}>
+        <Badge
+          variant="outline"
+          className={cn(
+            k.status === "Active" && "bg-risk-green/15 text-risk-green border-risk-green/30",
+            k.status === "Inactive" && "bg-muted text-muted-foreground",
+            k.status === "Revoked" && "bg-muted text-muted-foreground border-border",
+          )}
+        >
           {k.status}
         </Badge>
       );
-    case "filePaths":       return <span className="text-[11px] font-mono">{k.filePaths.join(", ") || "--"}</span>;
-    case "riskStatus":      return <Badge variant="outline" className={riskColor(k.riskStatus)}>{k.riskStatus}</Badge>;
+    case "filePaths":
+      return <span className="text-[11px] font-mono">{k.filePaths.join(", ") || "--"}</span>;
+    case "riskStatus":
+      return (
+        <Badge variant="outline" className={riskColor(k.riskStatus)}>
+          {k.riskStatus}
+        </Badge>
+      );
     case "complianceStatus":
       return (
-        <Badge variant="outline" className={cn(k.complianceStatus === "Compliant" ? "bg-risk-green/15 text-risk-green border-risk-green/30" : "bg-risk-red/15 text-risk-red border-risk-red/30")}>
+        <Badge
+          variant="outline"
+          className={cn(
+            k.complianceStatus === "Compliant"
+              ? "bg-risk-green/15 text-risk-green border-risk-green/30"
+              : "bg-risk-red/15 text-risk-red border-risk-red/30",
+          )}
+        >
           {k.complianceStatus}
         </Badge>
       );
-    default: return null;
+    default:
+      return null;
   }
 }
 
@@ -541,7 +756,11 @@ function Truncated({ items, mono }: { items: string[]; mono?: boolean }) {
   return (
     <div className="flex items-center gap-1">
       <span className={cn(mono && "font-mono text-[12px]")}>{items[0]}</span>
-      {items.length > 1 && <Badge variant="outline" className="h-5 text-[10px]">+{items.length - 1}</Badge>}
+      {items.length > 1 && (
+        <Badge variant="outline" className="h-5 text-[10px]">
+          +{items.length - 1}
+        </Badge>
+      )}
     </div>
   );
 }
