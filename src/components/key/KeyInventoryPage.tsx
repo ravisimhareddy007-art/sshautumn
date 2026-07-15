@@ -14,6 +14,7 @@ import { ProvisionDialog } from "@/components/key/ProvisionDialog";
 import { RotateKeyDialog } from "@/components/key/RotateKeyDialog";
 import { DeleteKeyWithCertDialog } from "@/components/key/DeleteKeyWithCertDialog";
 import { CertificatesOfKeyModal } from "@/components/key/CertificatesOfKeyModal";
+import { MigrateToCertDialog } from "@/components/key/MigrateToCertDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { CertDetailDrawer } from "@/components/cert/CertDetailDrawer";
 import { usePersistedState } from "@/hooks/use-persisted-state";
