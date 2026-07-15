@@ -87,6 +87,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
   const [statusChangeFor, setStatusChangeFor] = useState<SshKey | null>(null);
   const [statusNew, setStatusNew] = useState<"Active" | "Inactive">("Active");
   const [drawerCert, setDrawerCert] = useState<SshCert | null>(null);
+  const [migrateFor, setMigrateFor] = useState<SshKey | null>(null);
 
   const filtered = useMemo(() => {
     let list = keys;
@@ -292,6 +293,13 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
 
               <DropdownMenuItem disabled>Rollback</DropdownMenuItem>
 
+              <DropdownMenuItem onClick={() => setMigrateFor(selectedKeys[0])}>
+                <span className="flex items-center gap-2">
+                  Migrate to Certificate
+                  <Badge variant="outline" className="h-4 px-1 text-[9px] bg-primary/10 text-primary border-primary/30">NEW</Badge>
+                </span>
+              </DropdownMenuItem>
+
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Delete</DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
@@ -431,6 +439,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
       <CertDetailDrawer cert={drawerCert} onClose={() => setDrawerCert(null)} />
 
       <ProvisionDialog ssKey={provisionFor} onClose={() => setProvisionFor(null)} onProvisioned={(id) => updateKey(id, { hasCert: true, certCount: 1 })} />
+      <MigrateToCertDialog ssKey={migrateFor} onClose={() => setMigrateFor(null)} onMigrated={(id) => { const k = keys.find((x) => x.id === id); if (k) updateKey(id, { hasCert: true, certCount: k.certCount + 1 }); }} />
       <RotateKeyDialog ssKey={rotateFor} onClose={() => setRotateFor(null)} onDone={(id) => updateKey(id, { age: "0 days" })} />
       <DeleteKeyWithCertDialog ssKey={deleteWithCertFor} onClose={() => setDeleteWithCertFor(null)} onDone={(id) => removeKey(id)} />
 
