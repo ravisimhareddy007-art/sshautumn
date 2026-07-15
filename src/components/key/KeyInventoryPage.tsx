@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { RiskTileBar, type RiskTileDef } from "@/components/common/RiskTileBar";
 import { ColumnPicker, type ColumnDef } from "@/components/common/ColumnPicker";
 import { FilterChips } from "@/components/common/FilterChips";
 import { ProvisionDialog } from "@/components/key/ProvisionDialog";
@@ -55,7 +54,7 @@ import {
   CheckCircle2,
   Clock,
   RotateCcw,
-  ArrowRight,
+  Info,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -82,6 +81,7 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "associatedUsers", label: "Associated Users" },
   { key: "clientEndpoints", label: "Client Endpoint(s)" },
   { key: "hostEndpoints", label: "Host Endpoint(s)" },
+  { key: "migrationStatus", label: "Migration" },
   { key: "age", label: "Age" },
   { key: "encryption", label: "Encryption" },
   { key: "length", label: "Length" },
@@ -94,13 +94,17 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "complianceStatus", label: "Compliance Status" },
 ];
 
-const DEFAULT_USER_COLS = ["name", "associatedUsers", "clientEndpoints", "hostEndpoints", "age"];
+const DEFAULT_USER_COLS = ["name", "associatedUsers", "clientEndpoints", "hostEndpoints", "migrationStatus", "age"];
 const DEFAULT_HOST_COLS = ["name", "clientEndpoints", "hostEndpoints", "age", "encryption", "length"];
 
 const PAGE = 25;
-
-// Rollback retention window in days — after decommission, rollback available for this long
 const ROLLBACK_RETENTION_DAYS = 30;
+
+const RISK_COLORS: Record<string, { border: string; text: string }> = {
+  red: { border: "#EF4444", text: "#EF4444" },
+  amber: { border: "#F59E0B", text: "#F59E0B" },
+  green: { border: "#22C55E", text: "#22C55E" },
+};
 
 export function KeyInventoryPage(props: KeyInventoryProps) {
   const navigate = useNavigate();
@@ -110,7 +114,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
   const [group, setGroup] = useState("All Keys");
   const [search_, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState<RiskStatus | null>(null);
-  const [migrationFilter, setMigrationFilter] = useState<MigrationStatus | null>(null);
+  const [migrationFilter, setMigrationFilter] = useState<"all" | MigrationStatus | null>(null);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -121,7 +125,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
   const [colPickerOpen, setColPickerOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Existing dialogs
   const [certsForKey, setCertsForKey] = useState<SshKey | null>(null);
   const [provisionFor, setProvisionFor] = useState<SshKey | null>(null);
   const [rotateFor, setRotateFor] = useState<SshKey | null>(null);
@@ -131,8 +134,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
   const [statusChangeFor, setStatusChangeFor] = useState<SshKey | null>(null);
   const [statusNew, setStatusNew] = useState<"Active" | "Inactive">("Active");
   const [drawerCert, setDrawerCert] = useState<SshCert | null>(null);
-
-  // Migration dialogs
   const [migrateFor, setMigrateFor] = useState<SshKey | null>(null);
   const [confirmDecommission, setConfirmDecommission] = useState<SshKey | null>(null);
   const [confirmExtend, setConfirmExtend] = useState<SshKey | null>(null);
@@ -142,7 +143,8 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
     let list = keys;
     if (group !== "All Keys") list = list.filter((k) => k.keyComplianceGroup === group);
     if (riskFilter) list = list.filter((k) => k.riskStatus === riskFilter);
-    if (migrationFilter) list = list.filter((k) => k.migrationStatus === migrationFilter);
+    if (migrationFilter === "all") list = list.filter((k) => !!k.migrationStatus);
+    else if (migrationFilter) list = list.filter((k) => k.migrationStatus === migrationFilter);
     if (search_) {
       const s = search_.toLowerCase();
       list = list.filter(
@@ -159,28 +161,24 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE));
   const selectedKeys = paged.filter((k) => selectedIds.includes(k.id));
 
-  const tiles: RiskTileDef[] = useMemo(() => {
-    const counts: Record<string, number> = {};
+  // Risk tile counts
+  const riskCounts = useMemo(() => {
+    const c: Record<string, number> = {};
     props.riskKinds.forEach((r) => {
-      counts[r] = keys.filter((k) => k.riskStatus === r).length;
+      c[r] = keys.filter((k) => k.riskStatus === r).length;
     });
-    return props.riskKinds.map((r) => ({
-      key: r,
-      label: `${r} Keys`,
-      count: counts[r] ?? 0,
-      total: keys.length,
-      color: ["Rogue", "Suspicious", "Misplaced"].includes(r) ? "red" : "amber",
-      info: `Keys flagged as ${r}`,
-    }));
+    return c;
   }, [keys, props.riskKinds]);
 
-  // Migration summary counts
-  const migrationCounts = useMemo(
+  // Migration counts
+  const migCounts = useMemo(
     () => ({
       in_coexistence: keys.filter((k) => k.migrationStatus === "in_coexistence").length,
       awaiting_confirmation: keys.filter((k) => k.migrationStatus === "awaiting_confirmation").length,
       decommissioned: keys.filter((k) => k.migrationStatus === "decommissioned").length,
+      rolled_back: keys.filter((k) => k.migrationStatus === "rolled_back").length,
       critical: keys.filter((k) => isMigrationCertExpired(k, USER_CERTS)).length,
+      total: keys.filter((k) => !!k.migrationStatus).length,
     }),
     [keys],
   );
@@ -200,12 +198,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
     setSelectedIds((s) => s.filter((x) => x !== id));
   };
 
-  const refresh = () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 700);
-  };
-
-  // Migration action handlers
   const handleMigrated = (
     id: string,
     data: {
@@ -228,17 +220,13 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
 
   const handleConfirmDecommission = (key: SshKey) => {
     updateKey(key.id, { migrationStatus: "decommissioned" });
-    toast.success(`"${key.name}" decommissioned. Original key entry removed. Cert is now the sole auth path.`);
+    toast.success(`"${key.name}" decommissioned. Certificate is now the sole auth path.`);
     setConfirmDecommission(null);
   };
 
   const handleExtendWindow = (key: SshKey) => {
-    const today = new Date().toISOString().slice(0, 10);
-    updateKey(key.id, {
-      migrationStatus: "in_coexistence",
-      migrationIssuedAt: today,
-    });
-    toast.success(`Coexistence window extended by ${key.migrationWindowDays ?? 14} days for "${key.name}".`);
+    updateKey(key.id, { migrationStatus: "in_coexistence", migrationIssuedAt: new Date().toISOString().slice(0, 10) });
+    toast.success(`Window extended by ${key.migrationWindowDays ?? 14} days for "${key.name}".`);
     setConfirmExtend(null);
   };
 
@@ -247,22 +235,28 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
       migrationStatus: "rolled_back",
       hasCert: Math.max(0, (key.certCount ?? 1) - 1) > 0,
       certCount: Math.max(0, (key.certCount ?? 1) - 1),
-      combination: key.certCount === 1 ? "private_public" : "private_cert",
+      combination: (key.certCount ?? 1) <= 1 ? "private_public" : "private_cert",
     });
-    toast.success(`Migration rolled back for "${key.name}". Original authorized_keys entry restored.`);
+    toast.success(`Migration rolled back for "${key.name}". Original key entry restored.`);
     setConfirmRollback(null);
   };
 
   const chips = [
     riskFilter ? { key: "risk", label: `Risk: ${riskFilter}` } : null,
-    migrationFilter ? { key: "migration", label: `Migration: ${migrationStatusLabel[migrationFilter]}` } : null,
+    migrationFilter
+      ? {
+          key: "migration",
+          label:
+            migrationFilter === "all"
+              ? "Migration: All"
+              : `Migration: ${migrationStatusLabel[migrationFilter as MigrationStatus]}`,
+        }
+      : null,
     search.highlight ? { key: "highlight", label: `Highlight: ${search.highlight}` } : null,
   ].filter(Boolean) as { key: string; label: string }[];
 
   const sel = selectedKeys[0];
-
-  // Determine what migration actions to show for selected key
-  const showMigrateAction = (sel && !sel.migrationStatus) || sel?.migrationStatus === "rolled_back";
+  const showMigrateAction = !sel?.migrationStatus || sel?.migrationStatus === "rolled_back";
   const showConfirmDecommission = sel?.migrationStatus === "awaiting_confirmation";
   const showExtendWindow = sel?.migrationStatus === "awaiting_confirmation";
   const showRollback =
@@ -276,95 +270,122 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
     <div>
       <PageHeader breadcrumbs={props.breadcrumbs} title={props.title} />
 
-      <RiskTileBar
-        tiles={tiles}
-        activeKey={riskFilter}
-        onSelect={(k) => {
-          setRiskFilter((curr) => (curr === k ? null : (k as RiskStatus)));
-          setMigrationFilter(null);
-          setPage(1);
-        }}
-      />
+      {/* ── Unified compact tile bar ─────────────────────────────────────────── */}
+      <div className="bg-surface border border-border rounded-md flex overflow-hidden mb-3">
+        {/* Risk tiles */}
+        {props.riskKinds.map((r, i) => {
+          const count = riskCounts[r] ?? 0;
+          const isZero = count === 0;
+          const col = isZero
+            ? RISK_COLORS.green
+            : ["Rogue", "Suspicious", "Misplaced"].includes(r)
+              ? RISK_COLORS.red
+              : RISK_COLORS.amber;
+          const active = riskFilter === r;
+          return (
+            <button
+              key={r}
+              onClick={() => {
+                setRiskFilter((f) => (f === r ? null : r));
+                setMigrationFilter(null);
+                setPage(1);
+              }}
+              className={cn(
+                "flex-1 text-left px-4 py-2.5 border-l-[3px] transition-colors",
+                i > 0 && "border-l border-l-border",
+                active ? "bg-row-selected" : "hover:bg-muted/60",
+              )}
+              style={{ borderLeftColor: col.border, borderLeftWidth: 3 }}
+            >
+              <div className="text-[20px] font-bold leading-none" style={{ color: col.text }}>
+                {count}
+                {props.total != null && (
+                  <span className="text-[11px] text-muted-foreground font-normal ml-0.5">/{props.total}</span>
+                )}
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 text-[10px] uppercase tracking-wider font-medium text-muted-foreground whitespace-nowrap">
+                {r} Keys
+                <Info className="h-3 w-3" />
+              </div>
+            </button>
+          );
+        })}
 
-      {/* Migration status tiles — only shown when migrations exist */}
-      {(migrationCounts.in_coexistence > 0 ||
-        migrationCounts.awaiting_confirmation > 0 ||
-        migrationCounts.decommissioned > 0 ||
-        migrationCounts.critical > 0) && (
-        <div className="flex gap-3 px-1 pb-3">
-          {migrationCounts.in_coexistence > 0 && (
+        {/* Migration tile — only shown when migrations exist */}
+        {migCounts.total > 0 && (
+          <>
+            <div className="w-px bg-border my-1.5" />
             <button
               onClick={() => {
-                setMigrationFilter((f) => (f === "in_coexistence" ? null : "in_coexistence"));
+                setMigrationFilter((f) => (f ? null : "all"));
                 setRiskFilter(null);
                 setPage(1);
               }}
               className={cn(
-                "flex flex-col px-4 py-2 rounded-md border text-left transition-colors",
-                migrationFilter === "in_coexistence"
-                  ? "bg-risk-amber/10 border-risk-amber"
-                  : "bg-surface border-border hover:border-risk-amber/50",
+                "text-left px-4 py-2.5 min-w-[200px] transition-colors",
+                migrationFilter ? "bg-row-selected" : "hover:bg-muted/60",
               )}
             >
-              <span className="text-[18px] font-bold text-risk-amber leading-tight">
-                {migrationCounts.in_coexistence}
-              </span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">In Migration</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[20px] font-bold leading-none text-primary">{migCounts.total}</span>
+                <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
+                  Migration Activity
+                </span>
+                {migCounts.critical > 0 && (
+                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-risk-red bg-risk-red/10 px-1.5 py-0.5 rounded">
+                    <AlertTriangle className="h-3 w-3" />
+                    {migCounts.critical}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3 mt-1">
+                {migCounts.in_coexistence > 0 && (
+                  <span
+                    className="text-[10px] text-risk-amber cursor-pointer hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMigrationFilter("in_coexistence");
+                      setRiskFilter(null);
+                      setPage(1);
+                    }}
+                  >
+                    ⏳ {migCounts.in_coexistence} active
+                  </span>
+                )}
+                {migCounts.awaiting_confirmation > 0 && (
+                  <span
+                    className="text-[10px] text-risk-red font-medium cursor-pointer hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMigrationFilter("awaiting_confirmation");
+                      setRiskFilter(null);
+                      setPage(1);
+                    }}
+                  >
+                    ⚠ {migCounts.awaiting_confirmation} awaiting
+                  </span>
+                )}
+                {migCounts.decommissioned > 0 && (
+                  <span
+                    className="text-[10px] text-risk-green cursor-pointer hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMigrationFilter("decommissioned");
+                      setRiskFilter(null);
+                      setPage(1);
+                    }}
+                  >
+                    ✓ {migCounts.decommissioned} done
+                  </span>
+                )}
+                {migCounts.rolled_back > 0 && (
+                  <span className="text-[10px] text-muted-foreground">↺ {migCounts.rolled_back}</span>
+                )}
+              </div>
             </button>
-          )}
-          {migrationCounts.awaiting_confirmation > 0 && (
-            <button
-              onClick={() => {
-                setMigrationFilter((f) => (f === "awaiting_confirmation" ? null : "awaiting_confirmation"));
-                setRiskFilter(null);
-                setPage(1);
-              }}
-              className={cn(
-                "flex flex-col px-4 py-2 rounded-md border text-left transition-colors",
-                migrationFilter === "awaiting_confirmation"
-                  ? "bg-risk-red/10 border-risk-red"
-                  : "bg-surface border-risk-red/30 hover:border-risk-red",
-              )}
-            >
-              <span className="text-[18px] font-bold text-risk-red leading-tight">
-                {migrationCounts.awaiting_confirmation}
-              </span>
-              <span className="text-[10px] uppercase tracking-wider text-risk-red mt-0.5">Awaiting Confirmation</span>
-            </button>
-          )}
-          {migrationCounts.critical > 0 && (
-            <button
-              onClick={() =>
-                toast.error("Filter: keys where migration cert has expired. Renew certs immediately to restore access.")
-              }
-              className="flex flex-col px-4 py-2 rounded-md border bg-risk-red/5 border-risk-red text-left animate-pulse"
-            >
-              <span className="text-[18px] font-bold text-risk-red leading-tight">⚠ {migrationCounts.critical}</span>
-              <span className="text-[10px] uppercase tracking-wider text-risk-red mt-0.5">Critical — Cert Expired</span>
-            </button>
-          )}
-          {migrationCounts.decommissioned > 0 && (
-            <button
-              onClick={() => {
-                setMigrationFilter((f) => (f === "decommissioned" ? null : "decommissioned"));
-                setRiskFilter(null);
-                setPage(1);
-              }}
-              className={cn(
-                "flex flex-col px-4 py-2 rounded-md border text-left transition-colors",
-                migrationFilter === "decommissioned"
-                  ? "bg-risk-green/10 border-risk-green"
-                  : "bg-surface border-border hover:border-risk-green/50",
-              )}
-            >
-              <span className="text-[18px] font-bold text-risk-green leading-tight">
-                {migrationCounts.decommissioned}
-              </span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Migrated</span>
-            </button>
-          )}
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       <FilterChips
         chips={chips}
@@ -410,7 +431,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
           />
           <button
             className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted"
-            onClick={() => toast.info("Advanced search panel -- coming soon.")}
+            onClick={() => toast.info("Advanced search -- coming soon.")}
           >
             <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
@@ -423,16 +444,11 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant={selectedKeys.length > 0 ? "default" : "outline"}
-                disabled={selectedKeys.length === 0}
-              >
+              <Button size="sm" variant={sel ? "default" : "outline"} disabled={!sel}>
                 Actions <ChevronDown className="ml-1 h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              {/* Combination label */}
               {sel && (
                 <div className="px-2 py-1.5 mb-1 border-b border-border">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Combination</span>
@@ -446,8 +462,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   </div>
                 </div>
               )}
-
-              {/* Standard actions */}
               <DropdownMenuItem onClick={() => toast.success("Key updated.")}>Modify</DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
@@ -463,8 +477,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 Export
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Key file download started.")}>Download</DropdownMenuItem>
-
-              {/* Provision Certificate */}
               {(() => {
                 const a = sel ? provisionCertAction(sel.combination) : { show: false, enabled: false };
                 if (!a.show) return null;
@@ -483,8 +495,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   );
                 return <DropdownMenuItem onClick={() => setProvisionFor(sel)}>Provision Certificate</DropdownMenuItem>;
               })()}
-
-              {/* Rotate Key */}
               {(() => {
                 const a = sel ? rotateKeyAction(sel.combination) : { show: false, enabled: false };
                 if (!a.show) return null;
@@ -503,11 +513,9 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   );
                 return <DropdownMenuItem onClick={() => setRotateFor(sel)}>Rotate Key</DropdownMenuItem>;
               })()}
-
-              {/* Revoke Cert */}
               {(() => {
-                const combo = sel?.combination;
                 const hasCert = sel?.hasCert;
+                const combo = sel?.combination;
                 if (!hasCert || (combo !== "private_cert" && combo !== "public_cert")) return null;
                 const a = sel
                   ? certRevokeAction(sel.status === "Revoked" ? "Revoked" : "Active")
@@ -527,14 +535,8 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   );
                 return <DropdownMenuItem onClick={() => setConfirmRevoke(sel)}>Revoke Certificate</DropdownMenuItem>;
               })()}
-
               <DropdownMenuItem disabled>Rollback</DropdownMenuItem>
-
               <DropdownMenuSeparator />
-
-              {/* ── Migration actions (contextual) ── */}
-
-              {/* Migrate to Certificate — shown when not yet in migration */}
               {showMigrateAction && (
                 <DropdownMenuItem
                   onClick={() => setMigrateFor(sel)}
@@ -549,8 +551,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   </Badge>
                 </DropdownMenuItem>
               )}
-
-              {/* Confirm Decommission — shown for awaiting_confirmation */}
               {showConfirmDecommission && (
                 <DropdownMenuItem
                   onClick={() => setConfirmDecommission(sel)}
@@ -560,26 +560,19 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   Confirm Decommission
                 </DropdownMenuItem>
               )}
-
-              {/* Extend Window — shown for awaiting_confirmation */}
               {showExtendWindow && (
                 <DropdownMenuItem onClick={() => setConfirmExtend(sel)}>
                   <Clock className="h-3.5 w-3.5 mr-1.5" />
                   Extend Coexistence Window
                 </DropdownMenuItem>
               )}
-
-              {/* Rollback Migration — shown for in_coexistence, awaiting_confirmation, decommissioned (within retention) */}
               {showRollback && (
                 <DropdownMenuItem onClick={() => setConfirmRollback(sel)} className="text-risk-red focus:text-risk-red">
                   <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
                   Rollback Migration
                 </DropdownMenuItem>
               )}
-
               <DropdownMenuSeparator />
-
-              {/* Delete */}
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>Delete</DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
@@ -591,10 +584,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
-
-              <DropdownMenuItem onClick={() => toast.success("Tags uploaded successfully.")}>
-                Upload Bulk Tags
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.success("Tags uploaded.")}>Upload Bulk Tags</DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Key group updated.")}>Change Key Group</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -602,8 +592,15 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
           <Button size="sm" variant="ghost" onClick={() => setColPickerOpen(true)} title="Columns">
             <Columns className="h-4 w-4" />
           </Button>
-
-          <Button size="sm" variant="ghost" onClick={refresh} title="Refresh">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setRefreshing(true);
+              setTimeout(() => setRefreshing(false), 700);
+            }}
+            title="Refresh"
+          >
             <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
           </Button>
         </div>
@@ -627,7 +624,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                     <th
                       key={c.key}
                       className={cn(sticky && "sl")}
-                      style={sticky ? { left: 72, minWidth: 240, maxWidth: 240 } : undefined}
+                      style={sticky ? { left: 72, minWidth: 200, maxWidth: 200 } : undefined}
                     >
                       {c.label}
                       {c.mandatory && <span className="text-risk-red ml-0.5">*</span>}
@@ -642,7 +639,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 const isSelected = selectedIds.includes(k.id);
                 const isHighlighted = search.highlight === k.id;
                 const certExpired = isMigrationCertExpired(k, USER_CERTS);
-                const certExpiringSoon = isMigrationCertExpiringSoon(k, USER_CERTS);
                 return (
                   <Row key={k.id}>
                     <tr
@@ -678,22 +674,20 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                           <td
                             key={c.key}
                             className={cn(sticky && "sl")}
-                            style={sticky ? { left: 72, minWidth: 240, maxWidth: 240 } : undefined}
+                            style={sticky ? { left: 72, minWidth: 200, maxWidth: 200 } : undefined}
                             title={
                               typeof k[c.key as keyof SshKey] === "string"
                                 ? String(k[c.key as keyof SshKey])
                                 : undefined
                             }
                           >
-                            {renderCell(k, c.key, {
-                              onCertClick: () => setCertsForKey(k),
-                            })}
+                            {renderCell(k, c.key, { onCertClick: () => setCertsForKey(k) })}
                           </td>
                         );
                       })}
                     </tr>
 
-                    {/* Critical lockout warning row */}
+                    {/* Critical lockout warning */}
                     {certExpired && (
                       <tr>
                         <td
@@ -707,30 +701,8 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                         >
                           <div className="flex items-center gap-2 py-1.5 px-3 bg-risk-red/10 border border-risk-red/30 rounded text-[12px] text-risk-red">
                             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                            <span>
-                              <strong>Critical:</strong> This key was decommissioned and its migration certificate has
-                              expired. Access to <strong>{k.migrationHostEndpoint}</strong> via certificate may be
-                              broken. Renew the migration certificate immediately.
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-
-                    {/* Cert expiring soon warning row */}
-                    {!certExpired && certExpiringSoon && (
-                      <tr>
-                        <td
-                          colSpan={visibleCols.length + 2}
-                          style={{ height: "auto", maxWidth: "none", padding: "0 48px 6px" }}
-                        >
-                          <div className="flex items-center gap-2 py-1.5 px-3 bg-risk-amber/10 border border-risk-amber/30 rounded text-[12px] text-risk-amber">
-                            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-                            <span>
-                              Migration cert expiring soon on <strong>{k.migrationHostEndpoint}</strong>. The original
-                              key entry has been removed — renew the cert before it expires or the user will be locked
-                              out.
-                            </span>
+                            <strong>Critical:</strong> Key was decommissioned and migration cert has expired. Renew cert
+                            on <strong>{k.migrationHostEndpoint}</strong> immediately.
                           </div>
                         </td>
                       </tr>
@@ -760,73 +732,32 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                               value={[...k.clientEndpoints, ...k.hostEndpoints].join(", ") || "--"}
                             />
                           </div>
-
-                          {/* Migration detail section in expanded row */}
                           {k.migrationStatus && (
                             <div className="mt-4 pt-4 border-t border-border">
                               <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">
-                                Migration Status
+                                Migration Detail
                               </div>
                               <div className="grid grid-cols-3 gap-4 text-[12px]">
-                                <KV
-                                  label="Status"
-                                  value={
-                                    <Badge
-                                      variant="outline"
-                                      className={cn("text-[11px]", migrationStatusColor(k.migrationStatus))}
-                                    >
-                                      {migrationStatusLabel[k.migrationStatus]}
-                                    </Badge>
-                                  }
-                                />
                                 <KV label="Host" value={k.migrationHostEndpoint ?? "--"} />
                                 <KV label="Issued" value={k.migrationIssuedAt ?? "--"} />
+                                <KV
+                                  label="Post-window"
+                                  value={
+                                    k.migrationPostWindowAction === "manual" ? "Manual Confirmation" : "Auto-Deactivate"
+                                  }
+                                />
                                 {k.migrationStatus === "in_coexistence" &&
                                   k.migrationIssuedAt &&
                                   k.migrationWindowDays && (
-                                    <>
-                                      <KV
-                                        label="Window"
-                                        value={`Day ${migrationDaysElapsed(k.migrationIssuedAt)} of ${k.migrationWindowDays}`}
-                                      />
-                                      <KV
-                                        label="Remaining"
-                                        value={`${migrationDaysRemaining(k.migrationIssuedAt, k.migrationWindowDays)} days`}
-                                      />
-                                      <KV
-                                        label="Post-window"
-                                        value={
-                                          k.migrationPostWindowAction === "manual"
-                                            ? "Manual Confirmation"
-                                            : "Auto-Deactivate"
-                                        }
-                                      />
-                                    </>
+                                    <KV
+                                      label="Window"
+                                      value={`Day ${migrationDaysElapsed(k.migrationIssuedAt)} of ${k.migrationWindowDays} (${migrationDaysRemaining(k.migrationIssuedAt, k.migrationWindowDays)} days left)`}
+                                    />
                                   )}
-                                {k.migrationStatus === "awaiting_confirmation" && (
-                                  <>
-                                    <KV
-                                      label="Window closed"
-                                      value={
-                                        k.migrationIssuedAt
-                                          ? `${migrationDaysElapsed(k.migrationIssuedAt) - (k.migrationWindowDays ?? 14)} days ago`
-                                          : "--"
-                                      }
-                                    />
-                                    <KV
-                                      label="Action required"
-                                      value={
-                                        <span className="text-risk-red font-medium">
-                                          Confirm Decommission or Extend
-                                        </span>
-                                      }
-                                    />
-                                  </>
-                                )}
                                 {k.migrationRollbackStoredLine && (
                                   <div className="col-span-3">
                                     <div className="text-[10px] text-muted-foreground mb-1">
-                                      Stored authorized_keys line (for rollback)
+                                      Stored authorized_keys line (rollback)
                                     </div>
                                     <code className="text-[11px] bg-muted px-2 py-1 rounded block font-mono break-all">
                                       {k.migrationRollbackStoredLine}
@@ -888,7 +819,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
         selected={cols}
         onSave={setCols}
       />
-
       <CertificatesOfKeyModal
         ssKey={certsForKey}
         onClose={() => setCertsForKey(null)}
@@ -897,9 +827,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
           setDrawerCert(c);
         }}
       />
-
       <CertDetailDrawer cert={drawerCert} onClose={() => setDrawerCert(null)} />
-
       <ProvisionDialog
         ssKey={provisionFor}
         onClose={() => setProvisionFor(null)}
@@ -915,69 +843,33 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
         onClose={() => setDeleteWithCertFor(null)}
         onDone={(id) => removeKey(id)}
       />
-
-      {/* Migration wizard */}
       <MigrateToCertDialog ssKey={migrateFor} onClose={() => setMigrateFor(null)} onMigrated={handleMigrated} />
 
-      {/* Confirm Decommission */}
       <ConfirmDialog
         open={!!confirmDecommission}
         title="Confirm Decommission"
-        description={
-          <div className="space-y-3 text-[13px]">
-            <p>
-              The migration certificate for <strong>{confirmDecommission?.name}</strong> has been active through the
-              coexistence window. Confirming will:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>
-                Remove the original authorized_keys entry from{" "}
-                <strong>{confirmDecommission?.migrationHostEndpoint}</strong>
-              </li>
-              <li>Mark the certificate as the sole authentication path</li>
-              <li>Store the original line for rollback (available for {ROLLBACK_RETENTION_DAYS} days)</li>
-            </ul>
-          </div>
-        }
+        description={`The migration certificate for "${confirmDecommission?.name}" has been active through the coexistence window. Confirming will remove the original authorized_keys entry from ${confirmDecommission?.migrationHostEndpoint} and mark the cert as the sole auth path.`}
         confirmLabel="Confirm Decommission"
         onClose={() => setConfirmDecommission(null)}
         onConfirm={() => confirmDecommission && handleConfirmDecommission(confirmDecommission)}
       />
-
-      {/* Extend Window */}
       <ConfirmDialog
         open={!!confirmExtend}
         title="Extend Coexistence Window"
-        description={`Start a new ${confirmExtend?.migrationWindowDays ?? 14}-day coexistence window for "${confirmExtend?.name ?? ""}". Both the original key and the certificate will remain active. You will be notified again when the new window closes.`}
+        description={`Start a new ${confirmExtend?.migrationWindowDays ?? 14}-day window for "${confirmExtend?.name ?? ""}". Both key and cert remain active.`}
         confirmLabel="Extend Window"
         onClose={() => setConfirmExtend(null)}
         onConfirm={() => confirmExtend && handleExtendWindow(confirmExtend)}
       />
-
-      {/* Rollback Migration */}
       <ConfirmDialog
         open={!!confirmRollback}
         title="Rollback Migration"
-        description={
-          <div className="space-y-2 text-[13px]">
-            <p>
-              Rolling back will restore the original authorized_keys entry for <strong>{confirmRollback?.name}</strong>{" "}
-              on <strong>{confirmRollback?.migrationHostEndpoint}</strong> and mark this migration as rolled back.
-            </p>
-            {confirmRollback?.migrationStatus === "decommissioned" && (
-              <p className="text-risk-amber">
-                Note: The migration certificate will remain valid and can still be used until it expires. Only the
-                authorized_keys entry is being restored.
-              </p>
-            )}
-          </div>
-        }
+        description={`Restore the original authorized_keys entry for "${confirmRollback?.name ?? ""}" on ${confirmRollback?.migrationHostEndpoint}. The migration cert remains valid until it expires.`}
         destructive
         confirmLabel="Rollback"
         onClose={() => setConfirmRollback(null)}
         onConfirm={() => confirmRollback && handleRollback(confirmRollback)}
       />
-
       <ConfirmDialog
         open={!!confirmDeleteOnly}
         title={`Delete ${confirmDeleteOnly?.name ?? ""}?`}
@@ -993,7 +885,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
           setConfirmDeleteOnly(null);
         }}
       />
-
       <ConfirmDialog
         open={!!confirmRevoke}
         title="Revoke SSH Key"
@@ -1009,7 +900,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
           setConfirmRevoke(null);
         }}
       />
-
       <ConfirmDialog
         open={!!statusChangeFor}
         title={`Change status of ${statusChangeFor?.name ?? ""}`}
@@ -1052,78 +942,88 @@ function KV({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): React.ReactNode {
+  const certExpired = col === "migrationStatus" ? isMigrationCertExpired(k, USER_CERTS) : false;
+  const certExpiringSoon = col === "migrationStatus" ? isMigrationCertExpiringSoon(k, USER_CERTS) : false;
+
   switch (col) {
     case "name":
       return (
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="font-medium truncate max-w-[140px]" title={k.name}>
-              {k.name}
-            </span>
-            {k.hasCert && (
-              <button
-                onClick={opts.onCertClick}
-                className="p-0.5 rounded hover:bg-primary/10 text-primary"
-                title={`${k.certCount} certificate(s)`}
-              >
-                <Link2 className="h-3.5 w-3.5" />
-              </button>
-            )}
-            <Shield className="h-3 w-3 text-muted-foreground" />
-            <ClipboardList className="h-3 w-3 text-muted-foreground" />
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="font-medium truncate max-w-[130px]" title={k.name}>
+            {k.name}
+          </span>
+          {k.hasCert && (
+            <button
+              onClick={opts.onCertClick}
+              className="p-0.5 rounded hover:bg-primary/10 text-primary shrink-0"
+              title={`${k.certCount} certificate(s)`}
+            >
+              <Link2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <Shield className="h-3 w-3 text-muted-foreground shrink-0" />
+          <ClipboardList className="h-3 w-3 text-muted-foreground shrink-0" />
+          <Badge
+            variant="outline"
+            className={cn("text-[10px] h-4 px-1 shrink-0", COMBO_BADGE_CLASS[k.combination])}
+            title="Discovered combination"
+          >
+            {COMBO_LABEL[k.combination]}
+          </Badge>
+        </div>
+      );
+
+    case "migrationStatus":
+      if (!k.migrationStatus) return <span className="text-muted-foreground text-[12px]">—</span>;
+      return (
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-1.5">
             <Badge
               variant="outline"
-              className={cn("text-[10px] h-4 px-1", COMBO_BADGE_CLASS[k.combination])}
-              title="Discovered combination"
+              className={cn("text-[10px] h-5 px-1.5 whitespace-nowrap", migrationStatusColor(k.migrationStatus))}
             >
-              {COMBO_LABEL[k.combination]}
+              {migrationStatusLabel[k.migrationStatus]}
             </Badge>
+            {certExpired && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertTriangle className="h-3.5 w-3.5 text-risk-red shrink-0 cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>Migration cert expired — potential lockout</TooltipContent>
+              </Tooltip>
+            )}
+            {certExpiringSoon && !certExpired && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertTriangle className="h-3.5 w-3.5 text-risk-amber shrink-0 cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>Migration cert expiring soon</TooltipContent>
+              </Tooltip>
+            )}
           </div>
-
-          {/* Migration status indicator */}
-          {k.migrationStatus && (
-            <div className="mt-1 space-y-0.5">
-              <div className="flex items-center gap-1.5">
-                {k.migrationStatus === "in_coexistence" && <ArrowRight className="h-3 w-3 text-risk-amber" />}
-                {k.migrationStatus === "awaiting_confirmation" && <AlertTriangle className="h-3 w-3 text-risk-red" />}
-                {k.migrationStatus === "decommissioned" && <CheckCircle2 className="h-3 w-3 text-risk-green" />}
-                {k.migrationStatus === "rolled_back" && <RotateCcw className="h-3 w-3 text-muted-foreground" />}
-                <Badge variant="outline" className={cn("text-[9px] h-4 px-1", migrationStatusColor(k.migrationStatus))}>
-                  {migrationStatusLabel[k.migrationStatus]}
-                </Badge>
-                {k.migrationStatus === "in_coexistence" && k.migrationIssuedAt && k.migrationWindowDays && (
-                  <span className="text-[10px] text-muted-foreground">
-                    Day {migrationDaysElapsed(k.migrationIssuedAt)} of {k.migrationWindowDays}
-                  </span>
-                )}
-                {k.migrationStatus === "awaiting_confirmation" && k.migrationIssuedAt && k.migrationWindowDays && (
-                  <span className="text-[10px] text-risk-red">
-                    {migrationDaysElapsed(k.migrationIssuedAt) - k.migrationWindowDays}d overdue
-                  </span>
-                )}
+          {k.migrationStatus === "in_coexistence" && k.migrationIssuedAt && k.migrationWindowDays && (
+            <div className="flex items-center gap-1.5">
+              <div className="h-1 w-20 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-1 bg-risk-amber rounded-full"
+                  style={{
+                    width: `${Math.min(100, (migrationDaysElapsed(k.migrationIssuedAt) / k.migrationWindowDays) * 100)}%`,
+                  }}
+                />
               </div>
-              {/* Progress bar for coexistence window */}
-              {k.migrationStatus === "in_coexistence" && k.migrationIssuedAt && k.migrationWindowDays && (
-                <div className="h-1 w-24 bg-muted rounded-full">
-                  <div
-                    className="h-1 bg-risk-amber rounded-full transition-all"
-                    style={{
-                      width: `${Math.min(100, (migrationDaysElapsed(k.migrationIssuedAt) / k.migrationWindowDays) * 100)}%`,
-                    }}
-                  />
-                </div>
-              )}
+              <span className="text-[10px] text-muted-foreground">
+                {migrationDaysElapsed(k.migrationIssuedAt)}/{k.migrationWindowDays}d
+              </span>
             </div>
           )}
-
-          {/* Critical edge case inline warning */}
-          {isMigrationCertExpired(k, USER_CERTS) && (
-            <div className="flex items-center gap-1 mt-1 text-[10px] text-risk-red font-medium">
-              <AlertTriangle className="h-3 w-3" /> Cert expired — potential lockout
-            </div>
+          {k.migrationStatus === "awaiting_confirmation" && k.migrationIssuedAt && k.migrationWindowDays && (
+            <span className="text-[10px] text-risk-red">
+              {migrationDaysElapsed(k.migrationIssuedAt) - k.migrationWindowDays}d overdue
+            </span>
           )}
         </div>
       );
+
     case "associatedUsers":
       return <Truncated items={k.associatedUsers} />;
     case "clientEndpoints":
