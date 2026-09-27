@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_app/administration/ca")({
               <th className="text-left px-3 py-2">CA Name</th>
               <th className="text-left px-3 py-2">Type</th>
               <th className="text-left px-3 py-2">Status</th>
+              <th className="text-left px-3 py-2">Signing Algorithm</th>
               <th className="text-left px-3 py-2">Expiry</th>
               <th className="text-left px-3 py-2">Actions</th>
             </tr>
@@ -23,13 +24,23 @@ export const Route = createFileRoute("/_app/administration/ca")({
           <tbody>
             {CAS.map((c) => (
               <tr key={c.id} className="border-t border-border">
-                <td className="px-3 py-2 font-medium">{c.name}</td>
+                <td className="px-3 py-2 font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    {c.name}
+                    {c.pqcCapable && (
+                      <Badge variant="outline" className="bg-risk-green/10 text-risk-green border-risk-green/30 text-[10px]" title={`${c.keyType} CA key`}>
+                        PQC-capable CA
+                      </Badge>
+                    )}
+                  </span>
+                </td>
                 <td className="px-3 py-2">{c.type}</td>
                 <td className="px-3 py-2">
                   <Badge variant="outline" className="bg-risk-green/15 text-risk-green border-risk-green/30">
                     {c.status}
                   </Badge>
                 </td>
+                <td className="px-3 py-2 font-mono text-[12px]">{c.signingAlgorithm}</td>
                 <td className="px-3 py-2">{c.expiry}</td>
                 <td className="px-3 py-2 flex gap-1">
                   <Button size="sm" variant="ghost" onClick={() => toast.info("View details — coming soon")}>View</Button>

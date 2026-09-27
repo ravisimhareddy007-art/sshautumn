@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
-import { USER_KEYS, HOST_KEYS, USER_CERTS, HOST_CERTS, GROUPS } from "@/data/mock";
+import { USER_KEYS, HOST_KEYS, USER_CERTS, HOST_CERTS, GROUPS, getQuantumPosture } from "@/data/mock";
 import {
   KeyRound, Server, Users, ChevronRight, KeyRound as KeyIcon,
   Globe, Plus, FileText, RefreshCw, ClipboardList,
@@ -44,6 +44,7 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
           <KeySnapshot />
+          <QuantumPosture />
           <CertificateStatus />
           <CertComplianceTrend />
         </div>
@@ -122,6 +123,83 @@ function StatCard({
           <div className="p-2 rounded-md bg-primary/10">{icon}</div>
         </div>
       </Card>
+    </Link>
+  );
+}
+
+/* =========================================================
+   SECTION 1B — QUANTUM POSTURE
+========================================================= */
+function QuantumPosture() {
+  const vulnUser = USER_KEYS.filter((k) => getQuantumPosture(k) === "Quantum Vulnerable").length;
+  const vulnHost = HOST_KEYS.filter((k) => getQuantumPosture(k) === "Quantum Vulnerable").length;
+  const pqcUser = USER_KEYS.filter((k) => getQuantumPosture(k) === "Hybrid PQC").length;
+  const pqcHost = HOST_KEYS.filter((k) => getQuantumPosture(k) === "Hybrid PQC").length;
+  const total = USER_KEYS.length + HOST_KEYS.length;
+  const pct = total ? Math.round(((pqcUser + pqcHost) / total) * 100) : 0;
+
+  return (
+    <Panel>
+      <SectionHeader
+        title="Quantum Posture"
+        badge="NEW"
+        right={<Timestamp text="0m ago" />}
+      />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <PostureTile
+          label="Quantum Vulnerable Keys"
+          tag="RISK"
+          count={vulnUser + vulnHost}
+          user={vulnUser}
+          host={vulnHost}
+          total={total}
+          color={vulnUser + vulnHost === 0 ? "#22C55E" : "#EF4444"}
+          posture="Quantum Vulnerable"
+          footer="Classical RSA, ECDSA and Ed25519 keys. Replace with hybrid PQC keys before a cryptographically relevant quantum computer exists."
+        />
+        <PostureTile
+          label="Hybrid PQC Keys"
+          tag={`${pct}% MIGRATED`}
+          count={pqcUser + pqcHost}
+          user={pqcUser}
+          host={pqcHost}
+          total={total}
+          color="#22C55E"
+          posture="Hybrid PQC"
+          footer="Composite ML-DSA keys (ssh-mldsa44-ed25519, ssh-mldsa87-p384). Secure if either component is broken."
+        />
+      </div>
+    </Panel>
+  );
+}
+
+function PostureTile({
+  label, tag, count, user, host, total, color, posture, footer,
+}: {
+  label: string; tag: string; count: number; user: number; host: number; total: number;
+  color: string; posture: "Quantum Vulnerable" | "Hybrid PQC"; footer: string;
+}) {
+  return (
+    <Link
+      to="/inventory/keys/user"
+      search={{ posture } as never}
+      className="block h-full rounded-lg border border-border bg-white border-l-4 hover:shadow-md hover:bg-muted/30 transition-all cursor-pointer overflow-hidden"
+      style={{ borderLeftColor: color }}
+    >
+      <div className="p-4">
+        <div className="flex items-start justify-between mb-1">
+          <div className="text-[11px] uppercase-tracking font-semibold text-[#64748B]">{label}</div>
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase-tracking" style={{ background: `${color}1A`, color }}>
+            {tag}
+          </span>
+        </div>
+        <div className="text-[34px] font-bold leading-none" style={{ color }}>{count}</div>
+        <div className="text-[13px] text-[#64748B] mt-1.5">of {total} total keys</div>
+        <div className="text-[12px] text-[#64748B] mt-1">
+          User: {user} <span className="mx-1">·</span> Host: {host}
+        </div>
+      </div>
+      <div className="px-4 py-2 text-[11px] text-[#94A3B8] border-t border-border">{footer}</div>
     </Link>
   );
 }
