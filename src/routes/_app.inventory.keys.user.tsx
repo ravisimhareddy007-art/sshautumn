@@ -2,11 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { KeyInventoryPage } from "@/components/key/KeyInventoryPage";
 import { USER_KEYS } from "@/data/mock";
 
-type Search = { highlight?: string };
+type Search = { highlight?: string; posture?: string };
 
 export const Route = createFileRoute("/_app/inventory/keys/user")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     highlight: typeof s.highlight === "string" ? s.highlight : undefined,
+    posture: typeof s.posture === "string" ? s.posture : undefined,
   }),
   component: () => (
     <KeyInventoryPage

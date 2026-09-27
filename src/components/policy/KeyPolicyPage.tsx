@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Info, X, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { CAS } from "@/data/mock";
+import { CAS, PQC_KEY_ALGORITHMS, CLASSICAL_SIGNING_ALGORITHMS, PQC_SIGNING_ALGORITHMS, isPqcSigningAlgorithm } from "@/data/mock";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +29,7 @@ interface PolicyState {
   extensions: string[];
   criticalOptions: boolean;
   caId: string;
+  signingAlgorithm: string;
   coexistenceDays: string;
   postWindowAction: "manual" | "auto";
   rotateAutomatically: boolean;
@@ -37,10 +38,17 @@ interface PolicyState {
   autoRotateBefore: string;
 }
 
-const ALL_ALGOS = [
+const CLASSICAL_ALGOS = [
   "ECDSA:256", "ECDSA:384", "ECDSA:521",
   "ED25519:256", "RSA:2048", "RSA:3072", "RSA:4096", "RSA:8192",
 ];
+const PQC_ALGOS = PQC_KEY_ALGORITHMS.map((a) => a.id);
+const ALL_ALGOS = [...CLASSICAL_ALGOS, ...PQC_ALGOS];
+const isPqcAlgo = (v: string) => PQC_ALGOS.includes(v as (typeof PQC_ALGOS)[number]);
+const pqcHint = (v: string) => {
+  const a = PQC_KEY_ALGORITHMS.find((x) => x.id === v);
+  return a ? `${a.composite}. ${a.status}. ${a.level}.` : undefined;
+};
 
 const ALL_EXTENSIONS = [
   "permit-agent-forwarding", "permit-port-forwarding",
@@ -60,6 +68,7 @@ const DEFAULT_POLICY: PolicyState = {
   extensions: ["permit-agent-forwarding", "permit-port-forwarding", "permit-pty", "permit-user-rc", "permit-X11-forwarding"],
   criticalOptions: true,
   caId: "ca1",
+  signingAlgorithm: "ssh-ed25519",
   coexistenceDays: "14",
   postWindowAction: "manual",
   rotateAutomatically: false,
@@ -118,11 +127,15 @@ function TagInput({
   options,
   placeholder,
   onChange,
+  tag,
+  hint,
 }: {
   values: string[];
   options: string[];
   placeholder?: string;
   onChange: (v: string[]) => void;
+  tag?: (v: string) => string | null;
+  hint?: (v: string) => string | undefined;
 }) {
   const [open, setOpen] = useState(false);
   const remaining = options.filter((o) => !values.includes(o));
@@ -133,8 +146,13 @@ function TagInput({
       onClick={() => setOpen(true)}
     >
       {values.map((v) => (
-        <span key={v} className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] px-2 py-0.5 rounded">
+        <span key={v} title={hint?.(v)} className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] px-2 py-0.5 rounded">
           {v}
+          {tag?.(v) && (
+            <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">
+              {tag(v)}
+            </span>
+          )}
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onChange(values.filter((x) => x !== v)); }}
@@ -150,10 +168,16 @@ function TagInput({
             <button
               key={r}
               type="button"
-              className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-muted"
+              title={hint?.(r)}
+              className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-muted flex items-center justify-between gap-2"
               onClick={() => { onChange([...values, r]); setOpen(false); }}
             >
-              {r}
+              <span>{r}</span>
+              {tag?.(r) && (
+                <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">
+                  {tag(r)}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -245,7 +269,10 @@ export function KeyPolicyPage() {
                 options={ALL_ALGOS}
                 placeholder="Add algorithm"
                 onChange={(v) => set({ keyAlgorithms: v })}
+                tag={(v) => (isPqcAlgo(v) ? "Hybrid PQC" : null)}
+                hint={pqcHint}
               />
+              <PqcPostureHint algos={policy.keyAlgorithms} />
             </FieldRow>
             <FieldRow label="Allowed Risks">
               <TagInput
@@ -311,6 +338,34 @@ export function KeyPolicyPage() {
               </div>
             </FieldRow>
 
+            <FieldRow
+              label="Signing Algorithm"
+              required
+              hint="Algorithm the CA uses to sign certificates issued under this policy. Hybrid PQC signing requires a PQC-capable CA."
+            >
+              <Select value={policy.signingAlgorithm} onValueChange={(v) => set({ signingAlgorithm: v })}>
+                <SelectTrigger className="max-w-xs text-[13px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CLASSICAL_SIGNING_ALGORITHMS.map((a) => (
+                    <SelectItem key={a} value={a}>{a}</SelectItem>
+                  ))}
+                  {PQC_SIGNING_ALGORITHMS.map((a) => (
+                    <SelectItem key={a} value={a}>
+                      <span className="flex items-center gap-2">
+                        {a}
+                        <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">Hybrid PQC</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {isPqcSigningAlgorithm(policy.signingAlgorithm) && !CAS.find((c) => c.id === policy.caId)?.pqcCapable && (
+                <div className="mt-2 text-[12px] text-risk-red">
+                  This policy requires a PQC-capable CA. The selected CA does not support hybrid quantum-resistant signing.
+                </div>
+              )}
+            </FieldRow>
+
             {/* ── NEW: Migration Settings sub-section ── */}
             <div className="mt-6 pt-5 border-t border-dashed border-primary/40">
               <div className="flex items-center gap-2 mb-4">
@@ -331,7 +386,7 @@ export function KeyPolicyPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {CAS.map((ca) => (
-                      <SelectItem key={ca.id} value={ca.id}>
+                      <SelectItem key={ca.id} value={ca.id} title={`${ca.signingAlgorithm}`}>
                         {ca.name} — expires {ca.expiry}
                       </SelectItem>
                     ))}
@@ -442,12 +497,27 @@ export function KeyPolicyPage() {
                   <SelectItem value="ECDSA">ECDSA</SelectItem>
                   <SelectItem value="ED25519">ED25519</SelectItem>
                   <SelectItem value="RSA">RSA</SelectItem>
+                  {PQC_KEY_ALGORITHMS.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      <span className="flex items-center gap-2">
+                        {a.id}
+                        <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">Hybrid PQC</span>
+                      </span>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              {isPqcAlgo(policy.rotationAlgo) && (
+                <div className="mt-1.5 text-[12px] text-muted-foreground">
+                  Rotated keys will be generated as {PQC_KEY_ALGORITHMS.find((a) => a.id === policy.rotationAlgo)?.canonical}. Target endpoints require OpenSSH 10.4 or later.
+                </div>
+              )}
             </FieldRow>
             <FieldRow label="Key Size" required>
-              <Select value={policy.rotationKeySize} onValueChange={(v) => set({ rotationKeySize: v })}>
-                <SelectTrigger className="max-w-[200px] text-[13px]"><SelectValue /></SelectTrigger>
+              <Select value={policy.rotationKeySize} onValueChange={(v) => set({ rotationKeySize: v })} disabled={isPqcAlgo(policy.rotationAlgo)}>
+                <SelectTrigger className="max-w-[200px] text-[13px]">
+                  {isPqcAlgo(policy.rotationAlgo) ? <span className="text-muted-foreground">Fixed by algorithm</span> : <SelectValue />}
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="256">256</SelectItem>
                   <SelectItem value="384">384</SelectItem>
@@ -485,4 +555,23 @@ export function KeyPolicyPage() {
       </div>
     </div>
   );
+}
+
+function PqcPostureHint({ algos }: { algos: string[] }) {
+  const pqc = algos.filter(isPqcAlgo).length;
+  const classical = algos.length - pqc;
+  if (algos.length === 0) return null;
+  let text: string;
+  let cls: string;
+  if (pqc > 0 && classical === 0) {
+    text = "PQC required: classical keys under this policy will be flagged Non-Compliant with reason \"Algorithm does not meet PQC policy requirement\".";
+    cls = "text-risk-green";
+  } else if (pqc > 0) {
+    text = "Transition posture: classical and hybrid PQC keys are both compliant while the estate migrates.";
+    cls = "text-risk-amber";
+  } else {
+    text = "Classical only: no hybrid PQC algorithm allowed. Quantum Vulnerable keys are not flagged by this policy.";
+    cls = "text-muted-foreground";
+  }
+  return <div className={cn("mt-2 text-[12px]", cls)}>{text}</div>;
 }
