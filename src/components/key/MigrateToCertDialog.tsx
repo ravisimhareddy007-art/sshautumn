@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { isHybridKey, algoDef } from "@/data/mock";
 import type { SshKey } from "@/data/mock";
 import { CAS } from "@/data/mock";
 import { toast } from "sonner";
@@ -41,6 +42,21 @@ function computeEligibility(k: SshKey): Eligibility {
       pass: k.hostEndpoints.length > 0,
     },
   ];
+
+  if (isHybridKey(k.encryption))
+    return {
+      path: "blocked",
+      reason:
+        "Certificate support for hybrid post-quantum keys is not yet available. No shipping OpenSSH release confirms certificate support for composite key types, and no managed CA can sign one today. This key can be governed by policy and remains visible in inventory, but it cannot be migrated to certificate-based access in this release.",
+      checks: [
+        ...base,
+        {
+          label: "Algorithm support",
+          detail: `${algoDef(k.encryption)?.canonical} — ${algoDef(k.encryption)?.support}. Certificate issuance not supported.`,
+          pass: false,
+        },
+      ],
+    };
 
   if (k.migrationStatus && k.migrationStatus !== "rolled_back")
     return {
@@ -667,3 +683,4 @@ export function MigrateToCertDialog({
     </Dialog>
   );
 }
+
