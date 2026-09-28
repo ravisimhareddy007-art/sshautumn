@@ -146,7 +146,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
   const filtered = useMemo(() => {
     let list = keys;
     if (group !== "All Keys") list = list.filter((k) => k.keyComplianceGroup === group);
-    if (algoFilter !== "All") list = list.filter((k) => algoFamily(k.encryption) === algoFilter);
+    if (algoFilter !== "All") list = list.filter((k) => k.encryption !== "Unknown" && algoFamily(k.encryption) === algoFilter);
     if (riskFilter) list = list.filter((k) => k.riskStatus === riskFilter);
     if (migrationFilter === "all") list = list.filter((k) => !!k.migrationStatus);
     else if (migrationFilter) list = list.filter((k) => k.migrationStatus === migrationFilter);
@@ -498,7 +498,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
               >
                 Change Status
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success(`Exported ${selectedKeys.length} key(s) to CSV, including algorithm.`)}>
+              <DropdownMenuItem onClick={() => toast.success(`Exported ${selectedKeys.length} key(s) to CSV.`)}>
                 Export
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Key file download started.")}>Download</DropdownMenuItem>
@@ -757,23 +757,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                               value={[...k.clientEndpoints, ...k.hostEndpoints].join(", ") || "--"}
                             />
                           </div>
-                          <div className="mt-4 pt-4 border-t border-border">
-                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Algorithm</div>
-                            <div className="grid grid-cols-3 gap-4 text-[12px]">
-                              <KV
-                                label="Identifier"
-                                value={<span className="font-mono">{k.encryption === "Unknown" ? (k.rawAlgorithm ?? "--") : algoDef(k.encryption)?.canonical}</span>}
-                              />
-                              <KV
-                                label="Combines"
-                                value={k.encryption === "Unknown" ? "Algorithm not recognised" : (algoDef(k.encryption)?.components ?? "--")}
-                              />
-                              <KV
-                                label="Support"
-                                value={k.encryption === "Unknown" ? "--" : (algoDef(k.encryption)?.support ?? "--")}
-                              />
-                            </div>
-                          </div>
                           {k.migrationStatus && (
                             <div className="mt-4 pt-4 border-t border-border">
                               <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">
@@ -1012,15 +995,6 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
           >
             {COMBO_LABEL[k.combination]}
           </Badge>
-          {isHybridKey(k.encryption) && (
-            <Badge
-              variant="outline"
-              className="text-[10px] h-4 px-1 shrink-0 bg-primary/10 text-primary border-primary/30"
-              title={`${algoDef(k.encryption)?.canonical} · ${algoDef(k.encryption)?.components}`}
-            >
-              PQC
-            </Badge>
-          )}
         </div>
       );
 
@@ -1085,14 +1059,14 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
       return <span>{k.age || "--"}</span>;
     case "encryption":
       if (k.encryption === "Unknown")
-        return <Badge variant="outline" className="text-muted-foreground" title={k.rawAlgorithm}>Unknown</Badge>;
-      return isHybridKey(k.encryption) ? (
+        return <Badge variant="outline" className="text-muted-foreground">Unknown</Badge>;
+      return (
         <span className="inline-flex items-center gap-1">
-          <Badge variant="outline" title={algoDef(k.encryption)?.canonical}>{k.encryption}</Badge>
-          <span className="text-[9px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded">Hybrid PQC</span>
+          <Badge variant="outline">{k.encryption}</Badge>
+          {isHybridKey(k.encryption) && (
+            <span className="text-[9px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded">Hybrid PQC</span>
+          )}
         </span>
-      ) : (
-        <Badge variant="outline">{k.encryption}</Badge>
       );
     case "length":
       return <span>{algoDef(k.encryption)?.hasLength ? k.length : "n/a"}</span>;
