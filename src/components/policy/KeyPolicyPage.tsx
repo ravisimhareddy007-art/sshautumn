@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Info, X, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { CAS } from "@/data/mock";
+import { CAS, ALGO_DEFS as KEY_ALGO_DEFS } from "@/data/mock";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +46,8 @@ type AlgoDef = {
   tooltip: string;
 };
 
+// Classical entries carry a size; hybrid entries are read from the shared
+// algorithm definitions so policy and inventory never drift apart.
 const ALGO_DEFS: AlgoDef[] = [
   { display: "ECDSA:256",   canonical: "ECDSA:256",   family: "Classical", tooltip: "ECDSA with a 256-bit curve." },
   { display: "ECDSA:384",   canonical: "ECDSA:384",   family: "Classical", tooltip: "ECDSA with a 384-bit curve." },
@@ -55,18 +57,12 @@ const ALGO_DEFS: AlgoDef[] = [
   { display: "RSA:3072",    canonical: "RSA:3072",    family: "Classical", tooltip: "RSA with a 3072-bit key." },
   { display: "RSA:4096",    canonical: "RSA:4096",    family: "Classical", tooltip: "RSA with a 4096-bit key." },
   { display: "RSA:8192",    canonical: "RSA:8192",    family: "Classical", tooltip: "RSA with an 8192-bit key." },
-  {
-    display: "MLDSA44-ED25519",
-    canonical: "ssh-mldsa44-ed25519",
-    family: "Hybrid post-quantum",
-    tooltip: "ML-DSA-44 combined with Ed25519 in a single key. Both signatures must verify to log in. Usable on OpenSSH 10.4 and above.",
-  },
-  {
-    display: "MLDSA87-P384",
-    canonical: "ssh-mldsa87-p384",
-    family: "Hybrid post-quantum",
-    tooltip: "ML-DSA-87 combined with ECDSA P-384 in a single key. Not yet available in any OpenSSH version; can be allowed in policy ahead of time.",
-  },
+  ...KEY_ALGO_DEFS.filter((a) => a.family === "Hybrid post-quantum").map((a) => ({
+    display: a.display as string,
+    canonical: a.canonical,
+    family: "Hybrid post-quantum" as const,
+    tooltip: `${a.components} in a single key. Both signatures must verify to log in. ${a.support}.`,
+  })),
 ];
 
 const ALL_ALGOS = ALGO_DEFS.map((a) => a.display);
@@ -572,10 +568,15 @@ function AlgorithmSummary({ selected }: { selected: string[] }) {
     text = "Classical only. No hybrid post-quantum algorithm is allowed under this policy.";
   }
 
+  const canonical = selected.map((d) => algoDef(d)?.canonical ?? d).join(", ");
 
   return (
-    <div className="mt-2">
+    <div className="mt-2 space-y-1">
       <div className="text-[12px] text-muted-foreground">{text}</div>
+      <div className="text-[11px] text-muted-foreground/80 font-mono break-all" title="Values stored and sent over the API">
+        Stored as: {canonical}
+      </div>
     </div>
   );
 }
+
