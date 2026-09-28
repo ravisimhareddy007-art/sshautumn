@@ -41,6 +41,35 @@ export const algoDef = (e: KeyEncryption): AlgoDef | undefined => ALGO_DEFS.find
 export const isHybridKey = (e: KeyEncryption): boolean => algoDef(e)?.family === "Hybrid post-quantum";
 export const algoFamily = (e: KeyEncryption): AlgorithmFamily => algoDef(e)?.family ?? "Classical";
 
+// ---------- Quantum posture (derived from the shared algorithm list) ----------
+export type QuantumPosture = "Quantum Vulnerable" | "Hybrid PQC" | "Not Assessed";
+
+export const getQuantumPosture = (k: SshKey): QuantumPosture => {
+  if (!k.encryption || k.encryption === "Unknown") return "Not Assessed";
+  return isHybridKey(k.encryption) ? "Hybrid PQC" : "Quantum Vulnerable";
+};
+
+export const quantumPostureColor = (p: QuantumPosture): string =>
+  p === "Hybrid PQC"
+    ? "bg-risk-green/10 text-risk-green border-risk-green/30"
+    : p === "Quantum Vulnerable"
+      ? "bg-risk-red/10 text-risk-red border-risk-red/30"
+      : "bg-muted text-muted-foreground border-border";
+
+export const QUANTUM_POSTURE_EXPLANATION: Record<QuantumPosture, string> = {
+  "Quantum Vulnerable": "This key uses a classical algorithm that a quantum computer could break. Migrate to a hybrid post-quantum algorithm.",
+  "Hybrid PQC": "This key uses a hybrid post-quantum algorithm, combining a classical and a quantum-resistant primitive.",
+  "Not Assessed": "This key uses an algorithm that is not recognised, so its quantum posture could not be assessed.",
+};
+
+export const isPqcEncryption = (e: KeyEncryption): boolean => isHybridKey(e);
+
+export const pqcAlgorithmInfo = (e: KeyEncryption): { canonical: string; composite: string } | undefined => {
+  const def = algoDef(e);
+  if (!def || def.family !== "Hybrid post-quantum") return undefined;
+  return { canonical: def.canonical, composite: def.components };
+};
+
 export type MigrationStatus = "in_coexistence" | "awaiting_confirmation" | "decommissioned" | "rolled_back";
 
 export interface SshKey {
@@ -72,6 +101,7 @@ export interface SshKey {
   migrationCertId?: string;
   migrationRollbackStoredLine?: string;
   neverDecommission?: boolean;
+  negotiatedKex?: string; // key exchange negotiated on last connection ("--" when unknown)
 }
 
 export interface SshCert {
@@ -1016,8 +1046,8 @@ export const ROTATED_KEYS: RotatedKey[] = [
 
 // ---------- CAs ----------
 export const CAS = [
-  { id: "ca1", name: "Default-Infra-CA", type: "SSH", status: "Active", expiry: "2028-12-01" },
-  { id: "ca2", name: "Prod-CA", type: "SSH", status: "Active", expiry: "2027-06-15" },
+  { id: "ca1", name: "Default-Infra-CA", type: "SSH", status: "Active", expiry: "2028-12-01", pqcCapable: true, keyType: "RSA:4096", signingAlgorithm: "rsa-sha2-512" },
+  { id: "ca2", name: "Prod-CA", type: "SSH", status: "Active", expiry: "2027-06-15", pqcCapable: false, keyType: "RSA:3072", signingAlgorithm: "rsa-sha2-256" },
 ];
 
 export const GROUPS = ["All Groups", "Default", "Default_Host_Group", "Prod_Group", "Service_Group"];
