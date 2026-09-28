@@ -19,9 +19,9 @@ export interface AlgoDef {
   canGenerate: boolean;
   hasLength: boolean;
   // Derived aliases so existing pages can keep reading the richer detail.
-  canonical?: string;
-  components?: string;
-  support?: string;
+  canonical: string;
+  components: string;
+  support: string;
 }
 
 export const ALGO_DEFS: AlgoDef[] = [
