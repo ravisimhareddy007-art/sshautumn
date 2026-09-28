@@ -1091,9 +1091,15 @@ export const ROTATED_KEYS: RotatedKey[] = [
 
 // ---------- CAs ----------
 export const CAS = [
-  { id: "ca1", name: "Default-Infra-CA", type: "SSH", status: "Active", expiry: "2028-12-01" },
-  { id: "ca2", name: "Prod-CA", type: "SSH", status: "Active", expiry: "2027-06-15" },
+  { id: "ca1", name: "Default-Infra-CA", type: "SSH", status: "Active", expiry: "2028-12-01", keyType: "Ed25519", signingAlgorithm: "ssh-ed25519", pqcCapable: false },
+  { id: "ca2", name: "Prod-CA", type: "SSH", status: "Active", expiry: "2027-06-15", keyType: "ML-DSA-87 with ECDSA P-384", signingAlgorithm: "ssh-mldsa87-p384", pqcCapable: true },
 ];
+
+// Quantum posture helper used by the Dashboard and inventory pages.
+export type QuantumPosture = "Quantum Vulnerable" | "Hybrid PQC";
+export function getQuantumPosture(k: { encryption: KeyEncryption }): QuantumPosture {
+  return algoFamily(k.encryption) === "Hybrid post-quantum" ? "Hybrid PQC" : "Quantum Vulnerable";
+}
 
 export const GROUPS = ["All Groups", "Default", "Default_Host_Group", "Prod_Group", "Service_Group"];
 
