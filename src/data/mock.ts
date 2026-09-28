@@ -43,6 +43,8 @@ const ALGO_DETAIL: Record<KeyEncryption, { canonical: string; components: string
   Unknown: { canonical: "", components: "", support: "" },
 };
 for (const a of ALGO_DEFS) Object.assign(a, ALGO_DETAIL[a.display]);
+
+export const HYBRID_ALGOS = ALGO_DEFS.filter((a) => a.family === "Hybrid post-quantum");
 export const algoDef = (e: KeyEncryption): AlgoDef | undefined => ALGO_DEFS.find((a) => a.display === e);
 export const isHybridKey = (e: KeyEncryption): boolean => algoDef(e)?.family === "Hybrid post-quantum";
 export const algoFamily = (e: KeyEncryption): AlgorithmFamily => algoDef(e)?.family ?? "Classical";
