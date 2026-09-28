@@ -572,7 +572,6 @@ function AlgorithmSummary({ selected }: { selected: string[] }) {
     text = "Classical only. No hybrid post-quantum algorithm is allowed under this policy.";
   }
 
-  const canonical = selected.map((d) => algoDef(d)?.canonical ?? d).join(", ");
 
   return (
     <div className="mt-2">
