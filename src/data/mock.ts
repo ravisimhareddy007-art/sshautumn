@@ -31,6 +31,8 @@ export const ALGO_DEFS = [
   { display: "MLDSA44-ED25519", standardId: "ssh-mldsa44-ed25519", opensshId: "ssh-mldsa44-ed25519@openssh.com", family: "Hybrid post-quantum", canGenerate: true, hasLength: false },
   { display: "MLDSA87-P384", standardId: "ssh-mldsa87-p384", family: "Hybrid post-quantum", canGenerate: false, hasLength: false },
 ];
+// The enriched entries above satisfy AlgoDef once the aliases are populated below.
+export const ALGO_LIST: AlgoDef[] = ALGO_DEFS as AlgoDef[];
 
 
 // Populates the derived aliases from the standard identifiers above.
