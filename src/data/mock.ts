@@ -32,7 +32,17 @@ export const ALGO_DEFS: AlgoDef[] = [
   { display: "MLDSA87-P384", standardId: "ssh-mldsa87-p384", family: "Hybrid post-quantum", canGenerate: false, hasLength: false },
 ];
 
-export const HYBRID_ALGOS = ALGO_DEFS.filter((a) => a.family === "Hybrid post-quantum");
+
+// Populates the derived aliases from the standard identifiers above.
+const ALGO_DETAIL: Record<KeyEncryption, { canonical: string; components: string; support: string }> = {
+  ED25519: { canonical: "ssh-ed25519", components: "Ed25519", support: "Supported since OpenSSH 6.5" },
+  ECDSA: { canonical: "ecdsa-sha2-nistp256", components: "ECDSA", support: "Supported since OpenSSH 5.7" },
+  RSA: { canonical: "rsa-sha2-256", components: "RSA", support: "Supported since OpenSSH 7.2" },
+  "MLDSA44-ED25519": { canonical: "ssh-mldsa44-ed25519", components: "ML-DSA-44 with Ed25519", support: "Usable on OpenSSH 10.4 and above" },
+  "MLDSA87-P384": { canonical: "ssh-mldsa87-p384", components: "ML-DSA-87 with ECDSA P-384", support: "Not yet available in any OpenSSH version" },
+  Unknown: { canonical: "", components: "", support: "" },
+};
+for (const a of ALGO_DEFS) Object.assign(a, ALGO_DETAIL[a.display]);
 export const algoDef = (e: KeyEncryption): AlgoDef | undefined => ALGO_DEFS.find((a) => a.display === e);
 export const isHybridKey = (e: KeyEncryption): boolean => algoDef(e)?.family === "Hybrid post-quantum";
 export const algoFamily = (e: KeyEncryption): AlgorithmFamily => algoDef(e)?.family ?? "Classical";
