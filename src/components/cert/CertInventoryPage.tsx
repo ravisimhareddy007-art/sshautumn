@@ -15,7 +15,9 @@ import { RevokeCertDialog } from "@/components/cert/RevokeCertDialog";
 import { RotateCertDialog } from "@/components/cert/RotateCertDialog";
 import { DeleteCertDialog } from "@/components/cert/DeleteCertDialog";
 import type { SshCert } from "@/data/mock";
-import { USER_KEYS, HOST_KEYS } from "@/data/mock";
+import { USER_KEYS, HOST_KEYS, certKeyAlgorithm, isHybridKey, algoFamily } from "@/data/mock";
+import type { AlgorithmFamily } from "@/data/mock";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { certRotateAction, certRevokeAction, certDeleteAction } from "@/lib/clm-actions";
 import type { CertCombination } from "@/lib/clm-actions";
 import { ChevronDown, RefreshCw, Search, Plus } from "lucide-react";
@@ -38,6 +40,7 @@ export function CertInventoryPage({
 
   const [certs, setCerts] = useState<SshCert[]>(initialCerts);
   const [search_, setSearch] = useState("");
+  const [algoFilter, setAlgoFilter] = useState<AlgorithmFamily | "All">("All");
   const [tileFilter, setTileFilter] = useState<"expired" | "expiring30" | null>(
     search.status === "Expired" ? "expired" : search.filter === "expiring30" ? "expiring30" : null,
   );
@@ -59,12 +62,17 @@ export function CertInventoryPage({
     let list = certs;
     if (tileFilter === "expired")    list = list.filter((c) => c.status === "Expired");
     if (tileFilter === "expiring30") list = list.filter((c) => c.status === "Active" && c.expiresInDays > 0 && c.expiresInDays <= 30);
+    if (algoFilter !== "All")
+      list = list.filter((c) => {
+        const a = certKeyAlgorithm(c);
+        return !!a && a !== "Unknown" && algoFamily(a) === algoFilter;
+      });
     if (search_) {
       const s = search_.toLowerCase();
       list = list.filter((c) => c.certKeyId.toLowerCase().includes(s) || c.certName.toLowerCase().includes(s));
     }
     return list;
-  }, [certs, tileFilter, search_]);
+  }, [certs, tileFilter, algoFilter, search_]);
 
   const selected = filtered.filter((c) => selectedIds.includes(c.id));
 
@@ -112,6 +120,15 @@ export function CertInventoryPage({
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <span className="text-[12px] text-muted-foreground ml-2">Algorithm</span>
+        <Select value={algoFilter} onValueChange={(v) => setAlgoFilter(v as AlgorithmFamily | "All")}>
+          <SelectTrigger className="h-8 w-[190px] text-[13px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All algorithms</SelectItem>
+            <SelectItem value="Classical">Classical</SelectItem>
+            <SelectItem value="Hybrid post-quantum">Hybrid post-quantum</SelectItem>
+          </SelectContent>
+        </Select>
         <div className="ml-auto flex items-center gap-1">
           <Button size="sm" variant="ghost" onClick={() => toast.info("Certificate provisioning -- navigate to a key and use Provision Key & Certificate.")}>
             <Plus className="h-4 w-4" />
@@ -199,6 +216,7 @@ export function CertInventoryPage({
                 {scope === "host" && <th>Hostname / FQDN</th>}
                 {scope === "user" && <th>Principal(s)</th>}
                 <th>CA / Issuer</th>
+                <th>Key Algorithm</th>
                 <th>Valid From</th>
                 <th>Valid To</th>
                 <th>Expires In</th>
@@ -236,6 +254,20 @@ export function CertInventoryPage({
                       </td>
                     )}
                     <td title={c.caName}>{c.caName}</td>
+                    <td>
+                      {(() => {
+                        const a = certKeyAlgorithm(c);
+                        if (!a) return "--";
+                        return (
+                          <span className="inline-flex items-center gap-1">
+                            {a}
+                            {isHybridKey(a) && (
+                              <span className="text-[9px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded">Hybrid PQC</span>
+                            )}
+                          </span>
+                        );
+                      })()}
+                    </td>
                     <td>{c.validFrom}</td>
                     <td className={validToCls}>{c.validTo}</td>
                     <td className={validToCls}>{c.expiresIn}</td>
@@ -257,7 +289,7 @@ export function CertInventoryPage({
               })}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={11} style={{ height: "auto", whiteSpace: "normal", textAlign: "center", padding: "48px", color: "var(--color-muted-foreground)", maxWidth: "none" }}>
+                  <td colSpan={12} style={{ height: "auto", whiteSpace: "normal", textAlign: "center", padding: "48px", color: "var(--color-muted-foreground)", maxWidth: "none" }}>
                     No certificates match the current filters.
                   </td>
                 </tr>
