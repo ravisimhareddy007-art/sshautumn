@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Info, X, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { CAS, PQC_KEY_ALGORITHMS, CLASSICAL_SIGNING_ALGORITHMS, PQC_SIGNING_ALGORITHMS, isPqcSigningAlgorithm } from "@/data/mock";
+import { CAS } from "@/data/mock";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +29,6 @@ interface PolicyState {
   extensions: string[];
   criticalOptions: boolean;
   caId: string;
-  signingAlgorithm: string;
   coexistenceDays: string;
   postWindowAction: "manual" | "auto";
   rotateAutomatically: boolean;
@@ -38,17 +37,45 @@ interface PolicyState {
   autoRotateBefore: string;
 }
 
-const CLASSICAL_ALGOS = [
-  "ECDSA:256", "ECDSA:384", "ECDSA:521",
-  "ED25519:256", "RSA:2048", "RSA:3072", "RSA:4096", "RSA:8192",
-];
-const PQC_ALGOS = PQC_KEY_ALGORITHMS.map((a) => a.id);
-const ALL_ALGOS = [...CLASSICAL_ALGOS, ...PQC_ALGOS];
-const isPqcAlgo = (v: string) => PQC_ALGOS.includes(v as (typeof PQC_ALGOS)[number]);
-const pqcHint = (v: string) => {
-  const a = PQC_KEY_ALGORITHMS.find((x) => x.id === v);
-  return a ? `${a.composite}. ${a.status}. ${a.level}.` : undefined;
+// Single list of supported key algorithms. Adding a future algorithm means
+// adding one entry here; the policy screen and evaluator read from this list.
+type AlgoDef = {
+  display: string;      // shown in the UI
+  canonical: string;    // stored and sent over the API
+  family: "Classical" | "Hybrid post-quantum";
+  tooltip: string;
 };
+
+const ALGO_DEFS: AlgoDef[] = [
+  { display: "ECDSA:256",   canonical: "ECDSA:256",   family: "Classical", tooltip: "ECDSA with a 256-bit curve." },
+  { display: "ECDSA:384",   canonical: "ECDSA:384",   family: "Classical", tooltip: "ECDSA with a 384-bit curve." },
+  { display: "ECDSA:521",   canonical: "ECDSA:521",   family: "Classical", tooltip: "ECDSA with a 521-bit curve." },
+  { display: "ED25519:256", canonical: "ED25519:256", family: "Classical", tooltip: "Ed25519." },
+  { display: "RSA:2048",    canonical: "RSA:2048",    family: "Classical", tooltip: "RSA with a 2048-bit key." },
+  { display: "RSA:3072",    canonical: "RSA:3072",    family: "Classical", tooltip: "RSA with a 3072-bit key." },
+  { display: "RSA:4096",    canonical: "RSA:4096",    family: "Classical", tooltip: "RSA with a 4096-bit key." },
+  { display: "RSA:8192",    canonical: "RSA:8192",    family: "Classical", tooltip: "RSA with an 8192-bit key." },
+  {
+    display: "MLDSA44-ED25519",
+    canonical: "ssh-mldsa44-ed25519",
+    family: "Hybrid post-quantum",
+    tooltip: "ML-DSA-44 combined with Ed25519 in a single key. Both signatures must verify to log in. Usable on OpenSSH 10.4 and above.",
+  },
+  {
+    display: "MLDSA87-P384",
+    canonical: "ssh-mldsa87-p384",
+    family: "Hybrid post-quantum",
+    tooltip: "ML-DSA-87 combined with ECDSA P-384 in a single key. Not yet available in any OpenSSH version; can be allowed in policy ahead of time.",
+  },
+];
+
+const ALL_ALGOS = ALGO_DEFS.map((a) => a.display);
+const algoDef = (display: string) => ALGO_DEFS.find((a) => a.display === display);
+const isHybrid = (display: string) => algoDef(display)?.family === "Hybrid post-quantum";
+const ALGO_GROUPS = [
+  { label: "Classical", options: ALGO_DEFS.filter((a) => a.family === "Classical").map((a) => a.display) },
+  { label: "Hybrid post-quantum", options: ALGO_DEFS.filter((a) => a.family === "Hybrid post-quantum").map((a) => a.display) },
+];
 
 const ALL_EXTENSIONS = [
   "permit-agent-forwarding", "permit-port-forwarding",
@@ -68,7 +95,6 @@ const DEFAULT_POLICY: PolicyState = {
   extensions: ["permit-agent-forwarding", "permit-port-forwarding", "permit-pty", "permit-user-rc", "permit-X11-forwarding"],
   criticalOptions: true,
   caId: "ca1",
-  signingAlgorithm: "ssh-ed25519",
   coexistenceDays: "14",
   postWindowAction: "manual",
   rotateAutomatically: false,
@@ -127,18 +153,36 @@ function TagInput({
   options,
   placeholder,
   onChange,
+  groups,
+  tooltip,
   tag,
-  hint,
 }: {
   values: string[];
   options: string[];
   placeholder?: string;
   onChange: (v: string[]) => void;
+  groups?: { label: string; options: string[] }[];
+  tooltip?: (v: string) => string | undefined;
   tag?: (v: string) => string | null;
-  hint?: (v: string) => string | undefined;
 }) {
   const [open, setOpen] = useState(false);
   const remaining = options.filter((o) => !values.includes(o));
+  const renderOption = (r: string) => (
+    <button
+      key={r}
+      type="button"
+      title={tooltip?.(r)}
+      className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-muted flex items-center justify-between gap-2"
+      onClick={() => { onChange([...values, r]); setOpen(false); }}
+    >
+      <span>{r}</span>
+      {tag?.(r) && (
+        <span className="text-[9px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded shrink-0">
+          {tag(r)}
+        </span>
+      )}
+    </button>
+  );
 
   return (
     <div
@@ -146,10 +190,10 @@ function TagInput({
       onClick={() => setOpen(true)}
     >
       {values.map((v) => (
-        <span key={v} title={hint?.(v)} className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] px-2 py-0.5 rounded">
+        <span key={v} title={tooltip?.(v)} className="inline-flex items-center gap-1 bg-primary/10 text-primary border border-primary/20 text-[11px] px-2 py-0.5 rounded">
           {v}
           {tag?.(v) && (
-            <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">
+            <span className="text-[9px] font-semibold uppercase tracking-wider bg-primary/15 px-1 rounded">
               {tag(v)}
             </span>
           )}
@@ -163,23 +207,21 @@ function TagInput({
         </span>
       ))}
       {remaining.length > 0 && open && (
-        <div className="absolute z-10 top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-md min-w-[220px] max-h-[240px] overflow-y-auto">
-          {remaining.map((r) => (
-            <button
-              key={r}
-              type="button"
-              title={hint?.(r)}
-              className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-muted flex items-center justify-between gap-2"
-              onClick={() => { onChange([...values, r]); setOpen(false); }}
-            >
-              <span>{r}</span>
-              {tag?.(r) && (
-                <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">
-                  {tag(r)}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="absolute z-10 top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-md min-w-[250px] max-h-[280px] overflow-y-auto">
+          {groups
+            ? groups.map((g) => {
+                const opts = g.options.filter((o) => remaining.includes(o));
+                if (opts.length === 0) return null;
+                return (
+                  <div key={g.label}>
+                    <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground bg-muted/40 border-t border-border first:border-t-0">
+                      {g.label}
+                    </div>
+                    {opts.map(renderOption)}
+                  </div>
+                );
+              })
+            : remaining.map(renderOption)}
         </div>
       )}
       {!open && remaining.length > 0 && (
@@ -269,10 +311,11 @@ export function KeyPolicyPage() {
                 options={ALL_ALGOS}
                 placeholder="Add algorithm"
                 onChange={(v) => set({ keyAlgorithms: v })}
-                tag={(v) => (isPqcAlgo(v) ? "Hybrid PQC" : null)}
-                hint={pqcHint}
+                groups={ALGO_GROUPS}
+                tooltip={(v) => algoDef(v)?.tooltip}
+                tag={(v) => (isHybrid(v) ? "Hybrid PQC" : null)}
               />
-              <PqcPostureHint algos={policy.keyAlgorithms} />
+              <AlgorithmSummary selected={policy.keyAlgorithms} />
             </FieldRow>
             <FieldRow label="Allowed Risks">
               <TagInput
@@ -338,34 +381,6 @@ export function KeyPolicyPage() {
               </div>
             </FieldRow>
 
-            <FieldRow
-              label="Signing Algorithm"
-              required
-              hint="Algorithm the CA uses to sign certificates issued under this policy. Hybrid PQC signing requires a PQC-capable CA."
-            >
-              <Select value={policy.signingAlgorithm} onValueChange={(v) => set({ signingAlgorithm: v })}>
-                <SelectTrigger className="max-w-xs text-[13px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CLASSICAL_SIGNING_ALGORITHMS.map((a) => (
-                    <SelectItem key={a} value={a}>{a}</SelectItem>
-                  ))}
-                  {PQC_SIGNING_ALGORITHMS.map((a) => (
-                    <SelectItem key={a} value={a}>
-                      <span className="flex items-center gap-2">
-                        {a}
-                        <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">Hybrid PQC</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {isPqcSigningAlgorithm(policy.signingAlgorithm) && !CAS.find((c) => c.id === policy.caId)?.pqcCapable && (
-                <div className="mt-2 text-[12px] text-risk-red">
-                  This policy requires a PQC-capable CA. The selected CA does not support hybrid quantum-resistant signing.
-                </div>
-              )}
-            </FieldRow>
-
             {/* ── NEW: Migration Settings sub-section ── */}
             <div className="mt-6 pt-5 border-t border-dashed border-primary/40">
               <div className="flex items-center gap-2 mb-4">
@@ -386,7 +401,7 @@ export function KeyPolicyPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {CAS.map((ca) => (
-                      <SelectItem key={ca.id} value={ca.id} title={`${ca.signingAlgorithm}`}>
+                      <SelectItem key={ca.id} value={ca.id}>
                         {ca.name} — expires {ca.expiry}
                       </SelectItem>
                     ))}
@@ -497,27 +512,12 @@ export function KeyPolicyPage() {
                   <SelectItem value="ECDSA">ECDSA</SelectItem>
                   <SelectItem value="ED25519">ED25519</SelectItem>
                   <SelectItem value="RSA">RSA</SelectItem>
-                  {PQC_KEY_ALGORITHMS.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      <span className="flex items-center gap-2">
-                        {a.id}
-                        <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">Hybrid PQC</span>
-                      </span>
-                    </SelectItem>
-                  ))}
                 </SelectContent>
               </Select>
-              {isPqcAlgo(policy.rotationAlgo) && (
-                <div className="mt-1.5 text-[12px] text-muted-foreground">
-                  Rotated keys will be generated as {PQC_KEY_ALGORITHMS.find((a) => a.id === policy.rotationAlgo)?.canonical}. Target endpoints require OpenSSH 10.4 or later.
-                </div>
-              )}
             </FieldRow>
             <FieldRow label="Key Size" required>
-              <Select value={policy.rotationKeySize} onValueChange={(v) => set({ rotationKeySize: v })} disabled={isPqcAlgo(policy.rotationAlgo)}>
-                <SelectTrigger className="max-w-[200px] text-[13px]">
-                  {isPqcAlgo(policy.rotationAlgo) ? <span className="text-muted-foreground">Fixed by algorithm</span> : <SelectValue />}
-                </SelectTrigger>
+              <Select value={policy.rotationKeySize} onValueChange={(v) => set({ rotationKeySize: v })}>
+                <SelectTrigger className="max-w-[200px] text-[13px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="256">256</SelectItem>
                   <SelectItem value="384">384</SelectItem>
@@ -557,21 +557,29 @@ export function KeyPolicyPage() {
   );
 }
 
-function PqcPostureHint({ algos }: { algos: string[] }) {
-  const pqc = algos.filter(isPqcAlgo).length;
-  const classical = algos.length - pqc;
-  if (algos.length === 0) return null;
+/** Plain-language line under the algorithm field describing what the selection means. */
+function AlgorithmSummary({ selected }: { selected: string[] }) {
+  if (selected.length === 0) return null;
+  const hybrid = selected.filter(isHybrid).length;
+  const classical = selected.length - hybrid;
+
   let text: string;
-  let cls: string;
-  if (pqc > 0 && classical === 0) {
-    text = "PQC required: classical keys under this policy will be flagged Non-Compliant with reason \"Algorithm does not meet PQC policy requirement\".";
-    cls = "text-risk-green";
-  } else if (pqc > 0) {
-    text = "Transition posture: classical and hybrid PQC keys are both compliant while the estate migrates.";
-    cls = "text-risk-amber";
+  if (hybrid > 0 && classical === 0) {
+    text = "Hybrid post-quantum only. Keys using a classical algorithm are Non-Compliant with the reason \u201cAlgorithm does not meet PQC policy requirement\u201d.";
+  } else if (hybrid > 0) {
+    text = "Classical and hybrid post-quantum both allowed. Keys of either kind are Compliant while the estate moves across.";
   } else {
-    text = "Classical only: no hybrid PQC algorithm allowed. Quantum Vulnerable keys are not flagged by this policy.";
-    cls = "text-muted-foreground";
+    text = "Classical only. No hybrid post-quantum algorithm is allowed under this policy.";
   }
-  return <div className={cn("mt-2 text-[12px]", cls)}>{text}</div>;
+
+  const canonical = selected.map((d) => algoDef(d)?.canonical ?? d).join(", ");
+
+  return (
+    <div className="mt-2 space-y-1">
+      <div className="text-[12px] text-muted-foreground">{text}</div>
+      <div className="text-[11px] text-muted-foreground/80 font-mono break-all" title="Values stored and sent over the API">
+        Stored as: {canonical}
+      </div>
+    </div>
+  );
 }
