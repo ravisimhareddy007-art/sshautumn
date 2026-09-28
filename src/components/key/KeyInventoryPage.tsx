@@ -27,14 +27,12 @@ import { MigrateToCertDialog } from "@/components/key/MigrateToCertDialog";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { CertDetailDrawer } from "@/components/cert/CertDetailDrawer";
 import { usePersistedState } from "@/hooks/use-persisted-state";
-import type { SshKey, SshCert, RiskStatus, MigrationStatus, QuantumPosture } from "@/data/mock";
+import type { SshKey, SshCert, RiskStatus, MigrationStatus, AlgorithmFamily } from "@/data/mock";
 import {
   riskColor,
-  getQuantumPosture,
-  quantumPostureColor,
-  QUANTUM_POSTURE_EXPLANATION,
-  isPqcEncryption,
-  pqcAlgorithmInfo,
+  algoDef,
+  isHybridKey,
+  algoFamily,
   GROUPS,
   USER_CERTS,
   migrationDaysElapsed,
@@ -96,7 +94,6 @@ const ALL_COLUMNS: ColumnDef[] = [
   { key: "status", label: "Status" },
   { key: "filePaths", label: "FilePaths" },
   { key: "riskStatus", label: "Risk Status" },
-  { key: "quantumPosture", label: "Quantum Posture" },
   { key: "complianceStatus", label: "Compliance Status" },
 ];
 
@@ -114,17 +111,13 @@ const RISK_COLORS: Record<string, { border: string; text: string }> = {
 
 export function KeyInventoryPage(props: KeyInventoryProps) {
   const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as { highlight?: string; posture?: string };
+  const search = useSearch({ strict: false }) as { highlight?: string };
 
   const [keys, setKeys] = useState<SshKey[]>(props.initialKeys);
   const [group, setGroup] = useState("All Keys");
+  const [algoFilter, setAlgoFilter] = useState<AlgorithmFamily | "All">("All");
   const [search_, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState<RiskStatus | null>(null);
-  const [postureFilter, setPostureFilter] = useState<QuantumPosture | null>(
-    search.posture === "Quantum Vulnerable" || search.posture === "Hybrid PQC" || search.posture === "Not Assessed"
-      ? (search.posture as QuantumPosture)
-      : null,
-  );
   const [migrationFilter, setMigrationFilter] = useState<"all" | MigrationStatus | null>(null);
   const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -153,8 +146,8 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
   const filtered = useMemo(() => {
     let list = keys;
     if (group !== "All Keys") list = list.filter((k) => k.keyComplianceGroup === group);
+    if (algoFilter !== "All") list = list.filter((k) => algoFamily(k.encryption) === algoFilter);
     if (riskFilter) list = list.filter((k) => k.riskStatus === riskFilter);
-    if (postureFilter) list = list.filter((k) => getQuantumPosture(k) === postureFilter);
     if (migrationFilter === "all") list = list.filter((k) => !!k.migrationStatus);
     else if (migrationFilter) list = list.filter((k) => k.migrationStatus === migrationFilter);
     if (search_) {
@@ -167,7 +160,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
       );
     }
     return list;
-  }, [keys, group, riskFilter, postureFilter, migrationFilter, search_]);
+  }, [keys, group, algoFilter, riskFilter, migrationFilter, search_]);
 
   const paged = filtered.slice((page - 1) * PAGE, page * PAGE);
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE));
@@ -191,16 +184,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
       rolled_back: keys.filter((k) => k.migrationStatus === "rolled_back").length,
       critical: keys.filter((k) => isMigrationCertExpired(k, USER_CERTS)).length,
       total: keys.filter((k) => !!k.migrationStatus).length,
-    }),
-    [keys],
-  );
-
-  // Quantum posture counts
-  const postureCounts = useMemo(
-    () => ({
-      vulnerable: keys.filter((k) => getQuantumPosture(k) === "Quantum Vulnerable").length,
-      pqc: keys.filter((k) => getQuantumPosture(k) === "Hybrid PQC").length,
-      notAssessed: keys.filter((k) => getQuantumPosture(k) === "Not Assessed").length,
     }),
     [keys],
   );
@@ -265,7 +248,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
 
   const chips = [
     riskFilter ? { key: "risk", label: `Risk: ${riskFilter}` } : null,
-    postureFilter ? { key: "posture", label: `Quantum Posture: ${postureFilter}` } : null,
+    algoFilter !== "All" ? { key: "algorithm", label: `Algorithm: ${algoFilter}` } : null,
     migrationFilter
       ? {
           key: "migration",
@@ -311,7 +294,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
               onClick={() => {
                 setRiskFilter((f) => (f === r ? null : r));
                 setMigrationFilter(null);
-                setPostureFilter(null);
                 setPage(1);
               }}
               className={cn(
@@ -335,62 +317,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
           );
         })}
 
-        {/* Quantum posture tile */}
-        <div className="w-px bg-border my-1.5" />
-        <button
-          onClick={() => {
-            setPostureFilter((f) => (f === "Quantum Vulnerable" ? null : "Quantum Vulnerable"));
-            setRiskFilter(null);
-            setMigrationFilter(null);
-            setPage(1);
-          }}
-          className={cn(
-            "text-left px-4 py-2.5 min-w-[190px] transition-colors",
-            postureFilter === "Quantum Vulnerable" ? "bg-row-selected" : "hover:bg-muted/60",
-          )}
-          style={{ borderLeftColor: postureCounts.vulnerable === 0 ? RISK_COLORS.green.border : RISK_COLORS.red.border, borderLeftWidth: 3 }}
-          title={QUANTUM_POSTURE_EXPLANATION["Quantum Vulnerable"]}
-        >
-          <div className="text-[20px] font-bold leading-none" style={{ color: postureCounts.vulnerable === 0 ? RISK_COLORS.green.text : RISK_COLORS.red.text }}>
-            {postureCounts.vulnerable}
-            {props.total != null && (
-              <span className="text-[11px] text-muted-foreground font-normal ml-0.5">/{props.total}</span>
-            )}
-          </div>
-          <div className="mt-0.5 flex items-center gap-1 text-[10px] uppercase tracking-wider font-medium text-muted-foreground whitespace-nowrap">
-            Quantum Vulnerable
-            <Info className="h-3 w-3" />
-          </div>
-          <div className="flex items-center gap-3 mt-1">
-            <span
-              className="text-[10px] text-risk-green cursor-pointer hover:underline"
-              onClick={(e) => {
-                e.stopPropagation();
-                setPostureFilter((f) => (f === "Hybrid PQC" ? null : "Hybrid PQC"));
-                setRiskFilter(null);
-                setMigrationFilter(null);
-                setPage(1);
-              }}
-            >
-              {postureCounts.pqc} Hybrid PQC
-            </span>
-            {postureCounts.notAssessed > 0 && (
-              <span
-                className="text-[10px] text-muted-foreground cursor-pointer hover:underline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setPostureFilter((f) => (f === "Not Assessed" ? null : "Not Assessed"));
-                  setRiskFilter(null);
-                  setMigrationFilter(null);
-                  setPage(1);
-                }}
-              >
-                {postureCounts.notAssessed} Not Assessed
-              </span>
-            )}
-          </div>
-        </button>
-
         {/* Migration tile — only shown when migrations exist */}
         {migCounts.total > 0 && (
           <>
@@ -399,7 +325,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
               onClick={() => {
                 setMigrationFilter((f) => (f ? null : "all"));
                 setRiskFilter(null);
-                setPostureFilter(null);
                 setPage(1);
               }}
               className={cn(
@@ -474,7 +399,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
           if (k === "risk") setRiskFilter(null);
           if (k === "migration") setMigrationFilter(null);
           if (k === "highlight") navigate({ to: ".", search: {} as never });
-          if (k === "posture") { setPostureFilter(null); navigate({ to: ".", search: {} as never }); }
+          if (k === "algorithm") setAlgoFilter("All");
         }}
       />
 
@@ -497,6 +422,24 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 {g}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <span className="text-[12px] text-muted-foreground ml-2">Algorithm</span>
+        <Select
+          value={algoFilter}
+          onValueChange={(v) => {
+            setAlgoFilter(v as AlgorithmFamily | "All");
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="h-8 w-[190px] text-[13px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All algorithms</SelectItem>
+            <SelectItem value="Classical">Classical</SelectItem>
+            <SelectItem value="Hybrid post-quantum">Hybrid post-quantum</SelectItem>
           </SelectContent>
         </Select>
 
@@ -555,7 +498,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
               >
                 Change Status
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => toast.success(`Exported ${selectedKeys.length} key(s) to CSV, including Quantum Posture.`)}>
+              <DropdownMenuItem onClick={() => toast.success(`Exported ${selectedKeys.length} key(s) to CSV, including algorithm.`)}>
                 Export
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => toast.success("Key file download started.")}>Download</DropdownMenuItem>
@@ -815,30 +758,20 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                             />
                           </div>
                           <div className="mt-4 pt-4 border-t border-border">
-                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">
-                              Quantum Posture
-                            </div>
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Algorithm</div>
                             <div className="grid grid-cols-3 gap-4 text-[12px]">
                               <KV
-                                label="Posture"
-                                value={
-                                  <Badge variant="outline" className={cn("text-[11px]", quantumPostureColor(getQuantumPosture(k)))}>
-                                    {getQuantumPosture(k)}
-                                  </Badge>
-                                }
+                                label="Identifier"
+                                value={<span className="font-mono">{k.encryption === "Unknown" ? (k.rawAlgorithm ?? "--") : algoDef(k.encryption)?.canonical}</span>}
                               />
                               <KV
-                                label="Algorithm"
-                                value={
-                                  isPqcEncryption(k.encryption)
-                                    ? `${pqcAlgorithmInfo(k.encryption)?.canonical} (${pqcAlgorithmInfo(k.encryption)?.composite})`
-                                    : `${k.encryption}${k.length ? ` ${k.length}` : ""}`
-                                }
+                                label="Combines"
+                                value={k.encryption === "Unknown" ? "Algorithm not recognised" : (algoDef(k.encryption)?.components ?? "--")}
                               />
-                              <KV label="Negotiated Key Exchange" value={k.negotiatedKex ?? "--"} />
-                              <div className="col-span-3 text-[12px] text-muted-foreground">
-                                {QUANTUM_POSTURE_EXPLANATION[getQuantumPosture(k)]}
-                              </div>
+                              <KV
+                                label="Support"
+                                value={k.encryption === "Unknown" ? "--" : (algoDef(k.encryption)?.support ?? "--")}
+                              />
                             </div>
                           </div>
                           {k.migrationStatus && (
@@ -1079,26 +1012,17 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
           >
             {COMBO_LABEL[k.combination]}
           </Badge>
-          {isPqcEncryption(k.encryption) && (
+          {isHybridKey(k.encryption) && (
             <Badge
               variant="outline"
-              className="text-[10px] h-4 px-1 shrink-0 bg-risk-green/10 text-risk-green border-risk-green/30"
-              title={`${pqcAlgorithmInfo(k.encryption)?.canonical} · ${pqcAlgorithmInfo(k.encryption)?.composite}`}
+              className="text-[10px] h-4 px-1 shrink-0 bg-primary/10 text-primary border-primary/30"
+              title={`${algoDef(k.encryption)?.canonical} · ${algoDef(k.encryption)?.components}`}
             >
               PQC
             </Badge>
           )}
         </div>
       );
-
-    case "quantumPosture": {
-      const posture = getQuantumPosture(k);
-      return (
-        <Badge variant="outline" className={cn("text-[11px]", quantumPostureColor(posture))} title={QUANTUM_POSTURE_EXPLANATION[posture]}>
-          {posture}
-        </Badge>
-      );
-    }
 
     case "migrationStatus":
       if (!k.migrationStatus) return <span className="text-muted-foreground text-[12px]">—</span>;
@@ -1160,16 +1084,18 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
     case "age":
       return <span>{k.age || "--"}</span>;
     case "encryption":
-      return isPqcEncryption(k.encryption) ? (
+      if (k.encryption === "Unknown")
+        return <Badge variant="outline" className="text-muted-foreground" title={k.rawAlgorithm}>Unknown</Badge>;
+      return isHybridKey(k.encryption) ? (
         <span className="inline-flex items-center gap-1">
-          <Badge variant="outline" title={pqcAlgorithmInfo(k.encryption)?.canonical}>{k.encryption}</Badge>
-          <span className="text-[9px] font-semibold uppercase tracking-wider bg-risk-green/15 text-risk-green px-1 rounded">Hybrid PQC</span>
+          <Badge variant="outline" title={algoDef(k.encryption)?.canonical}>{k.encryption}</Badge>
+          <span className="text-[9px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded">Hybrid PQC</span>
         </span>
       ) : (
         <Badge variant="outline">{k.encryption}</Badge>
       );
     case "length":
-      return <span>{k.length === 0 ? "n/a" : k.length}</span>;
+      return <span>{algoDef(k.encryption)?.hasLength ? k.length : "n/a"}</span>;
     case "fingerprint":
       return <span className="font-mono text-[11px]">{k.fingerprint.slice(0, 18)}…</span>;
     case "comment":
@@ -1230,3 +1156,4 @@ function Truncated({ items, mono }: { items: string[]; mono?: boolean }) {
 }
 
 export { Link };
+
