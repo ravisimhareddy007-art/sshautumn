@@ -24,7 +24,7 @@ export interface AlgoDef {
   support: string;
 }
 
-export const ALGO_DEFS: AlgoDef[] = [
+export const ALGO_DEFS = [
   { display: "ED25519", standardId: "ssh-ed25519", opensshId: "ssh-ed25519", family: "Classical", canGenerate: true, hasLength: true },
   { display: "ECDSA", standardId: "ecdsa-sha2-nistp256", opensshId: "ecdsa-sha2-nistp256", family: "Classical", canGenerate: true, hasLength: true },
   { display: "RSA", standardId: "rsa-sha2-256", opensshId: "rsa-sha2-256", family: "Classical", canGenerate: true, hasLength: true },
