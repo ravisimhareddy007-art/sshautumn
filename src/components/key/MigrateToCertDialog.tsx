@@ -4,9 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { isHybridKey, algoDef } from "@/data/mock";
 import type { SshKey } from "@/data/mock";
-import { CAS } from "@/data/mock";
+import { CAS, isHybridKey, findHost } from "@/data/mock";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, AlertTriangle, ArrowRight, Shield, Info } from "lucide-react";
 
@@ -42,21 +41,6 @@ function computeEligibility(k: SshKey): Eligibility {
       pass: k.hostEndpoints.length > 0,
     },
   ];
-
-  if (isHybridKey(k.encryption))
-    return {
-      path: "blocked",
-      reason:
-        "Certificate support for hybrid post-quantum keys is not yet available. No shipping OpenSSH release confirms certificate support for composite key types, and no managed CA can sign one today. This key can be governed by policy and remains visible in inventory, but it cannot be migrated to certificate-based access in this release.",
-      checks: [
-        ...base,
-        {
-          label: "Algorithm support",
-          detail: `${algoDef(k.encryption)?.canonical} — ${algoDef(k.encryption)?.support}. Certificate issuance not supported.`,
-          pass: false,
-        },
-      ],
-    };
 
   if (k.migrationStatus && k.migrationStatus !== "rolled_back")
     return {
@@ -137,6 +121,26 @@ function computeEligibility(k: SshKey): Eligibility {
       ],
     };
 
+  if (isHybridKey(k.encryption)) {
+    const failing = k.hostEndpoints
+      .map((ep) => {
+        const h = findHost(ep);
+        if (!h || !h.hybridUses) return { ep, why: "readiness could not be determined" };
+        if (!h.hybridUses.acceptUserCerts) return { ep, why: `hybrid user certificates are not enabled (OpenSSH ${h.openSshVersion ?? "unknown"})` };
+        return null;
+      })
+      .filter(Boolean) as { ep: string; why: string }[];
+    if (failing.length > 0)
+      return {
+        path: "blocked",
+        reason: `Every host endpoint must accept hybrid user certificates. Not accepted on: ${failing.map((f) => `${f.ep} (${f.why})`).join("; ")}.`,
+        checks: [
+          ...base,
+          { label: "Hybrid certificate support", detail: failing.map((f) => `${f.ep}: ${f.why}`).join("; "), pass: false },
+        ],
+      };
+  }
+
   return {
     path: "migrate",
     reason:
@@ -146,6 +150,9 @@ function computeEligibility(k: SshKey): Eligibility {
       { label: "Risk classification", detail: "NONE — no risk flags", pass: true },
       { label: "Single associated user", detail: k.associatedUsers[0] ?? "—", pass: k.associatedUsers.length <= 1 },
       { label: "Private key located", detail: "Both public and private halves found in discovery", pass: true },
+      ...(isHybridKey(k.encryption)
+        ? [{ label: "Hybrid certificate support", detail: "All host endpoints accept hybrid user certificates", pass: true }]
+        : []),
     ],
   };
 }
