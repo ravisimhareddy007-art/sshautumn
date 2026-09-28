@@ -6,69 +6,32 @@ export type ComplianceStatus = "Compliant" | "Non-Compliant";
 export type KeyStatus = "Active" | "Inactive" | "Revoked";
 export type CertStatus = "Active" | "Expired" | "Revoked";
 
-// ─── Supported key algorithms ────────────────────────────────────────────────
-// Single definition shared by Key Policy and Key Inventory. Adding a future
-// algorithm means adding one entry here.
+// ─── Key algorithms ───────────────────────────────────────────────────────────
+// Single definition shared by Key Policy, discovery, inventory and provisioning.
 export type KeyEncryption = "ED25519" | "RSA" | "ECDSA" | "MLDSA44-ED25519" | "MLDSA87-P384" | "Unknown";
 export type AlgorithmFamily = "Classical" | "Hybrid post-quantum";
 
 export interface AlgoDef {
   display: KeyEncryption;
-  canonical: string;
+  standardId: string;         // SSHM working group identifier
+  opensshId?: string;         // current OpenSSH implementation identifier
   family: AlgorithmFamily;
-  components: string;
-  support: string;
+  canGenerate: boolean;
   hasLength: boolean;
 }
 
 export const ALGO_DEFS: AlgoDef[] = [
-  { display: "ED25519", canonical: "ssh-ed25519", family: "Classical", components: "Ed25519", support: "Supported since OpenSSH 6.5", hasLength: true },
-  { display: "ECDSA", canonical: "ecdsa-sha2-nistp256", family: "Classical", components: "ECDSA", support: "Supported since OpenSSH 5.7", hasLength: true },
-  { display: "RSA", canonical: "rsa-sha2-256", family: "Classical", components: "RSA", support: "Supported since OpenSSH 7.2", hasLength: true },
-  {
-    display: "MLDSA44-ED25519", canonical: "ssh-mldsa44-ed25519", family: "Hybrid post-quantum",
-    components: "ML-DSA-44 with Ed25519",
-    support: "Usable on OpenSSH 10.4 and above", hasLength: false,
-  },
-  {
-    display: "MLDSA87-P384", canonical: "ssh-mldsa87-p384", family: "Hybrid post-quantum",
-    components: "ML-DSA-87 with ECDSA P-384",
-    support: "Not yet available in any OpenSSH version", hasLength: false,
-  },
+  { display: "ED25519", standardId: "ssh-ed25519", opensshId: "ssh-ed25519", family: "Classical", canGenerate: true, hasLength: true },
+  { display: "ECDSA", standardId: "ecdsa-sha2-nistp256", opensshId: "ecdsa-sha2-nistp256", family: "Classical", canGenerate: true, hasLength: true },
+  { display: "RSA", standardId: "rsa-sha2-256", opensshId: "rsa-sha2-256", family: "Classical", canGenerate: true, hasLength: true },
+  { display: "MLDSA44-ED25519", standardId: "ssh-mldsa44-ed25519", opensshId: "ssh-mldsa44-ed25519@openssh.com", family: "Hybrid post-quantum", canGenerate: true, hasLength: false },
+  { display: "MLDSA87-P384", standardId: "ssh-mldsa87-p384", family: "Hybrid post-quantum", canGenerate: false, hasLength: false },
 ];
 
+export const HYBRID_ALGOS = ALGO_DEFS.filter((a) => a.family === "Hybrid post-quantum");
 export const algoDef = (e: KeyEncryption): AlgoDef | undefined => ALGO_DEFS.find((a) => a.display === e);
 export const isHybridKey = (e: KeyEncryption): boolean => algoDef(e)?.family === "Hybrid post-quantum";
 export const algoFamily = (e: KeyEncryption): AlgorithmFamily => algoDef(e)?.family ?? "Classical";
-
-// ---------- Quantum posture (derived from the shared algorithm list) ----------
-export type QuantumPosture = "Quantum Vulnerable" | "Hybrid PQC" | "Not Assessed";
-
-export const getQuantumPosture = (k: SshKey): QuantumPosture => {
-  if (!k.encryption || k.encryption === "Unknown") return "Not Assessed";
-  return isHybridKey(k.encryption) ? "Hybrid PQC" : "Quantum Vulnerable";
-};
-
-export const quantumPostureColor = (p: QuantumPosture): string =>
-  p === "Hybrid PQC"
-    ? "bg-risk-green/10 text-risk-green border-risk-green/30"
-    : p === "Quantum Vulnerable"
-      ? "bg-risk-red/10 text-risk-red border-risk-red/30"
-      : "bg-muted text-muted-foreground border-border";
-
-export const QUANTUM_POSTURE_EXPLANATION: Record<QuantumPosture, string> = {
-  "Quantum Vulnerable": "This key uses a classical algorithm that a quantum computer could break. Migrate to a hybrid post-quantum algorithm.",
-  "Hybrid PQC": "This key uses a hybrid post-quantum algorithm, combining a classical and a quantum-resistant primitive.",
-  "Not Assessed": "This key uses an algorithm that is not recognised, so its quantum posture could not be assessed.",
-};
-
-export const isPqcEncryption = (e: KeyEncryption): boolean => isHybridKey(e);
-
-export const pqcAlgorithmInfo = (e: KeyEncryption): { canonical: string; composite: string } | undefined => {
-  const def = algoDef(e);
-  if (!def || def.family !== "Hybrid post-quantum") return undefined;
-  return { canonical: def.canonical, composite: def.components };
-};
 
 export type MigrationStatus = "in_coexistence" | "awaiting_confirmation" | "decommissioned" | "rolled_back";
 
@@ -77,8 +40,8 @@ export interface SshKey {
   name: string;
   type: "user" | "host";
   encryption: KeyEncryption;
-  length: number; // 0 when the algorithm has no single key size
-  rawAlgorithm?: string; // raw identifier when the algorithm is not recognised
+  length: number; // 0 when the algorithm has no key size
+  rawAlgorithm?: string; // raw value when the algorithm is not recognised
   age: string;
   associatedUsers: string[];
   clientEndpoints: string[];
@@ -101,7 +64,6 @@ export interface SshKey {
   migrationCertId?: string;
   migrationRollbackStoredLine?: string;
   neverDecommission?: boolean;
-  negotiatedKex?: string; // key exchange negotiated on last connection ("--" when unknown)
 }
 
 export interface SshCert {
@@ -453,33 +415,46 @@ const namedUserKeys: SshKey[] = [
     combination: "private_public",
   },
   {
-    id: "uk-pqc1", name: "pqc_pilot_devops", type: "user", encryption: "MLDSA44-ED25519", length: 0, age: "12 days",
+    id: "uk-pqc1", name: "pqc_devops_admin", type: "user", encryption: "MLDSA44-ED25519", length: 0, age: "12 days",
     associatedUsers: ["devops"], clientEndpoints: ["10.0.9.10"], hostEndpoints: ["10.0.9.20"],
     fingerprint: fp("pqcA1mLdSa44Ed25519"), status: "Active", riskStatus: "None", complianceStatus: "Compliant",
-    filePaths: ["/home/devops/.ssh/id_mldsa44_ed25519"], comment: "Hybrid post-quantum pilot", keyComplianceGroup: "Prod_Group",
+    filePaths: ["/home/devops/.ssh/id_mldsa44_ed25519"], comment: "", keyComplianceGroup: "Prod_Group",
     hasCert: false, certCount: 0, combination: "private_public",
   },
   {
-    id: "uk-pqc2", name: "pqc_pilot_shared_ci", type: "user", encryption: "MLDSA44-ED25519", length: 0, age: "9 days",
-    associatedUsers: ["ci-runner", "build-svc"], clientEndpoints: ["10.0.9.11"], hostEndpoints: ["10.0.9.21"],
+    id: "uk-pqc2", name: "pqc_ci_shared", type: "user", encryption: "MLDSA44-ED25519", length: 0, age: "9 days",
+    associatedUsers: ["ci-runner", "build-svc"], clientEndpoints: ["10.0.9.10"], hostEndpoints: ["10.0.9.21"],
     fingerprint: fp("pqcB2mLdSa44Ed25519"), status: "Active", riskStatus: "Shared", complianceStatus: "Non-Compliant",
-    filePaths: ["/home/ci/.ssh/id_mldsa44_ed25519"], comment: "Hybrid key used by two accounts", keyComplianceGroup: "Prod_Group",
+    filePaths: ["/home/ci/.ssh/id_mldsa44_ed25519"], comment: "", keyComplianceGroup: "Prod_Group",
     hasCert: false, certCount: 0, combination: "private_public",
   },
   {
-    id: "uk-pqc3", name: "pqc_cnsa_admin", type: "user", encryption: "MLDSA87-P384", length: 0, age: "4 days",
-    associatedUsers: ["secadmin"], clientEndpoints: ["10.0.9.12"], hostEndpoints: ["10.0.9.22"],
-    fingerprint: fp("pqcC3mLdSa87P384xx"), status: "Active", riskStatus: "None", complianceStatus: "Compliant",
-    filePaths: ["/home/secadmin/.ssh/id_mldsa87_p384"], comment: "Hybrid post-quantum pilot", keyComplianceGroup: "Prod_Group",
+    id: "uk-pqc3", name: "pqc_build_svc", type: "user", encryption: "MLDSA44-ED25519", length: 0, age: "6 days",
+    associatedUsers: ["svc-build"], clientEndpoints: ["10.0.9.10"], hostEndpoints: ["10.0.9.22"],
+    fingerprint: fp("pqcC3mLdSa44Ed25519"), status: "Active", riskStatus: "None", complianceStatus: "Compliant",
+    filePaths: ["/home/svc-build/.ssh/id_mldsa44_ed25519"], comment: "", keyComplianceGroup: "Prod_Group",
     hasCert: false, certCount: 0, combination: "private_public",
   },
   {
-    id: "uk-unk1", name: "legacy_unrecognised_alg", type: "user", encryption: "Unknown", length: 0, age: "812 days",
+    id: "uk-pqc4", name: "pqc_platform_ops", type: "user", encryption: "MLDSA44-ED25519", length: 0, age: "20 days",
+    associatedUsers: ["platform-ops"], clientEndpoints: ["10.0.9.10"], hostEndpoints: ["10.0.9.20", "10.0.9.21"],
+    fingerprint: fp("pqcD4mLdSa44Ed25519"), status: "Active", riskStatus: "None", complianceStatus: "Compliant",
+    filePaths: ["/home/platform-ops/.ssh/id_mldsa44_ed25519"], comment: "", keyComplianceGroup: "Prod_Group",
+    hasCert: true, certCount: 1, combination: "private_cert",
+  },
+  {
+    id: "uk-pqc5", name: "pqc_cnsa_admin", type: "user", encryption: "MLDSA87-P384", length: 0, age: "4 days",
+    associatedUsers: ["secadmin"], clientEndpoints: [], hostEndpoints: ["10.0.9.20"],
+    fingerprint: fp("pqcE5mLdSa87P384xx"), status: "Active", riskStatus: "None", complianceStatus: "Compliant",
+    filePaths: ["/home/secadmin/.ssh/authorized_keys"], comment: "", keyComplianceGroup: "Prod_Group",
+    hasCert: false, certCount: 0, combination: "public_only",
+  },
+  {
+    id: "uk-unk1", name: "legacy_batch_key", type: "user", encryption: "Unknown", length: 0, age: "812 days",
     associatedUsers: ["svc-legacy"], clientEndpoints: [], hostEndpoints: ["10.0.2.40"],
     fingerprint: fp("unk9RawIdentifier12"), status: "Active", riskStatus: "None", complianceStatus: "Non-Compliant",
-    filePaths: ["/home/svc-legacy/.ssh/"], comment: "", keyComplianceGroup: "Default",
-    hasCert: false, certCount: 0, combination: "public_only",
-    rawAlgorithm: "ssh-dss-cert-v01@openssh.com",
+    filePaths: ["/home/svc-legacy/.ssh/authorized_keys"], comment: "", keyComplianceGroup: "Default",
+    hasCert: false, certCount: 0, combination: "public_only", rawAlgorithm: "ssh-xmss@openssh.com",
   },
 ];
 
@@ -642,7 +617,42 @@ export interface Host {
   instanceId: string;
   hostPermission: string;
   allowedPrincipals: string;
+  openSshVersion?: string;
+  hybridUses?: HybridUses; // for MLDSA44-ED25519; undefined when it could not be read
 }
+
+export interface HybridUses {
+  acceptUserKeys: boolean;
+  acceptUserCerts: boolean;
+  presentHostKey: boolean;
+  presentHostCert: boolean;
+  clientUse: boolean;
+}
+
+export type HybridReadiness = "Ready" | "Partially Ready" | "Not Ready" | "Unknown";
+
+export const HYBRID_USE_LABELS: { key: keyof HybridUses; label: string }[] = [
+  { key: "acceptUserKeys", label: "Accepts hybrid user keys for login" },
+  { key: "acceptUserCerts", label: "Accepts hybrid user certificates for login" },
+  { key: "presentHostKey", label: "Presents a hybrid host key" },
+  { key: "presentHostCert", label: "Presents a hybrid host certificate" },
+  { key: "clientUse", label: "Connects to other hosts using a hybrid key" },
+];
+
+export function hostReadiness(h: Host): HybridReadiness {
+  if (!h.hybridUses) return "Unknown";
+  const values = Object.values(h.hybridUses);
+  if (values.every(Boolean)) return "Ready";
+  if (values.some(Boolean)) return "Partially Ready";
+  return "Not Ready";
+}
+
+export const findHost = (endpoint: string): Host | undefined =>
+  HOSTS.find((h) => h.deviceName === endpoint || h.fqdn === endpoint);
+
+const ALL_USES: HybridUses = { acceptUserKeys: true, acceptUserCerts: true, presentHostKey: true, presentHostCert: true, clientUse: true };
+const NO_USES: HybridUses = { acceptUserKeys: false, acceptUserCerts: false, presentHostKey: false, presentHostCert: false, clientUse: false };
+
 export const HOSTS: Host[] = [
   {
     id: "h1",
@@ -661,6 +671,8 @@ export const HOSTS: Host[] = [
     instanceId: "i-0a1b2c3d4e5f",
     hostPermission: "Full",
     allowedPrincipals: "devteam,admins",
+    openSshVersion: "10.4",
+    hybridUses: ALL_USES,
   },
   {
     id: "h2",
@@ -679,11 +691,28 @@ export const HOSTS: Host[] = [
     instanceId: "i-1b2c3d4e5f6a",
     hostPermission: "Full",
     allowedPrincipals: "devteam,admins,appviewx",
+    openSshVersion: "10.3",
+    hybridUses: NO_USES,
   },
+  { id: "h3", deviceName: "10.0.9.10", fqdn: "10.0.9.10", hostName: "dev-client-01.appviewx.net", hostNameStatus: "active", group: "Prod_Group", hostStatus: "Managed", client: "SSH Client", accessType: "SSH", username: "admin", port: 22, vendor: "Linux", lastSyncTime: "2026-09-27 09:10:00", instanceId: "i-pqc0010", hostPermission: "Full", allowedPrincipals: "devops",
+    openSshVersion: "10.4", hybridUses: ALL_USES },
+  { id: "h4", deviceName: "10.0.9.20", fqdn: "10.0.9.20", hostName: "pqc-app-01.appviewx.net", hostNameStatus: "active", group: "Prod_Group", hostStatus: "Managed", client: "SSH Client", accessType: "SSH", username: "admin", port: 22, vendor: "Linux", lastSyncTime: "2026-09-27 09:12:00", instanceId: "i-pqc0020", hostPermission: "Full", allowedPrincipals: "devops",
+    openSshVersion: "10.4", hybridUses: ALL_USES },
+  { id: "h5", deviceName: "10.0.9.21", fqdn: "10.0.9.21", hostName: "pqc-app-02.appviewx.net", hostNameStatus: "active", group: "Prod_Group", hostStatus: "Managed", client: "SSH Client", accessType: "SSH", username: "admin", port: 22, vendor: "Linux", lastSyncTime: "2026-09-27 09:14:00", instanceId: "i-pqc0021", hostPermission: "Full", allowedPrincipals: "ci-runner",
+    openSshVersion: "10.4", hybridUses: ALL_USES },
+  { id: "h6", deviceName: "10.0.9.22", fqdn: "10.0.9.22", hostName: "pqc-app-03.appviewx.net", hostNameStatus: "active", group: "Prod_Group", hostStatus: "Managed", client: "SSH Client", accessType: "SSH", username: "admin", port: 22, vendor: "Linux", lastSyncTime: "2026-09-27 09:16:00", instanceId: "i-pqc0022", hostPermission: "Full", allowedPrincipals: "svc-build",
+    openSshVersion: "10.4", hybridUses: { acceptUserKeys: true, acceptUserCerts: false, presentHostKey: false, presentHostCert: false, clientUse: true } },
+  { id: "h7", deviceName: "10.0.2.40", fqdn: "10.0.2.40", hostName: "legacy-batch-01.appviewx.net", hostNameStatus: "active", group: "Default_Host_Group", hostStatus: "Managed", client: "SSH Client", accessType: "SSH", username: "admin", port: 22, vendor: "Linux", lastSyncTime: "2026-09-26 22:40:00", instanceId: "i-leg0040", hostPermission: "Full", allowedPrincipals: "svc-legacy" },
 ];
 
 // ---------- USER CERTS ----------
 export const USER_CERTS: SshCert[] = [
+  {
+    id: "uc-pqc1", certKeyId: "UC-2026-901", certName: "cert-pqc_platform_ops", type: "user",
+    associatedKeyId: "uk-pqc4", associatedKeyName: "pqc_platform_ops", principals: ["platform-ops"], caName: "Default-Infra-CA",
+    serialNumber: "990112233445", status: "Active", validFrom: "2026-09-15", validTo: "2026-11-14", expiresIn: "48 days",
+    expiresInDays: 48, endpoints: ["10.0.9.20", "10.0.9.21"], extensions: ["permit-pty"], complianceStatus: "Compliant", origin: "provision",
+  },
   {
     id: "uc1",
     certKeyId: "UC-2026-001",
@@ -1046,8 +1075,8 @@ export const ROTATED_KEYS: RotatedKey[] = [
 
 // ---------- CAs ----------
 export const CAS = [
-  { id: "ca1", name: "Default-Infra-CA", type: "SSH", status: "Active", expiry: "2028-12-01", pqcCapable: true, keyType: "RSA:4096", signingAlgorithm: "rsa-sha2-512" },
-  { id: "ca2", name: "Prod-CA", type: "SSH", status: "Active", expiry: "2027-06-15", pqcCapable: false, keyType: "RSA:3072", signingAlgorithm: "rsa-sha2-256" },
+  { id: "ca1", name: "Default-Infra-CA", type: "SSH", status: "Active", expiry: "2028-12-01" },
+  { id: "ca2", name: "Prod-CA", type: "SSH", status: "Active", expiry: "2027-06-15" },
 ];
 
 export const GROUPS = ["All Groups", "Default", "Default_Host_Group", "Prod_Group", "Service_Group"];
@@ -1086,3 +1115,8 @@ export const migrationStatusLabel: Record<MigrationStatus, string> = {
   rolled_back: "Rolled Back",
 };
 
+/** Algorithm of the key a certificate was issued to. */
+export function certKeyAlgorithm(c: SshCert): KeyEncryption | undefined {
+  const pool = c.type === "user" ? USER_KEYS : HOST_KEYS;
+  return pool.find((k) => k.id === c.associatedKeyId)?.encryption;
+}
