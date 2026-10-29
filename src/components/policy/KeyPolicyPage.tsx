@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { PgpPolicySection, type PgpPolicyHandle } from "@/components/pgp/PgpPolicySection";
+import { useState, useRef } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -239,13 +240,19 @@ export function KeyPolicyPage() {
   const set = (patch: Partial<PolicyState>) => setPolicy((p) => ({ ...p, ...patch }));
 
   const [saveWarnings, setSaveWarnings] = useState<string[]>([]);
+  const pgpRef = useRef<PgpPolicyHandle>(null);
 
   const commitSave = () => {
     setSaveWarnings([]);
-    toast.success(`Key Policy "${policy.name}" updated successfully.`);
+    const pgpName = pgpRef.current?.save();
+    toast.success(`Key Policy "${policy.name}" updated successfully.${pgpName && pgpName !== policy.name ? ` PGP settings saved to ${pgpName}.` : ""}`);
   };
 
   const handleSave = () => {
+    if (pgpRef.current && !pgpRef.current.validate()) {
+      toast.error("Fix the errors in PGP Key Configuration before saving.");
+      return;
+    }
     const warnings: string[] = [];
     const allowed = policy.keyAlgorithms;
     const onlyUnbuildable = allowed.length > 0 && allowed.every((a) => isHybrid(a) && !canGenerate(a));
@@ -552,9 +559,12 @@ export function KeyPolicyPage() {
           </div>
         </div>
 
+        {/* ── PGP Key Configuration ──────────────────────────────────── */}
+        <PgpPolicySection ref={pgpRef} />
+
         {/* ── Action bar ─────────────────────────────────────────────── */}
         <div className="px-6 py-4 bg-muted/20 flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setPolicy(DEFAULT_POLICY)}>Cancel</Button>
+          <Button variant="outline" onClick={() => (setPolicy(DEFAULT_POLICY), pgpRef.current?.reset())}>Cancel</Button>
           <Button onClick={handleSave}>Update</Button>
           <AlertDialog open={saveWarnings.length > 0} onOpenChange={(o) => !o && setSaveWarnings([])}>
             <AlertDialogContent>

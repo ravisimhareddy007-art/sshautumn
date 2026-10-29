@@ -55,6 +55,14 @@ const SECTIONS: Section[] = [
           { label: "Recently Deleted Certificates", to: "/inventory/certificates/deleted" },
         ],
       },
+      {
+        label: "PGP Key Inventory",
+        children: [
+          { label: "Own Keys", to: "/inventory/pgp/own" },
+          { label: "Trusted Keys", to: "/inventory/pgp/trusted" },
+          { label: "Recently Deleted PGP Keys", to: "/inventory/pgp/deleted" },
+        ],
+      },
       { label: "Host Inventory", to: "/inventory/hosts" },
     ],
   },
@@ -82,6 +90,7 @@ const SECTIONS: Section[] = [
       { label: "Certificate Authority", to: "/administration/ca" },
       { label: "MCP Tools", to: "/administration/mcp" },
       { label: "Advanced Settings", to: "/administration/settings" },
+      { label: "PGP Settings", to: "/administration/pgp" },
       { label: "Tags", to: "/administration/tags" },
     ],
   },

@@ -22,9 +22,15 @@ import { Route as AppDiscoveryProfilesRouteImport } from './routes/_app.discover
 import { Route as AppAgentMcpRouteImport } from './routes/_app.agent.mcp'
 import { Route as AppAdministrationTagsRouteImport } from './routes/_app.administration.tags'
 import { Route as AppAdministrationSettingsRouteImport } from './routes/_app.administration.settings'
+import { Route as AppAdministrationPgpRouteImport } from './routes/_app.administration.pgp'
 import { Route as AppAdministrationMcpRouteImport } from './routes/_app.administration.mcp'
 import { Route as AppAdministrationDevicesRouteImport } from './routes/_app.administration.devices'
 import { Route as AppAdministrationCaRouteImport } from './routes/_app.administration.ca'
+import { Route as AppInventoryPgpTrustedRouteImport } from './routes/_app.inventory.pgp.trusted'
+import { Route as AppInventoryPgpProvisionRouteImport } from './routes/_app.inventory.pgp.provision'
+import { Route as AppInventoryPgpOwnRouteImport } from './routes/_app.inventory.pgp.own'
+import { Route as AppInventoryPgpGenerateRouteImport } from './routes/_app.inventory.pgp.generate'
+import { Route as AppInventoryPgpDeletedRouteImport } from './routes/_app.inventory.pgp.deleted'
 import { Route as AppInventoryKeysUserRouteImport } from './routes/_app.inventory.keys.user'
 import { Route as AppInventoryKeysRotatedRouteImport } from './routes/_app.inventory.keys.rotated'
 import { Route as AppInventoryKeysHostRouteImport } from './routes/_app.inventory.keys.host'
@@ -99,6 +105,11 @@ const AppAdministrationSettingsRoute =
     path: '/administration/settings',
     getParentRoute: () => AppRoute,
   } as any)
+const AppAdministrationPgpRoute = AppAdministrationPgpRouteImport.update({
+  id: '/administration/pgp',
+  path: '/administration/pgp',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdministrationMcpRoute = AppAdministrationMcpRouteImport.update({
   id: '/administration/mcp',
   path: '/administration/mcp',
@@ -113,6 +124,32 @@ const AppAdministrationDevicesRoute =
 const AppAdministrationCaRoute = AppAdministrationCaRouteImport.update({
   id: '/administration/ca',
   path: '/administration/ca',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryPgpTrustedRoute = AppInventoryPgpTrustedRouteImport.update({
+  id: '/inventory/pgp/trusted',
+  path: '/inventory/pgp/trusted',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryPgpProvisionRoute =
+  AppInventoryPgpProvisionRouteImport.update({
+    id: '/inventory/pgp/provision',
+    path: '/inventory/pgp/provision',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppInventoryPgpOwnRoute = AppInventoryPgpOwnRouteImport.update({
+  id: '/inventory/pgp/own',
+  path: '/inventory/pgp/own',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryPgpGenerateRoute = AppInventoryPgpGenerateRouteImport.update({
+  id: '/inventory/pgp/generate',
+  path: '/inventory/pgp/generate',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryPgpDeletedRoute = AppInventoryPgpDeletedRouteImport.update({
+  id: '/inventory/pgp/deleted',
+  path: '/inventory/pgp/deleted',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInventoryKeysUserRoute = AppInventoryKeysUserRouteImport.update({
@@ -167,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/administration/ca': typeof AppAdministrationCaRoute
   '/administration/devices': typeof AppAdministrationDevicesRoute
   '/administration/mcp': typeof AppAdministrationMcpRoute
+  '/administration/pgp': typeof AppAdministrationPgpRoute
   '/administration/settings': typeof AppAdministrationSettingsRoute
   '/administration/tags': typeof AppAdministrationTagsRoute
   '/agent/mcp': typeof AppAgentMcpRoute
@@ -184,6 +222,11 @@ export interface FileRoutesByFullPath {
   '/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
   '/inventory/keys/user': typeof AppInventoryKeysUserRoute
+  '/inventory/pgp/deleted': typeof AppInventoryPgpDeletedRoute
+  '/inventory/pgp/generate': typeof AppInventoryPgpGenerateRoute
+  '/inventory/pgp/own': typeof AppInventoryPgpOwnRoute
+  '/inventory/pgp/provision': typeof AppInventoryPgpProvisionRoute
+  '/inventory/pgp/trusted': typeof AppInventoryPgpTrustedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -192,6 +235,7 @@ export interface FileRoutesByTo {
   '/administration/ca': typeof AppAdministrationCaRoute
   '/administration/devices': typeof AppAdministrationDevicesRoute
   '/administration/mcp': typeof AppAdministrationMcpRoute
+  '/administration/pgp': typeof AppAdministrationPgpRoute
   '/administration/settings': typeof AppAdministrationSettingsRoute
   '/administration/tags': typeof AppAdministrationTagsRoute
   '/agent/mcp': typeof AppAgentMcpRoute
@@ -209,6 +253,11 @@ export interface FileRoutesByTo {
   '/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
   '/inventory/keys/user': typeof AppInventoryKeysUserRoute
+  '/inventory/pgp/deleted': typeof AppInventoryPgpDeletedRoute
+  '/inventory/pgp/generate': typeof AppInventoryPgpGenerateRoute
+  '/inventory/pgp/own': typeof AppInventoryPgpOwnRoute
+  '/inventory/pgp/provision': typeof AppInventoryPgpProvisionRoute
+  '/inventory/pgp/trusted': typeof AppInventoryPgpTrustedRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -219,6 +268,7 @@ export interface FileRoutesById {
   '/_app/administration/ca': typeof AppAdministrationCaRoute
   '/_app/administration/devices': typeof AppAdministrationDevicesRoute
   '/_app/administration/mcp': typeof AppAdministrationMcpRoute
+  '/_app/administration/pgp': typeof AppAdministrationPgpRoute
   '/_app/administration/settings': typeof AppAdministrationSettingsRoute
   '/_app/administration/tags': typeof AppAdministrationTagsRoute
   '/_app/agent/mcp': typeof AppAgentMcpRoute
@@ -236,6 +286,11 @@ export interface FileRoutesById {
   '/_app/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/_app/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
   '/_app/inventory/keys/user': typeof AppInventoryKeysUserRoute
+  '/_app/inventory/pgp/deleted': typeof AppInventoryPgpDeletedRoute
+  '/_app/inventory/pgp/generate': typeof AppInventoryPgpGenerateRoute
+  '/_app/inventory/pgp/own': typeof AppInventoryPgpOwnRoute
+  '/_app/inventory/pgp/provision': typeof AppInventoryPgpProvisionRoute
+  '/_app/inventory/pgp/trusted': typeof AppInventoryPgpTrustedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -246,6 +301,7 @@ export interface FileRouteTypes {
     | '/administration/ca'
     | '/administration/devices'
     | '/administration/mcp'
+    | '/administration/pgp'
     | '/administration/settings'
     | '/administration/tags'
     | '/agent/mcp'
@@ -263,6 +319,11 @@ export interface FileRouteTypes {
     | '/inventory/keys/host'
     | '/inventory/keys/rotated'
     | '/inventory/keys/user'
+    | '/inventory/pgp/deleted'
+    | '/inventory/pgp/generate'
+    | '/inventory/pgp/own'
+    | '/inventory/pgp/provision'
+    | '/inventory/pgp/trusted'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -271,6 +332,7 @@ export interface FileRouteTypes {
     | '/administration/ca'
     | '/administration/devices'
     | '/administration/mcp'
+    | '/administration/pgp'
     | '/administration/settings'
     | '/administration/tags'
     | '/agent/mcp'
@@ -288,6 +350,11 @@ export interface FileRouteTypes {
     | '/inventory/keys/host'
     | '/inventory/keys/rotated'
     | '/inventory/keys/user'
+    | '/inventory/pgp/deleted'
+    | '/inventory/pgp/generate'
+    | '/inventory/pgp/own'
+    | '/inventory/pgp/provision'
+    | '/inventory/pgp/trusted'
   id:
     | '__root__'
     | '/'
@@ -297,6 +364,7 @@ export interface FileRouteTypes {
     | '/_app/administration/ca'
     | '/_app/administration/devices'
     | '/_app/administration/mcp'
+    | '/_app/administration/pgp'
     | '/_app/administration/settings'
     | '/_app/administration/tags'
     | '/_app/agent/mcp'
@@ -314,6 +382,11 @@ export interface FileRouteTypes {
     | '/_app/inventory/keys/host'
     | '/_app/inventory/keys/rotated'
     | '/_app/inventory/keys/user'
+    | '/_app/inventory/pgp/deleted'
+    | '/_app/inventory/pgp/generate'
+    | '/_app/inventory/pgp/own'
+    | '/_app/inventory/pgp/provision'
+    | '/_app/inventory/pgp/trusted'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -414,6 +487,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdministrationSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/administration/pgp': {
+      id: '/_app/administration/pgp'
+      path: '/administration/pgp'
+      fullPath: '/administration/pgp'
+      preLoaderRoute: typeof AppAdministrationPgpRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/administration/mcp': {
       id: '/_app/administration/mcp'
       path: '/administration/mcp'
@@ -433,6 +513,41 @@ declare module '@tanstack/react-router' {
       path: '/administration/ca'
       fullPath: '/administration/ca'
       preLoaderRoute: typeof AppAdministrationCaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/pgp/trusted': {
+      id: '/_app/inventory/pgp/trusted'
+      path: '/inventory/pgp/trusted'
+      fullPath: '/inventory/pgp/trusted'
+      preLoaderRoute: typeof AppInventoryPgpTrustedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/pgp/provision': {
+      id: '/_app/inventory/pgp/provision'
+      path: '/inventory/pgp/provision'
+      fullPath: '/inventory/pgp/provision'
+      preLoaderRoute: typeof AppInventoryPgpProvisionRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/pgp/own': {
+      id: '/_app/inventory/pgp/own'
+      path: '/inventory/pgp/own'
+      fullPath: '/inventory/pgp/own'
+      preLoaderRoute: typeof AppInventoryPgpOwnRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/pgp/generate': {
+      id: '/_app/inventory/pgp/generate'
+      path: '/inventory/pgp/generate'
+      fullPath: '/inventory/pgp/generate'
+      preLoaderRoute: typeof AppInventoryPgpGenerateRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/pgp/deleted': {
+      id: '/_app/inventory/pgp/deleted'
+      path: '/inventory/pgp/deleted'
+      fullPath: '/inventory/pgp/deleted'
+      preLoaderRoute: typeof AppInventoryPgpDeletedRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/inventory/keys/user': {
@@ -500,6 +615,7 @@ interface AppRouteChildren {
   AppAdministrationCaRoute: typeof AppAdministrationCaRoute
   AppAdministrationDevicesRoute: typeof AppAdministrationDevicesRoute
   AppAdministrationMcpRoute: typeof AppAdministrationMcpRoute
+  AppAdministrationPgpRoute: typeof AppAdministrationPgpRoute
   AppAdministrationSettingsRoute: typeof AppAdministrationSettingsRoute
   AppAdministrationTagsRoute: typeof AppAdministrationTagsRoute
   AppAgentMcpRoute: typeof AppAgentMcpRoute
@@ -517,6 +633,11 @@ interface AppRouteChildren {
   AppInventoryKeysHostRoute: typeof AppInventoryKeysHostRoute
   AppInventoryKeysRotatedRoute: typeof AppInventoryKeysRotatedRoute
   AppInventoryKeysUserRoute: typeof AppInventoryKeysUserRoute
+  AppInventoryPgpDeletedRoute: typeof AppInventoryPgpDeletedRoute
+  AppInventoryPgpGenerateRoute: typeof AppInventoryPgpGenerateRoute
+  AppInventoryPgpOwnRoute: typeof AppInventoryPgpOwnRoute
+  AppInventoryPgpProvisionRoute: typeof AppInventoryPgpProvisionRoute
+  AppInventoryPgpTrustedRoute: typeof AppInventoryPgpTrustedRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -525,6 +646,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdministrationCaRoute: AppAdministrationCaRoute,
   AppAdministrationDevicesRoute: AppAdministrationDevicesRoute,
   AppAdministrationMcpRoute: AppAdministrationMcpRoute,
+  AppAdministrationPgpRoute: AppAdministrationPgpRoute,
   AppAdministrationSettingsRoute: AppAdministrationSettingsRoute,
   AppAdministrationTagsRoute: AppAdministrationTagsRoute,
   AppAgentMcpRoute: AppAgentMcpRoute,
@@ -542,6 +664,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppInventoryKeysHostRoute: AppInventoryKeysHostRoute,
   AppInventoryKeysRotatedRoute: AppInventoryKeysRotatedRoute,
   AppInventoryKeysUserRoute: AppInventoryKeysUserRoute,
+  AppInventoryPgpDeletedRoute: AppInventoryPgpDeletedRoute,
+  AppInventoryPgpGenerateRoute: AppInventoryPgpGenerateRoute,
+  AppInventoryPgpOwnRoute: AppInventoryPgpOwnRoute,
+  AppInventoryPgpProvisionRoute: AppInventoryPgpProvisionRoute,
+  AppInventoryPgpTrustedRoute: AppInventoryPgpTrustedRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

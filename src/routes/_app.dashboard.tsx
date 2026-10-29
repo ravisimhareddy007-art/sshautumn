@@ -8,6 +8,10 @@ import {
   Globe, Plus, FileText, RefreshCw, ClipboardList,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { usePgp } from "@/lib/pgp-store";
+import { keyName } from "@/lib/pgp-store";
+import { keyStatus, nextExpiryRaw, policyFor, withinWindow } from "@/lib/pgp-rules";
+import { daysFromToday, fmtDate, PGP_GROUPS } from "@/data/pgp";
 import { cn } from "@/lib/utils";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -46,6 +50,7 @@ function Dashboard() {
           <KeySnapshot />
           <QuantumPosture />
           <CertificateStatus />
+          <PgpKeyStatus group={group} />
           <CertComplianceTrend />
         </div>
         <div className="lg:col-span-1">
@@ -475,6 +480,94 @@ function AdoptionRow({ label, value }: { label: string; value: number }) {
 /* =========================================================
    SHARED PRIMITIVES
 ========================================================= */
+/* =========================================================
+   SECTION 3B — PGP KEY STATUS
+========================================================= */
+function PgpKeyStatus({ group }: { group: string }) {
+  const s = usePgp();
+  const [scope, setScope] = useState<"own" | "trusted">("own");
+  const [win, setWin] = useState("30");
+  const w = Number(win);
+  const keys = (scope === "own" ? s.own : s.trusted).filter((k) => !PGP_GROUPS.includes(group) || k.group === group);
+  const rows = keys.map((k) => ({ k, st: keyStatus(k, policyFor(k.group, s.policies).expiringThreshold) }));
+  const expired = rows.filter((r) => r.st === "Expired").length;
+  const expiring = rows.filter((r) => withinWindow(r.k, r.st, w));
+  const soonest = [...expiring].sort((a, b) => (nextExpiryRaw(a.k) ?? "").localeCompare(nextExpiryRaw(b.k) ?? "")).slice(0, 4);
+  const to = scope === "own" ? "/inventory/pgp/own" : "/inventory/pgp/trusted";
+  return (
+    <Panel>
+      <SectionHeader
+        title="PGP Key Status"
+        badge="New"
+        right={
+          <div className="flex items-center gap-3">
+            <PillToggle
+              options={[
+                { value: "own", label: "Own Keys" },
+                { value: "trusted", label: "Trusted Keys" },
+              ]}
+              value={scope}
+              onChange={(v) => setScope(v as "own" | "trusted")}
+            />
+            <Select value={win} onValueChange={setWin}>
+              <SelectTrigger className="h-7 w-[124px] text-[12px]" aria-label="PGP expiry window">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {["7", "30", "60", "90"].map((d) => (
+                  <SelectItem key={d} value={d}>
+                    Next {d} days
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        }
+      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <Link to={to} search={{ tile: "Expired" }}>
+          <Card className="p-4 border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: expired ? "#EF4444" : "#22C55E" }}>
+            <div className="text-[11px] uppercase-tracking text-muted-foreground">Expired</div>
+            <div className="text-[28px] font-bold leading-tight mt-1" style={{ color: expired ? "#EF4444" : undefined }}>
+              {expired}
+              <span className="text-[12px] text-muted-foreground font-normal ml-1">of {keys.length}</span>
+            </div>
+          </Card>
+        </Link>
+        <Link to={to} search={{ tile: "Expiring", window: w }}>
+          <Card className="p-4 border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: expiring.length ? "#F59E0B" : "#22C55E" }}>
+            <div className="text-[11px] uppercase-tracking text-muted-foreground">Expiring in {w} days</div>
+            <div className="text-[28px] font-bold leading-tight mt-1" style={{ color: expiring.length ? "#B45309" : undefined }}>
+              {expiring.length}
+              <span className="text-[12px] text-muted-foreground font-normal ml-1">of {keys.length}</span>
+            </div>
+          </Card>
+        </Link>
+        <div className="rounded-lg border border-border p-3">
+          <div className="text-[11px] uppercase-tracking text-muted-foreground mb-1.5">Expiring soonest</div>
+          {soonest.length === 0 ? (
+            <div className="text-[12px] text-muted-foreground">Nothing expires in the next {w} days.</div>
+          ) : (
+            <ul className="space-y-1">
+              {soonest.map(({ k }) => {
+                const nx = nextExpiryRaw(k)!;
+                return (
+                  <li key={k.id} className="flex justify-between gap-2 text-[12px]">
+                    <span className="truncate">{keyName(k)}</span>
+                    <span className="text-muted-foreground whitespace-nowrap">
+                      {fmtDate(nx)} ({daysFromToday(nx)}d)
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
 function Panel({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-border bg-white p-4">
