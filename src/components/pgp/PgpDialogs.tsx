@@ -751,7 +751,9 @@ export function ImportKeyDialog({
           k.id !== replacing.id &&
           !k.replaces &&
           !k.replacedBy &&
-          !k.primary.revoked,
+          !k.primary.revoked &&
+          (k.approval === "Approved" || k.approval === "Pending") &&
+          (!k.primary.expires || k.primary.expires > new Date().toISOString().slice(0, 10)),
       )
     : [];
 
@@ -930,7 +932,7 @@ export function ImportKeyDialog({
       {source === "Already in Trusted Keys" && (
         <Field
           label="New key"
-          hint="Partner keys already imported, for example one a colleague imported and approved."
+          hint="Approved or pending partner keys already in the inventory. A pending key must be approved before it can be distributed."
         >
           {candidates.length ? (
             <RadioGroup value={existing} onValueChange={setExisting} className="space-y-1.5">
@@ -945,7 +947,7 @@ export function ImportKeyDialog({
             </RadioGroup>
           ) : (
             <div className="text-[13px] text-muted-foreground">
-              No other partner keys are available.
+              No approved or pending partner keys are available.
             </div>
           )}
         </Field>
