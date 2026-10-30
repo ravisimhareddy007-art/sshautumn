@@ -59,13 +59,13 @@ export function KeyPolicyListPage() {
               className={toolbarButton}
               onClick={() => navigate({ to: "/policies/key/new" })}
             >
-              <Plus className="h-[18px] w-[18px]" /> Create policy
+              <Plus className="h-4 w-4" /> Create policy
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button type="button" className={cn(toolbarButton, "w-[168px] justify-between")}>
                   <span className="inline-flex items-center gap-2">
-                    <LayoutGrid className="h-[18px] w-[18px]" /> Actions
+                    <LayoutGrid className="h-4 w-4" /> Actions
                   </span>
                   <ChevronDown className="h-4 w-4" />
                 </button>

@@ -147,19 +147,19 @@ function Flyout({ item, pathname }: { item: NavItem; pathname: string }) {
         type="button"
         onClick={show}
         className={cn(
-          "mx-2 flex h-10 w-[calc(100%-16px)] items-center rounded-md pl-[42px] pr-3 text-left text-[14px] text-white/85 transition-colors hover:text-white",
+          "mx-1 flex h-[33px] w-[calc(100%-8px)] items-center rounded-md pl-8 pr-2.5 text-left text-[13px] text-white/85 transition-colors hover:text-white",
           (active || open) && "text-white",
         )}
         style={{ background: active || open ? NAV_ACTIVE : undefined }}
       >
         <span className="truncate">{item.label}</span>
-        <ChevronRight className="ml-auto h-3.5 w-3.5 text-white/45" />
+        <ChevronRight className="ml-auto h-3 w-3 text-white/45" />
       </button>
       {open &&
         mounted &&
         createPortal(
           <div
-            className="fixed z-[100] min-w-[244px] rounded-md py-2 shadow-xl"
+            className="fixed z-[100] min-w-[200px] rounded-md py-1.5 shadow-xl"
             style={{ top, left, background: NAV_BG }}
             onMouseEnter={show}
             onMouseLeave={hide}
@@ -172,7 +172,7 @@ function Flyout({ item, pathname }: { item: NavItem; pathname: string }) {
                   to={c.to}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "mx-2 block rounded-md px-4 py-2.5 text-[14px] transition-colors",
+                    "mx-1.5 block rounded-md px-3.5 py-2 text-[13px] transition-colors",
                     on ? "font-medium text-white" : "text-white/85 hover:text-white",
                   )}
                   style={{ background: on ? NAV_ACTIVE : undefined }}
@@ -209,7 +209,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
     <aside
       className={cn(
         "relative shrink-0 text-white transition-[width] duration-200",
-        collapsed ? "w-[68px]" : "w-[256px]",
+        collapsed ? "w-[56px]" : "w-[210px]",
       )}
       style={{ background: NAV_BG }}
     >
@@ -217,28 +217,28 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
         type="button"
         onClick={onToggle}
         aria-label={collapsed ? "Expand menu" : "Collapse menu"}
-        className="absolute -right-[15px] top-[22px] z-30 flex h-[30px] w-[30px] items-center justify-center rounded-full border border-border bg-white shadow-sm hover:bg-muted"
+        className="absolute -right-3 top-[9px] z-30 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-white shadow-sm hover:bg-muted"
       >
         <ChevronLeft
-          className={cn("h-4 w-4 text-[#4B5563] transition-transform", collapsed && "rotate-180")}
+          className={cn("h-3.5 w-3.5 text-[#4B5563] transition-transform", collapsed && "rotate-180")}
         />
       </button>
 
       <div className="flex h-full flex-col">
         <div
           className={cn(
-            "flex h-[64px] items-center",
-            collapsed ? "justify-center" : "justify-between px-5",
+            "flex h-[52px] items-center",
+            collapsed ? "justify-center" : "justify-between pl-3 pr-3",
           )}
         >
           <span
-            className={cn("font-bold tracking-tight", collapsed ? "text-[16px]" : "text-[22px]")}
+            className={cn("font-bold tracking-tight", collapsed ? "text-[14px]" : "text-[19px]")}
           >
             SSH
           </span>
           {!collapsed && (
             <button className="rounded p-1.5 hover:bg-white/10" aria-label="Search menu">
-              <Search className="h-[18px] w-[18px] text-white/80" />
+              <Search className="h-4 w-4 text-white/80" />
             </button>
           )}
         </div>
@@ -256,10 +256,10 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                   key={s.header}
                   to={firstLink}
                   title={s.header}
-                  className="mx-2 my-0.5 flex h-11 items-center justify-center rounded-md hover:bg-white/10"
+                  className="mx-1 my-0.5 flex h-[38px] items-center justify-center rounded-md hover:bg-white/10"
                   style={{ background: active ? NAV_ACTIVE : undefined }}
                 >
-                  <Icon className="h-[19px] w-[19px] text-white/90" strokeWidth={1.75} />
+                  <Icon className="h-4 w-4 text-white/90" strokeWidth={1.75} />
                 </Link>
               );
             }
@@ -269,10 +269,10 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                 <Link
                   key={s.header}
                   to={s.to}
-                  className="mx-2 my-0.5 flex h-11 items-center gap-3 rounded-md px-3 text-[13.5px] font-semibold uppercase tracking-[0.08em] text-white/90 hover:bg-white/5 hover:text-white"
+                  className="mx-1 flex h-[38px] items-center gap-[10px] rounded-md px-[9px] text-[12px] font-semibold uppercase tracking-[0.08em] text-white/90 hover:bg-white/5 hover:text-white"
                   style={{ background: active ? NAV_ACTIVE : undefined }}
                 >
-                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.75} />
+                  <Icon className="h-4 w-4" strokeWidth={1.75} />
                   {s.header}
                 </Link>
               );
@@ -280,19 +280,19 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
 
             const isOpen = openSections[s.header];
             return (
-              <div key={s.header} className="mt-1">
+              <div key={s.header}>
                 <button
                   type="button"
                   onClick={() => setOpenSections((p) => ({ ...p, [s.header]: !p[s.header] }))}
-                  className="mx-2 flex h-11 w-[calc(100%-16px)] items-center gap-3 rounded-md px-3 text-[13.5px] font-semibold uppercase tracking-[0.08em] text-white/90 hover:bg-white/5 hover:text-white"
+                  className="mx-1 flex h-[38px] w-[calc(100%-8px)] items-center gap-[10px] rounded-md px-[9px] text-[12px] font-semibold uppercase tracking-[0.08em] text-white/90 hover:bg-white/5 hover:text-white"
                   aria-expanded={isOpen}
                 >
-                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.75} />
+                  <Icon className="h-4 w-4" strokeWidth={1.75} />
                   {s.header}
                   {isOpen ? (
-                    <Minus className="ml-auto h-3.5 w-3.5 text-white/80" />
+                    <Minus className="ml-auto h-3 w-3 text-white/80" />
                   ) : (
-                    <Plus className="ml-auto h-3.5 w-3.5 text-white/80" />
+                    <Plus className="ml-auto h-3 w-3 text-white/80" />
                   )}
                 </button>
                 {isOpen && (
@@ -305,7 +305,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
                           key={item.label}
                           to={item.to!}
                           className={cn(
-                            "mx-2 flex h-10 items-center rounded-md pl-[42px] pr-3 text-[14px] transition-colors hover:text-white",
+                            "mx-1 flex h-[33px] items-center rounded-md pl-8 pr-2.5 text-[13px] transition-colors hover:text-white",
                             itemActive(pathname, item) ? "font-medium text-white" : "text-white/85",
                           )}
                           style={{

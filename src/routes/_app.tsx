@@ -15,7 +15,7 @@ function AppLayout() {
       <Topbar />
       <div className="flex min-h-0 flex-1">
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
-        <main id="app-main" className="min-w-0 flex-1 overflow-y-auto px-8 pb-10">
+        <main id="app-main" className="min-w-0 flex-1 overflow-y-auto px-6 pb-8">
           <Outlet />
         </main>
       </div>

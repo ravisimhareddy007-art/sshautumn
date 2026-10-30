@@ -25,23 +25,23 @@ export function SearchBox({
 }) {
   return (
     <div className={cn("relative", className)}>
-      <Search className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#6B7280]" />
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280]" />
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label="Search"
-        className="h-10 w-full rounded-md border border-[#D1D5DB] bg-white pl-10 pr-10 text-[15px] placeholder:text-[#9CA3AF] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="h-8 w-full rounded-md border border-[#D1D5DB] bg-white pl-9 pr-9 text-[13px] placeholder:text-[#9CA3AF] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
       />
       {withFilter && (
-        <SlidersHorizontal className="absolute right-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#9CA3AF]" />
+        <SlidersHorizontal className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]" />
       )}
     </div>
   );
 }
 
 export const toolbarButton =
-  "inline-flex h-10 items-center gap-2 rounded-md border border-[#D1D5DB] bg-white px-4 text-[15px] text-[#1F2937] hover:bg-[#F9FAFB] disabled:opacity-50";
+  "inline-flex h-8 items-center gap-2 rounded-md border border-[#D1D5DB] bg-white px-3.5 text-[13.5px] text-[#1F2937] hover:bg-[#F9FAFB] disabled:opacity-50";
 
 export function Pager({
   page,
@@ -62,16 +62,16 @@ export function Pager({
   const last = Math.max(1, Math.ceil(total / pageSize));
   return (
     <div className="flex items-center gap-2">
-      <div className="flex h-10 items-center whitespace-nowrap rounded-md border border-[#D1D5DB] px-4 text-[15px] text-[#374151]">
+      <div className="flex h-8 items-center whitespace-nowrap rounded-md border border-[#D1D5DB] px-3 text-[13.5px] text-[#374151]">
         {from} to {to} of {total}
       </div>
-      <div className="flex h-10 overflow-hidden rounded-md border border-[#D1D5DB]">
+      <div className="flex h-8 overflow-hidden rounded-md border border-[#D1D5DB]">
         <button
           type="button"
           aria-label="Previous page"
           disabled={page <= 1}
           onClick={() => onPage(page - 1)}
-          className="flex w-9 items-center justify-center hover:bg-[#F9FAFB] disabled:opacity-40"
+          className="flex w-7 items-center justify-center hover:bg-[#F9FAFB] disabled:opacity-40"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -80,7 +80,7 @@ export function Pager({
           aria-label="Next page"
           disabled={page >= last}
           onClick={() => onPage(page + 1)}
-          className="flex w-9 items-center justify-center border-l border-[#D1D5DB] hover:bg-[#F9FAFB] disabled:opacity-40"
+          className="flex w-7 items-center justify-center border-l border-[#D1D5DB] hover:bg-[#F9FAFB] disabled:opacity-40"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -93,9 +93,9 @@ export function Pager({
           onRefresh?.();
           setTimeout(() => setSpinning(false), 600);
         }}
-        className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-[#F3F4F6]"
+        className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-[#F3F4F6]"
       >
-        <RefreshCw className={cn("h-[18px] w-[18px] text-[#374151]", spinning && "animate-spin")} />
+        <RefreshCw className={cn("h-4 w-4 text-[#374151]", spinning && "animate-spin")} />
       </button>
     </div>
   );

@@ -585,16 +585,20 @@ export function RetireDialog({ k, onClose }: { k: OwnKey | null; onClose: () => 
 
 export function DeleteOwnDialog({
   keys,
-  mode,
+  open,
   onClose,
 }: {
   keys: OwnKey[];
-  mode: "From Inventory" | "From Hosts" | null;
+  open: boolean;
   onClose: () => void;
 }) {
   const [typed, setTyped] = useState("");
-  useEffect(() => setTyped(""), [mode, keys.length]);
-  if (!keys.length || !mode) return null;
+  const [mode, setMode] = useState<"From Inventory" | "From Hosts">("From Inventory");
+  useEffect(() => {
+    setTyped("");
+    setMode("From Inventory");
+  }, [open, keys.length]);
+  if (!keys.length || !open) return null;
   const locs = keys.reduce((n, k) => n + locCount(k), 0);
   const fromHosts = mode === "From Hosts";
   const unreachable = fromHosts
@@ -608,7 +612,7 @@ export function DeleteOwnDialog({
     <Shell
       open
       onClose={onClose}
-      title={`Delete ${keys.length > 1 ? `${keys.length} keys` : keyName(keys[0])} ${mode.toLowerCase()}`}
+      title={`Delete ${keys.length > 1 ? `${keys.length} keys` : keyName(keys[0])}`}
       footer={
         <>
           <Button variant="outline" onClick={onClose}>
@@ -633,6 +637,12 @@ export function DeleteOwnDialog({
         </>
       }
     >
+      <Field label="Delete">
+        <RadioGroup value={mode} onValueChange={(v) => setMode(v as typeof mode)} className="space-y-2">
+          <Opt value="From Inventory" label="From Inventory" hint="Remove the key from AppViewX only. Hosts are not changed." />
+          <Opt value="From Hosts" label="From Hosts" hint="Remove the key from every host and from AppViewX." />
+        </RadioGroup>
+      </Field>
       {fromHosts ? (
         <>
           <Note tone="danger">

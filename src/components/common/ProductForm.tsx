@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export function FormCard({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-xl border border-border bg-white px-12 py-10", className)}>
+    <div className={cn("rounded-lg border border-border bg-white px-10 py-8", className)}>
       {children}
     </div>
   );
@@ -24,10 +24,10 @@ export function FormSection({
 }) {
   return (
     <section className={cn("mb-10", className)}>
-      <h2 className="mb-7 border-b border-border pb-3 text-[19px] font-semibold text-primary">
+      <h2 className="mb-6 border-b border-border pb-2.5 text-[17px] font-semibold text-primary">
         {title}
       </h2>
-      <div className="space-y-6">{children}</div>
+      <div className="space-y-5">{children}</div>
     </section>
   );
 }
@@ -50,9 +50,9 @@ export function FormRow({
   children: ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[220px_minmax(0,576px)_32px] items-start gap-x-6">
+    <div className="grid grid-cols-[260px_minmax(0,576px)_28px] items-start gap-x-5">
       <label
-        className={cn("pt-2.5 text-right text-[15px] text-[#1F2937]", disabled && "text-[#9CA3AF]")}
+        className={cn("pt-2 text-right text-[14px] text-[#1F2937]", disabled && "text-[#9CA3AF]")}
       >
         {required && <span className="mr-1 text-risk-red">*</span>}
         {label}
@@ -60,12 +60,12 @@ export function FormRow({
       <div className="min-w-0">
         {children}
         {error ? (
-          <p className="mt-1.5 text-[13px] text-risk-red">{error}</p>
+          <p className="mt-1 text-[12.5px] text-risk-red">{error}</p>
         ) : (
           hint && (
             <p
               className={cn(
-                "mt-1.5 text-[13px] italic leading-snug text-[#6B7280]",
+                "mt-1 text-[12.5px] italic leading-snug text-[#6B7280]",
                 disabled && "text-[#9CA3AF]",
               )}
             >
@@ -74,7 +74,7 @@ export function FormRow({
           )
         )}
       </div>
-      <div className="pt-2.5">
+      <div className="pt-2">
         {info && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -95,7 +95,7 @@ export function FormRow({
 }
 
 const inputBase =
-  "h-10 w-full rounded-md border border-[#D1D5DB] bg-white px-3 text-[15px] text-[#111827] placeholder:text-[#9CA3AF] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#9CA3AF]";
+  "h-[38px] w-full rounded-md border border-[#D1D5DB] bg-white px-3 text-[14px] text-[#111827] placeholder:text-[#9CA3AF] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:text-[#9CA3AF]";
 
 export function TextInput({
   value,
@@ -144,7 +144,7 @@ export function TextArea({
       aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value)}
       rows={4}
-      className="w-full resize-y rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-[15px] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+      className="w-full resize-y rounded-md border border-[#D1D5DB] bg-white px-3 py-2 text-[14px] focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
     />
   );
 }
@@ -231,19 +231,19 @@ export function TagInput({
           if (e.key === "Escape") setOpen(false);
         }}
         className={cn(
-          "flex min-h-[48px] w-full cursor-pointer flex-wrap items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-2",
+          "flex min-h-[46px] w-full cursor-pointer flex-wrap items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-2",
           disabled && "cursor-not-allowed opacity-60",
           invalid && "border-risk-red",
           open && "border-primary ring-2 ring-primary/20",
         )}
       >
         {values.length === 0 && (
-          <span className="px-1 text-[15px] text-[#9CA3AF]">{placeholder}</span>
+          <span className="px-1 text-[14px] text-[#9CA3AF]">{placeholder}</span>
         )}
         {values.map((v) => (
           <span
             key={v}
-            className="inline-flex items-center gap-1.5 rounded bg-[#E5E7EB] px-2.5 py-1 text-[14px] text-[#374151]"
+            className="inline-flex items-center gap-1.5 rounded bg-[#E5E7EB] px-2 py-0.5 text-[13px] text-[#374151]"
           >
             {render(v)}
             {!disabled && (
@@ -311,7 +311,7 @@ export function OnOff({
       disabled={disabled}
       onClick={() => onChange(!value)}
       className={cn(
-        "h-[34px] w-[76px] rounded-md border text-[15px] font-medium transition-colors",
+        "h-8 w-[70px] rounded-md border text-[14px] font-medium transition-colors",
         value
           ? "border-primary bg-primary text-white"
           : "border-[#D1D5DB] bg-white text-[#374151] hover:bg-[#F9FAFB]",
@@ -374,7 +374,7 @@ export function RadioGroupRow<T extends string>({
 }) {
   return (
     <div
-      className="flex min-h-[40px] flex-wrap items-center gap-x-10 gap-y-2"
+      className="flex min-h-[38px] flex-wrap items-center gap-x-9 gap-y-2"
       role="radiogroup"
       aria-label={name}
     >
@@ -382,7 +382,7 @@ export function RadioGroupRow<T extends string>({
         <label
           key={o.value}
           className={cn(
-            "flex cursor-pointer items-center gap-2.5 text-[15px] text-[#1F2937]",
+            "flex cursor-pointer items-center gap-2 text-[14px] text-[#1F2937]",
             disabled && "cursor-not-allowed opacity-60",
           )}
         >
@@ -393,7 +393,7 @@ export function RadioGroupRow<T extends string>({
             checked={value === o.value}
             disabled={disabled}
             onChange={() => onChange(o.value)}
-            className="h-[18px] w-[18px] accent-primary"
+            className="h-4 w-4 accent-primary"
           />
           {o.label}
         </label>
@@ -408,12 +408,12 @@ export function CheckRow({
   items: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }[];
 }) {
   return (
-    <div className="flex min-h-[40px] flex-wrap items-center gap-x-8 gap-y-2">
+    <div className="flex min-h-[38px] flex-wrap items-center gap-x-7 gap-y-2">
       {items.map((i) => (
         <label
           key={i.label}
           className={cn(
-            "flex cursor-pointer items-center gap-2.5 text-[15px] text-[#1F2937]",
+            "flex cursor-pointer items-center gap-2 text-[14px] text-[#1F2937]",
             i.disabled && "cursor-not-allowed opacity-60",
           )}
         >
@@ -422,7 +422,7 @@ export function CheckRow({
             checked={i.checked}
             disabled={i.disabled}
             onChange={(e) => i.onChange(e.target.checked)}
-            className="h-[18px] w-[18px] accent-primary"
+            className="h-4 w-4 accent-primary"
           />
           {i.label}
         </label>
@@ -449,7 +449,7 @@ export function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="h-10 min-w-[96px] rounded-md bg-primary px-5 text-[15px] font-medium text-white hover:bg-primary-hover disabled:opacity-50"
+      className="h-9 min-w-[88px] rounded-md bg-primary px-5 text-[14px] font-medium text-white hover:bg-primary-hover disabled:opacity-50"
     >
       {children}
     </button>
@@ -467,7 +467,7 @@ export function SecondaryButton({
     <button
       type="button"
       onClick={onClick}
-      className="h-10 min-w-[96px] rounded-md border border-[#D1D5DB] bg-white px-5 text-[15px] text-[#1F2937] hover:bg-[#F9FAFB]"
+      className="h-9 min-w-[88px] rounded-md border border-[#D1D5DB] bg-white px-5 text-[14px] text-[#1F2937] hover:bg-[#F9FAFB]"
     >
       {children}
     </button>
@@ -506,7 +506,7 @@ export function FreeTagInput({
     <div className="relative">
       <div
         className={cn(
-          "flex min-h-[48px] w-full flex-wrap items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-2",
+          "flex min-h-[46px] w-full flex-wrap items-center gap-1.5 rounded-md border border-[#E5E7EB] bg-[#F3F4F6] px-2.5 py-2",
           invalid && "border-risk-red",
           focus && "border-primary ring-2 ring-primary/20",
         )}
@@ -515,7 +515,7 @@ export function FreeTagInput({
           <span
             key={v}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded bg-[#E5E7EB] px-2.5 py-1 text-[14px] text-[#374151]",
+              "inline-flex items-center gap-1.5 rounded bg-[#E5E7EB] px-2 py-0.5 text-[13px] text-[#374151]",
               mono && "font-mono text-[13px]",
             )}
           >
@@ -545,7 +545,7 @@ export function FreeTagInput({
             if (e.key === "Backspace" && !text && values.length) onChange(values.slice(0, -1));
           }}
           className={cn(
-            "min-w-[140px] flex-1 bg-transparent px-1 text-[15px] placeholder:text-[#9CA3AF] focus:outline-none",
+            "min-w-[140px] flex-1 bg-transparent px-1 text-[14px] placeholder:text-[#9CA3AF] focus:outline-none",
             mono && "font-mono text-[14px]",
           )}
         />

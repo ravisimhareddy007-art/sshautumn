@@ -39,7 +39,7 @@ function ActionsButton({ children, active }: { children: React.ReactNode; active
           )}
         >
           <span className="inline-flex items-center gap-2">
-            <LayoutGrid className="h-[18px] w-[18px]" /> Actions
+            <LayoutGrid className="h-4 w-4" /> Actions
           </span>
           <ChevronDown className="h-4 w-4" />
         </button>
@@ -107,7 +107,7 @@ export function DiscoveryStatusPage() {
               className={toolbarButton}
               onClick={() => navigate({ to: "/discovery/network-scan" })}
             >
-              <Plus className="h-[18px] w-[18px]" /> New Network Scan
+              <Plus className="h-4 w-4" /> New Network Scan
             </button>
             <Pager page={page} pageSize={PAGE} total={rows.length} onPage={setPage} />
           </div>
@@ -240,7 +240,7 @@ export function SchedulerPage() {
               className={toolbarButton}
               onClick={() => navigate({ to: "/discovery/network-scan" })}
             >
-              <Plus className="h-[18px] w-[18px]" /> Schedule Discovery
+              <Plus className="h-4 w-4" /> Schedule Discovery
             </button>
             <ActionsButton active={selected.length > 0}>
               <DropdownMenuItem
@@ -379,7 +379,7 @@ export function ManagedDevicesPage() {
               className={toolbarButton}
               onClick={() => navigate({ to: "/discovery/network-scan" })}
             >
-              <Plus className="h-[18px] w-[18px]" /> Add Devices
+              <Plus className="h-4 w-4" /> Add Devices
             </button>
             <Pager page={page} pageSize={PAGE} total={rows.length} onPage={setPage} />
           </div>

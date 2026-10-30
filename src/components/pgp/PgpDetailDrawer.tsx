@@ -1,357 +1,221 @@
+import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Copy, KeyRound, RotateCw, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Copy, Lock, RotateCw } from "lucide-react";
 import { toast } from "sonner";
-import {
-  fmtDate,
-  groupedFp,
-  keyIdOf,
-  shortFp,
-  type OwnKey,
-  type PgpKey,
-  type PgpLocation,
-  type Subkey,
-  type TrustedKey,
-} from "@/data/pgp";
-import { algoLabel, RISK_HELP, subkeyStatus } from "@/lib/pgp-rules";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { fmtDate, groupedFp, keyIdOf, type OwnKey, type PgpKey, type PgpLocation, type TrustedKey } from "@/data/pgp";
+import { algoLabel, RISK_HELP, subkeyStatus, type KeyStatus } from "@/lib/pgp-rules";
 import { keyName, retryFailed, usePgp } from "@/lib/pgp-store";
-import {
-  ComplianceCell,
-  derive,
-  KV,
-  NextExpiryCell,
-  Pill,
-  PurposeList,
-  Section,
-  StatusBadge,
-} from "./pgp-ui";
-import { cn } from "@/lib/utils";
+import { ComplianceCell, derive, DotPill, KV, NextExpiryCell, PanelTable, Pill, PurposeList, RiskList, Section, StatusBadge } from "./pgp-ui";
 
 export function PgpDetailDrawer({ keyId, onClose }: { keyId: string | null; onClose: () => void }) {
   const s = usePgp();
-  const k: PgpKey | undefined =
-    s.own.find((x) => x.id === keyId) ?? s.trusted.find((x) => x.id === keyId);
+  const k: PgpKey | undefined = s.own.find((x) => x.id === keyId) ?? s.trusted.find((x) => x.id === keyId);
   return (
     <Sheet open={!!keyId} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent side="right" className="w-[640px] sm:max-w-[640px] p-0 overflow-y-auto">
+      <SheetContent side="right" className="w-[540px] gap-0 overflow-y-auto p-0 sm:max-w-[540px]">
         {k && <Body k={k} />}
       </SheetContent>
     </Sheet>
   );
 }
 
+const muted = (t: ReactNode) => <span className="text-[#6B7280]">{t}</span>;
+
 function Body({ k }: { k: PgpKey }) {
   const s = usePgp();
   const d = derive(k, s.policies);
+  const own = k.kind === "own" ? k : null;
+  const tr = k.kind === "trusted" ? k : null;
+  const primaryUid = k.userIds.find((u) => u.primary) ?? k.userIds[0];
   const copy = () => {
     navigator.clipboard?.writeText(k.primary.fingerprint).catch(() => undefined);
     toast.success("Fingerprint copied");
   };
+  const lastOp = own?.lastOperation ?? (k.history.length ? k.history[k.history.length - 1] : undefined);
+
   return (
     <div>
-      <SheetHeader className="px-5 pt-5 pb-4 border-b border-border">
-        <div className="flex items-center gap-2 flex-wrap">
-          <KeyRound className="h-4 w-4 text-primary" />
-          <SheetTitle className="text-[16px]">{keyName(k)}</SheetTitle>
-          <StatusBadge status={d.status} />
-          {k.kind === "own" ? <Pill>{k.management}</Pill> : <Pill>{k.type} key</Pill>}
-        </div>
-        <div className="flex items-center gap-2 mt-1">
-          <code className="text-[12px] font-mono text-muted-foreground">
-            {groupedFp(k.primary.fingerprint)}
-          </code>
-          <button onClick={copy} className="p-1 rounded hover:bg-muted" title="Copy fingerprint">
-            <Copy className="h-3 w-3 text-muted-foreground" />
-          </button>
-        </div>
-      </SheetHeader>
+      <div className="sticky top-0 z-10 flex h-[60px] items-center border-b border-border bg-white px-6 pr-12">
+        <SheetTitle className="truncate text-[17px] font-medium text-[#111827]">{keyName(k)}</SheetTitle>
+      </div>
 
-      <div className="px-5 py-4">
-        <Section title="Summary">
-          <div className="grid grid-cols-3 gap-4">
-            <KV
-              label="Key ID"
-              value={<span className="font-mono">{keyIdOf(k.primary.fingerprint)}</span>}
-            />
-            <KV label="Algorithm" value={algoLabel(k.primary.algo)} />
-            <KV label="Created" value={fmtDate(k.primary.created)} />
-            <KV label="Next Expiry" value={<NextExpiryCell k={k} status={d.status} />} />
-            <KV label="Purpose" value={<PurposeList list={d.purposes} />} />
-            <KV label="Key Group" value={`${k.group} (${d.policy.name})`} />
-            {k.kind === "own" ? (
-              <>
-                <KV label="Storage" value={k.storage === "Host only" ? "Hosts only" : k.storage} />
-                <KV
-                  label="Compliance"
-                  value={d.compliance && <ComplianceCell c={d.compliance} />}
-                />
-                <KV label="Passphrase" value={k.passphrase} />
-              </>
-            ) : (
-              <>
-                <KV
-                  label="Approval"
-                  value={k.type === "Repository" ? "Set by policy" : k.approval}
-                />
-                <KV label="Source" value={k.source} />
-                {k.repoManager && <KV label="Package manager" value={k.repoManager} />}
-              </>
-            )}
-          </div>
-        </Section>
+      <Section title="Key">
+        <div className="divide-y divide-[#F1F2F5]">
+          <KV label="User ID" value={primaryUid ? `${primaryUid.name}${primaryUid.email ? ` <${primaryUid.email}>` : ""}` : muted("—")} />
+          {k.userIds.length > 1 && <KV label="Other User IDs" value={k.userIds.filter((u) => u !== primaryUid).map((u) => u.email ?? u.name).join(", ")} />}
+          <KV
+            label="Fingerprint"
+            value={
+              <span className="inline-flex items-center gap-1.5">
+                <span className="font-mono text-[12px] leading-[18px]">{groupedFp(k.primary.fingerprint)}</span>
+                <button onClick={copy} className="shrink-0 rounded p-1 hover:bg-muted" title="Copy fingerprint" aria-label="Copy fingerprint">
+                  <Copy className="h-3.5 w-3.5 text-[#6B7280]" />
+                </button>
+              </span>
+            }
+          />
+          <KV label="Key ID" value={<span className="font-mono text-[12.5px]">{keyIdOf(k.primary.fingerprint)}</span>} />
+          <KV label="Status" value={<StatusBadge status={d.status} />} />
+          {tr && <KV label="Type" value={<Pill>{tr.type}</Pill>} />}
+          <KV label="Purpose" value={<span className="inline-flex justify-end"><PurposeList list={d.purposes} /></span>} />
+          <KV label="Algorithm" value={algoLabel(k.primary.algo)} />
+          <KV label="Created" value={fmtDate(k.primary.created)} />
+          <KV label="Primary Expiry" value={k.primary.expires ? fmtDate(k.primary.expires) : muted("No expiry")} />
+          <KV label="Next Expiry" value={<NextExpiryCell k={k} status={d.status} />} />
+          <KV label="Key Group" value={`${k.group} (${d.policy.name})`} />
+          {own && (
+            <>
+              <KV label="Management" value={<DotPill tone={own.management === "Managed" ? "purple" : "grey"}>{own.management}</DotPill>} />
+              <KV
+                label="Storage"
+                value={
+                  own.storage === "CyberArk" ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Lock className="h-3.5 w-3.5 text-primary" /> CyberArk{own.vault ? `, safe ${own.vault.safeName}` : ""}
+                    </span>
+                  ) : own.storage === "Host only" ? (
+                    "Hosts only"
+                  ) : (
+                    own.storage
+                  )
+                }
+              />
+              <KV label="Revocation Certificate" value={<DotPill tone={own.revCert === "Stored" ? "green" : "red"}>{own.revCert === "Stored" ? `Stored in ${own.revCertWhere}` : "Missing"}</DotPill>} />
+              <KV
+                label="Linked SSH Key"
+                value={
+                  own.linkedSshKeyId ? (
+                    <Link to="/inventory/keys/user" search={{ highlight: own.linkedSshKeyId }} className="text-primary hover:underline">
+                      Authentication subkey
+                    </Link>
+                  ) : (
+                    muted("None")
+                  )
+                }
+              />
+              <KV label="Git Reference" value={own.gitRefs.length ? own.gitRefs.map((g) => `${g.host} / ${g.osUser} (${g.level})`).join(", ") : muted("None")} />
+              <KV
+                label="Publication"
+                value={
+                  <DotPill tone={own.publication === "Published" ? "green" : own.publication === "Out of date" ? "amber" : "grey"} title={own.publishedAt ? `Last published ${fmtDate(own.publishedAt)}` : undefined}>
+                    {own.publication}
+                  </DotPill>
+                }
+              />
+              <KV label="Compliance" value={d.compliance && <ComplianceCell c={d.compliance} />} />
+              <KV label="Passphrase" value={own.passphrase} />
+              {own.tags.length > 0 && <KV label="Tags" value={own.tags.join(", ")} />}
+              {own.generated && <KV label="Generated" value={`${fmtDate(own.generated.at)} by ${own.generated.by}`} />}
+              {own.onboarded && <KV label="Onboarded" value={`${fmtDate(own.onboarded.at)} by ${own.onboarded.by}`} />}
+            </>
+          )}
+          {tr && (
+            <>
+              <KV label="Source" value={tr.source} />
+              {tr.repoManager && <KV label="Package Manager" value={tr.repoManager} />}
+            </>
+          )}
+          <KV label="Last Operation" value={lastOp ? `${lastOp.action} · ${fmtDate(lastOp.at)}` : muted("None")} />
+          <KV label="Last Discovered" value={k.lastDiscovered ? fmtDate(k.lastDiscovered) : muted("Not yet")} />
+        </div>
+      </Section>
 
-        <Section title="Risks">
-          {d.risks.length === 0 ? (
-            <div className="text-[13px] text-muted-foreground">No risks found.</div>
-          ) : (
-            <ul className="space-y-1.5">
+      <Section title="Key parts">
+        <KeyParts k={k} status={d.status} threshold={d.policy.expiringThreshold} />
+      </Section>
+
+      {own ? <OwnLocations k={own} /> : tr && <LocationTable title="Locations" list={tr.locations.map((l) => ({ l, holds: "Public key" }))} empty="Not on any host yet. Use Distribute to place it." />}
+
+      <Section title="Risks">
+        {d.risks.length === 0 ? (
+          <div className="text-[13.5px] text-[#6B7280]">No risks found.</div>
+        ) : (
+          <div className="space-y-2.5">
+            <RiskList risks={d.risks} />
+            <ul className="space-y-1.5 text-[13px] text-[#374151]">
               {d.risks.map((r) => (
-                <li key={r} className="flex gap-2 text-[13px]">
-                  <AlertTriangle className="h-3.5 w-3.5 mt-0.5 text-risk-amber shrink-0" />
-                  <span>
-                    <span className="font-medium">{r}.</span> {RISK_HELP[r]}
-                    {k.kind === "own" && d.policy.allowedRisks.includes(r) && (
-                      <span className="text-muted-foreground"> Allowed by policy.</span>
-                    )}
-                  </span>
+                <li key={r}>
+                  <span className="font-medium">{r}.</span> {RISK_HELP[r]}
+                  {own && d.policy.allowedRisks.includes(r) && <span className="text-[#6B7280]"> Allowed by policy.</span>}
                 </li>
               ))}
             </ul>
-          )}
-          {d.compliance?.state === "Non-Compliant" && (
-            <div className="mt-3 rounded border border-risk-red/30 bg-risk-red/5 px-3 py-2 text-[13px]">
-              <div className="font-medium text-risk-red mb-1">Why it is non-compliant</div>
-              <ul className="list-disc pl-4 space-y-0.5">
-                {d.compliance.reasons.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </Section>
-
-        {k.kind === "trusted" && <ApprovalSection k={k} />}
-
-        <Section title="User IDs">
-          <table className="w-full text-[13px]">
-            <tbody>
-              {k.userIds.map((u, i) => (
-                <tr key={i} className="border-b border-border last:border-0">
-                  <td className="py-1.5 pr-2">
-                    <span className={cn(u.revoked && "line-through text-muted-foreground")}>
-                      {u.name}
-                      {u.comment && <span className="text-muted-foreground"> ({u.comment})</span>}
-                      {u.email && <span className="text-muted-foreground"> &lt;{u.email}&gt;</span>}
-                    </span>
-                  </td>
-                  <td className="py-1.5 text-right space-x-1">
-                    {u.primary && <Pill>Primary</Pill>}
-                    {u.revoked && (
-                      <Pill className="text-risk-red border-risk-red/30">
-                        Revoked {fmtDate(u.revoked.at)}
-                      </Pill>
-                    )}
-                  </td>
-                </tr>
+          </div>
+        )}
+        {d.compliance?.state === "Non-Compliant" && (
+          <div className="mt-3 rounded-md border border-[#FCA5A5] bg-[#FEF2F2] px-3.5 py-2.5 text-[13px]">
+            <div className="mb-1 font-medium text-[#B91C1C]">Why it is non-compliant</div>
+            <ul className="list-disc space-y-0.5 pl-4 text-[#374151]">
+              {d.compliance.reasons.map((r) => (
+                <li key={r}>{r}</li>
               ))}
-            </tbody>
-          </table>
-        </Section>
+            </ul>
+          </div>
+        )}
+      </Section>
 
-        <Section title="Primary key and subkeys">
-          <SubkeyTable k={k} threshold={d.policy.expiringThreshold} keyStatus={d.status} />
-        </Section>
+      {tr && <ApprovalSection k={tr} />}
 
-        {k.kind === "own" ? (
-          <OwnLocations k={k} />
+      <Section title="History">
+        {k.history.length === 0 ? (
+          <div className="text-[13.5px] text-[#6B7280]">No operations yet. Found by discovery{k.lastDiscovered ? ` on ${fmtDate(k.lastDiscovered)}` : ""}.</div>
         ) : (
-          <Locations
-            title="Hosts"
-            list={k.locations}
-            empty="Not on any host yet. Use Distribute to place it."
+          <PanelTable
+            head={["Date", "Operation", "By", "Result"]}
+            rows={[...k.history].reverse().map((o) => [
+              <span className="whitespace-nowrap">{fmtDate(o.at)}</span>,
+              <span title={o.detail}>{o.action}</span>,
+              o.user,
+              <DotPill tone={o.outcome === "Succeeded" ? "green" : o.outcome === "Failed" ? "red" : "amber"}>{o.outcome}</DotPill>,
+            ])}
           />
         )}
-
-        {k.kind === "own" && <OwnExtras k={k} />}
-
-        <Section title="History">
-          {k.history.length === 0 ? (
-            <div className="text-[13px] text-muted-foreground">
-              No operations yet. Found by discovery{" "}
-              {k.lastDiscovered ? fmtDate(k.lastDiscovered) : ""}.
-            </div>
-          ) : (
-            <ul className="space-y-1">
-              {[...k.history].reverse().map((o, i) => (
-                <li key={i} className="flex gap-2 text-[13px]">
-                  <span className="w-[92px] shrink-0 text-muted-foreground">{fmtDate(o.at)}</span>
-                  <span className="font-medium">{o.action}</span>
-                  <span className="text-muted-foreground">by {o.user}</span>
-                  {o.outcome !== "Succeeded" && (
-                    <span className={o.outcome === "Failed" ? "text-risk-red" : "text-[#B45309]"}>
-                      {o.outcome}
-                    </span>
-                  )}
-                  {o.detail && <span className="text-muted-foreground truncate">· {o.detail}</span>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Section>
-      </div>
+      </Section>
     </div>
   );
 }
 
-function SubkeyTable({
-  k,
-  threshold,
-  keyStatus,
-}: {
-  k: PgpKey;
-  threshold: number;
-  keyStatus: string;
-}) {
-  const rows: {
-    type: string;
-    purpose: string;
-    algo: string;
-    created: string;
-    expires: string | null;
-    status: string;
-    fp: string;
-    note?: string;
-  }[] = [
-    {
-      type: "Primary",
-      purpose: k.primary.canSign ? "Certify, Sign" : "Certify",
-      algo: algoLabel(k.primary.algo),
-      created: k.primary.created,
-      expires: k.primary.expires,
-      status: keyStatus,
-      fp: k.primary.fingerprint,
-      note: k.primary.revoked
-        ? `${k.primary.revoked.reason}${k.primary.revoked.comment ? `: ${k.primary.revoked.comment}` : ""}`
-        : undefined,
-    },
-    ...k.subkeys.map((sk: Subkey) => ({
-      type: "Subkey",
-      purpose: sk.purpose,
-      algo: algoLabel(sk.algo),
-      created: sk.created,
-      expires: sk.expires,
-      status: subkeyStatus(sk, threshold),
-      fp: sk.fingerprint,
-      note:
-        sk.retiredBy === "rotate"
-          ? "Replaced by Rotate Subkey"
-          : sk.retiredBy === "retire"
-            ? "Ended by Retire"
-            : sk.revoked
-              ? sk.revoked.reason
-              : undefined,
-    })),
+function KeyParts({ k, status, threshold }: { k: PgpKey; status: KeyStatus; threshold: number }) {
+  const primaryLabel = k.primary.canSign ? "Primary (certify, sign)" : "Primary (certify)";
+  const rows: ReactNode[][] = [
+    [primaryLabel, algoLabel(k.primary.algo), k.primary.expires ? fmtDate(k.primary.expires) : "No expiry", <StatusBadge status={status} />],
+    ...k.subkeys.map((sk) => {
+      const st = subkeyStatus(sk, threshold) as KeyStatus | "";
+      const note = sk.retiredBy === "rotate" ? "Replaced by rotation" : sk.retiredBy === "retire" ? "Ended by Retire" : sk.revoked ? sk.revoked.reason : undefined;
+      return [
+        <span title={sk.fingerprint}>{sk.purpose === "Authenticate" ? "Authentication" : sk.purpose === "Encrypt" ? "Encryption" : "Signing"}</span>,
+        algoLabel(sk.algo),
+        sk.expires ? fmtDate(sk.expires) : "No expiry",
+        <span title={note}>{st ? <StatusBadge status={st} /> : <DotPill tone="grey">Follows key</DotPill>}</span>,
+      ];
+    }),
   ];
-  return (
-    <table className="w-full text-[13px]">
-      <thead>
-        <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-          <th className="py-1 font-medium">Type</th>
-          <th className="py-1 font-medium">Purpose</th>
-          <th className="py-1 font-medium">Algorithm</th>
-          <th className="py-1 font-medium">Expires</th>
-          <th className="py-1 font-medium">Status</th>
-          <th className="py-1 font-medium">Fingerprint</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <tr key={r.fp} className="border-t border-border align-top">
-            <td className="py-1.5">{r.type}</td>
-            <td className="py-1.5">{r.purpose}</td>
-            <td className="py-1.5">{r.algo}</td>
-            <td className="py-1.5">{r.expires ? fmtDate(r.expires) : "No expiry"}</td>
-            <td className="py-1.5">
-              {r.status ? (
-                <StatusBadge status={r.status as never} />
-              ) : (
-                <span className="text-muted-foreground">Key status</span>
-              )}
-              {r.note && <div className="text-[12px] text-muted-foreground mt-0.5">{r.note}</div>}
-            </td>
-            <td className="py-1.5 font-mono text-[12px]" title={r.fp}>
-              {shortFp(r.fp)}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+  return <PanelTable head={["Part", "Algorithm", "Expires", "Status"]} rows={rows} />;
 }
 
-function Locations({
-  title,
-  list,
-  empty,
-  right,
-}: {
-  title: string;
-  list: PgpLocation[];
-  empty: string;
-  right?: React.ReactNode;
-}) {
-  const shown = list.slice(0, 12);
+function LocationTable({ title, list, empty, right }: { title: string; list: { l: PgpLocation; holds: string }[]; empty: string; right?: ReactNode }) {
+  const shown = list.slice(0, 15);
   return (
     <Section title={`${title} (${list.length})`} right={right}>
-      {list.length === 0 ? (
-        <div className="text-[13px] text-muted-foreground">{empty}</div>
-      ) : (
-        <table className="w-full text-[13px]">
-          <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-              <th className="py-1 font-medium">Host</th>
-              <th className="py-1 font-medium">OS user</th>
-              <th className="py-1 font-medium">Path</th>
-              <th className="py-1 font-medium">Held in</th>
-              <th className="py-1 font-medium">Placed by</th>
-            </tr>
-          </thead>
-          <tbody>
-            {shown.map((l, i) => (
-              <tr key={i} className="border-t border-border align-top">
-                <td className="py-1.5">{l.host}</td>
-                <td className="py-1.5">{l.osUser}</td>
-                <td className="py-1.5 font-mono text-[12px] break-all">
-                  {l.path}
-                  {l.misplaced && (
-                    <div className="text-risk-red font-sans text-[12px]">
-                      Misplaced: {l.misplaced}
-                    </div>
-                  )}
-                  {l.read === "Inaccessible" && (
-                    <div className="text-[#B45309] font-sans text-[12px]">
-                      Inaccessible: {l.inaccessibleReason}
-                    </div>
-                  )}
-                  {l.inBaseline === false && (
-                    <div className="text-risk-red font-sans text-[12px]">
-                      Not in the host's PGP baseline
-                    </div>
-                  )}
-                </td>
-                <td className="py-1.5">{l.heldIn ?? l.keyring}</td>
-                <td className="py-1.5">{l.placedBy ?? "Discovery"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {list.length > shown.length && (
-        <div className="text-[12px] text-muted-foreground mt-1">
-          and {list.length - shown.length} more
-        </div>
-      )}
+      <PanelTable
+        head={["Host", "OS user", "Keyring", "Holds"]}
+        empty={empty}
+        rows={shown.map(({ l, holds }) => [
+          <div>
+            <div>{l.host}</div>
+            {l.misplaced && <div className="text-[12px] text-[#DC2626]">Misplaced: {l.misplaced}</div>}
+            {l.read === "Inaccessible" && <div className="text-[12px] text-[#B45309]">Inaccessible: {l.inaccessibleReason}</div>}
+            {l.inBaseline === false && <div className="text-[12px] text-[#DC2626]">Not in the host's PGP baseline</div>}
+          </div>,
+          l.osUser,
+          <span className="font-mono text-[12px] break-all" title={l.path}>
+            {l.heldIn ?? l.keyring}
+          </span>,
+          <span className="whitespace-nowrap">{holds}</span>,
+        ])}
+      />
+      {list.length > shown.length && <div className="mt-1.5 text-[12.5px] text-[#6B7280]">and {list.length - shown.length} more</div>}
     </Section>
   );
 }
@@ -364,142 +228,36 @@ function OwnLocations({ k }: { k: OwnKey }) {
     if (bad) toast.error(`${ok} placed, ${bad} still failing`);
     else toast.success(`${ok} location${ok === 1 ? "" : "s"} placed on retry`);
   };
+  const list = [...k.privateLocations.map((l) => ({ l, holds: "Private key" })), ...k.publicCopies.map((l) => ({ l, holds: "Public copy" }))];
   return (
     <>
-      <Locations
-        title="Private key locations"
-        list={k.privateLocations}
-        empty={
-          k.notProvisioned
-            ? "Not provisioned. Use Provision PGP Key to place the private key on a host."
-            : "The private key is not on any host."
-        }
+      <LocationTable
+        title="Locations"
+        list={list}
+        empty={k.notProvisioned ? "Not provisioned. Use Provision PGP Key to place the private key on a host." : "The key is not on any host."}
         right={
           k.management === "Managed" && k.storage !== "Host only" ? (
-            <Button asChild size="sm" variant="outline" className="h-7 text-[13px]">
-              <Link to="/inventory/pgp/provision" search={{ key: k.id }}>
-                Provision
-              </Link>
-            </Button>
+            <Link to="/inventory/pgp/provision" search={{ key: k.id }} className="text-[13.5px] text-primary hover:underline">
+              Provision
+            </Link>
           ) : undefined
         }
-      />
-      <Locations
-        title="Public copies"
-        list={k.publicCopies}
-        empty="No public copies placed by AppViewX."
       />
       {k.failedLocations.length > 0 && (
         <Section
           title={`Failed locations (${k.failedLocations.length})`}
           right={
-            <Button size="sm" variant="outline" className="h-7 text-[13px]" onClick={retry}>
-              <RotateCw className="h-3 w-3 mr-1" /> Retry failed
-            </Button>
+            <button onClick={retry} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#D1D5DB] bg-white px-3 text-[13px] hover:bg-[#F9FAFB]">
+              <RotateCw className="h-3.5 w-3.5" /> Retry failed
+            </button>
           }
         >
-          <ul className="space-y-1 text-[13px]">
-            {k.failedLocations.map((f, i) => (
-              <li key={i}>
-                <span className="font-medium">
-                  {f.host} / {f.osUser}
-                </span>{" "}
-                <span className="text-muted-foreground">({f.role})</span>:{" "}
-                <span className="text-risk-red">{f.reason}</span>
-              </li>
-            ))}
-          </ul>
+          <PanelTable
+            head={["Host", "OS user", "Receives", "Reason"]}
+            rows={k.failedLocations.map((f) => [f.host, f.osUser, f.role, <span className="text-[#DC2626]">{f.reason}</span>])}
+          />
         </Section>
       )}
-    </>
-  );
-}
-
-function OwnExtras({ k }: { k: OwnKey }) {
-  const s = usePgp();
-  return (
-    <>
-      <Section title="Links">
-        <div className="grid grid-cols-2 gap-4">
-          <KV
-            label="SSH key"
-            value={
-              k.linkedSshKeyId ? (
-                <Link
-                  to="/inventory/keys/user"
-                  search={{ highlight: k.linkedSshKeyId }}
-                  className="text-primary hover:underline"
-                >
-                  Authentication subkey also used as an SSH key
-                </Link>
-              ) : (
-                "None"
-              )
-            }
-          />
-          <KV
-            label="Git signing"
-            value={
-              k.gitRefs.length
-                ? k.gitRefs.map((g) => `${g.host} / ${g.osUser} (${g.level})`).join(", ")
-                : "None"
-            }
-          />
-        </div>
-      </Section>
-      <Section title="Revocation certificate and publication">
-        <div className="grid grid-cols-2 gap-4">
-          <KV
-            label="Revocation certificate"
-            value={
-              k.revCert === "Stored" ? (
-                <span className="inline-flex items-center gap-1 text-[#15803D]">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Stored in {k.revCertWhere}
-                </span>
-              ) : (
-                <span className="text-risk-red">Missing</span>
-              )
-            }
-          />
-          <KV
-            label="Publication"
-            value={
-              k.publication === "Not published"
-                ? "Not published"
-                : `${k.publication}${k.publishedAt ? `, last published ${fmtDate(k.publishedAt)}` : ""}${s.settings.keyserver ? ` to ${s.settings.keyserver}` : ""}`
-            }
-          />
-        </div>
-      </Section>
-      <Section title="Management">
-        <div className="grid grid-cols-2 gap-4">
-          {k.generated && (
-            <KV label="Generated" value={`${fmtDate(k.generated.at)} by ${k.generated.by}`} />
-          )}
-          {k.onboarded && (
-            <KV
-              label="Onboarded"
-              value={`${fmtDate(k.onboarded.at)} by ${k.onboarded.by}. ${k.onboarded.note}`}
-            />
-          )}
-          {k.vault && (
-            <KV
-              label="CyberArk"
-              value={`${k.vault.vaultConfig}, safe ${k.vault.safeName}, account ${k.vault.pamAccountName}`}
-            />
-          )}
-          {k.tags.length > 0 && <KV label="Tags" value={k.tags.join(", ")} />}
-          {k.lastOperation && (
-            <KV
-              label="Last operation"
-              value={`${k.lastOperation.action}, ${k.lastOperation.outcome}, ${fmtDate(k.lastOperation.at)} by ${k.lastOperation.user}`}
-            />
-          )}
-          {!k.generated && !k.onboarded && (
-            <KV label="Found by" value={`Discovery, last seen ${fmtDate(k.lastDiscovered)}`} />
-          )}
-        </div>
-      </Section>
     </>
   );
 }
@@ -510,45 +268,20 @@ function ApprovalSection({ k }: { k: TrustedKey }) {
   const replacement = k.replacedBy ? s.trusted.find((x) => x.id === k.replacedBy) : undefined;
   return (
     <Section title="Approval">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="divide-y divide-[#F1F2F5]">
         {k.type === "Repository" ? (
-          <KV
-            label="Approval"
-            value="Repository keys are trusted through the policy's Approved Repository Keys list."
-            className="col-span-2"
-          />
+          <KV label="Approval" value="Set by policy (Approved Repository Keys)" />
         ) : (
           <>
-            <KV label="Status" value={k.approval} />
-            <KV
-              label="Imported"
-              value={
-                k.imported ? `${fmtDate(k.imported.at)} by ${k.imported.by}` : "Found by discovery"
-              }
-            />
-            {k.decision && (
-              <KV
-                label={k.decision.decision === "Rejected" ? "Rejected" : "Approved by"}
-                value={`${k.decision.by}, ${fmtDate(k.decision.at)}`}
-              />
-            )}
-            {k.decision && <KV label="How the fingerprint was confirmed" value={k.decision.note} />}
-            {k.policyCheck && (
-              <KV
-                label="Policy check at import"
-                value={k.policyCheck.join(" · ")}
-                className="col-span-2"
-              />
-            )}
+            <KV label="Status" value={<DotPill tone={k.approval === "Approved" ? "green" : k.approval === "Pending" ? "amber" : "red"}>{k.approval}</DotPill>} />
+            <KV label="Imported" value={k.imported ? `${fmtDate(k.imported.at)} by ${k.imported.by}` : "Found by discovery"} />
+            {k.decision && <KV label={k.decision.decision === "Rejected" ? "Rejected by" : "Decided by"} value={`${k.decision.by}, ${fmtDate(k.decision.at)}`} />}
+            {k.decision?.note && <KV label="Fingerprint confirmed" value={k.decision.note} />}
+            {k.policyCheck && <KV label="Policy check at import" value={k.policyCheck.join(" · ")} />}
           </>
         )}
         {replaced && <KV label="Replaces" value={keyName(replaced)} />}
-        {replacement && (
-          <KV
-            label="Being replaced by"
-            value={`${keyName(replacement)}. Confirm Cutover once it is on every host.`}
-          />
-        )}
+        {replacement && <KV label="Being replaced by" value={`${keyName(replacement)}. Confirm Cutover once it is on every host.`} />}
       </div>
     </Section>
   );

@@ -20,8 +20,8 @@ export function PageHeader({
   tabs?: ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-20 -mx-8 mb-6 border-b border-border bg-white px-8">
-      <div className="flex min-h-[64px] items-center justify-between gap-4 py-3">
+    <div className="sticky top-0 z-20 -mx-6 mb-6 border-b border-border bg-white px-6">
+      <div className="flex min-h-[52px] items-center justify-between gap-4 py-2.5">
         {parents?.length ? (
           <div className="flex items-center gap-2">
             {parents.map((p) => (
@@ -29,21 +29,21 @@ export function PageHeader({
                 <Link
                   to={p.to}
                   search={p.search as never}
-                  className="text-[15px] text-primary hover:underline"
+                  className="text-[13px] text-primary hover:underline"
                 >
                   {p.label}
                 </Link>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
               </span>
             ))}
-            <h1 className="text-[20px] font-semibold text-[#111827]">{title}</h1>
+            <h1 className="text-[16px] font-semibold text-[#111827]">{title}</h1>
           </div>
         ) : (
-          <h1 className="text-[20px] font-semibold text-[#111827]">{title}</h1>
+          <h1 className="text-[16px] font-semibold text-[#111827]">{title}</h1>
         )}
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
-      {tabs && <div className="-mb-px flex gap-8">{tabs}</div>}
+      {tabs && <div className="-mb-px flex gap-6">{tabs}</div>}
     </div>
   );
 }
@@ -66,8 +66,8 @@ export function HeaderTab({
       onClick={onClick}
       className={
         active
-          ? "border-b-[3px] border-primary pb-2.5 text-[16px] font-medium text-primary"
-          : "border-b-[3px] border-transparent pb-2.5 text-[16px] text-[#111827] hover:text-primary"
+          ? "border-b-2 border-primary pb-2 text-[14px] text-primary"
+          : "border-b-2 border-transparent pb-2 text-[14px] text-[#111827] hover:text-primary"
       }
     >
       {children}
