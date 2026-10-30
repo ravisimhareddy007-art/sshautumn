@@ -172,13 +172,17 @@ export interface VaultConfig {
   serverAddress: string;
 }
 
+/**
+ * The PGP view of a key policy, derived from KeyPolicy by toPgpPolicy().
+ * The PGP rules read this shape only.
+ */
 export interface PgpPolicy {
   id: string;
   name: string;
   evaluate: boolean;
-  rsaMin: 2048 | 3072 | 4096 | null;
-  ed25519: boolean;
-  ecdsaCurves: Curve[];
+  /** Allowed algorithm tokens, e.g. "RSA:3072", "ED25519", "ECDSA:P-256". */
+  algorithms: string[];
+  /** Days, converted from the policy's months. */
   maxValidityPrimary: number | null;
   maxValiditySubkeys: number | null;
   expiringThreshold: number;
@@ -190,13 +194,105 @@ export interface PgpPolicy {
   allowedRisks: string[];
   requireApproval: boolean;
   approvedRepoKeys: { fingerprint: string; label: string }[];
-  cyberArk?: {
+  cyberArk: {
     required: boolean;
     vaultConfig: string;
     safeName: string;
     userName: string;
     pamFormat: string;
     serverAddress: string;
+  };
+}
+
+/** One key policy as configured on the Key Policy page. Covers SSH and PGP keys. */
+export interface KeyPolicy {
+  id: string;
+  name: string;
+  description: string;
+  /** Key compliance groups this policy applies to. */
+  groups: string[];
+  // Compliance Configuration
+  sshAlgorithms: string[];
+  allowedRisks: string[];
+  age: number | null;
+  // Private Key Storage
+  storage: {
+    mode: "Optional" | "Required";
+    vaultConfig: string;
+    safeName: string;
+    userName: string;
+    pamAccountName: string;
+    serverAddress: string;
+    allowOverride: boolean;
+  };
+  // PGP Key Configuration
+  evaluatePgp: boolean;
+  pgpAlgorithms: string[];
+  maxValidityPrimaryMonths: number | null;
+  maxValiditySubkeysMonths: number | null;
+  expiryRequired: boolean;
+  revCertRequired: boolean;
+  requiredSubkeys: Purpose[];
+  // Trusted Key Settings
+  requireApproval: boolean;
+  approvedRepoKeys: { fingerprint: string; label: string }[];
+  // SSH Certificate Configuration
+  certMaxValidity: number | null;
+  certMaxValidityUnit: "Day(s)" | "Week(s)" | "Month(s)";
+  extensions: string[];
+  criticalOptions: boolean;
+  // Rotation Configuration
+  rotateAutomatically: boolean;
+  rotationKeyAlgorithm: string;
+  rotationKeySize: string;
+  postWindowAction: "Manual Confirmation" | "Auto-Deactivate";
+  // Host Certificate Auto Rotate Settings
+  hostCertAutoRotateBefore: string;
+}
+
+/** A key is Expiring when its next expiry falls within this many days. */
+export const PGP_EXPIRING_THRESHOLD = 30;
+
+export const monthsToDays = (m: number | null) => (m === null ? null : Math.round((m * 365) / 12));
+
+/** Rotate Subkey uses Ed25519 when allowed, otherwise the strongest allowed algorithm. */
+export function rotationAlgorithmFor(algorithms: string[]): string {
+  if (algorithms.includes("ED25519")) return "Ed25519";
+  const rsa = algorithms
+    .filter((a) => a.startsWith("RSA:"))
+    .map((a) => Number(a.slice(4)))
+    .sort((a, b) => b - a);
+  if (rsa.length) return `RSA ${rsa[0]}`;
+  const ec = algorithms.find((a) => a.startsWith("ECDSA:"));
+  return ec ? `ECDSA ${ec.slice(6)}` : "Ed25519";
+}
+
+export function toPgpPolicy(p: KeyPolicy): PgpPolicy {
+  const sub = monthsToDays(p.maxValiditySubkeysMonths);
+  return {
+    id: p.id,
+    name: p.name,
+    evaluate: p.evaluatePgp,
+    algorithms: p.pgpAlgorithms,
+    maxValidityPrimary: monthsToDays(p.maxValidityPrimaryMonths),
+    maxValiditySubkeys: sub,
+    expiringThreshold: PGP_EXPIRING_THRESHOLD,
+    expiryRequired: p.expiryRequired,
+    revCertRequired: p.revCertRequired,
+    requiredSubkeys: p.requiredSubkeys,
+    rotationAlgorithm: rotationAlgorithmFor(p.pgpAlgorithms),
+    rotationValidity: sub ?? 365,
+    allowedRisks: p.allowedRisks,
+    requireApproval: p.requireApproval,
+    approvedRepoKeys: p.approvedRepoKeys,
+    cyberArk: {
+      required: p.storage.mode === "Required",
+      vaultConfig: p.storage.vaultConfig,
+      safeName: p.storage.safeName,
+      userName: p.storage.userName,
+      pamFormat: p.storage.pamAccountName,
+      serverAddress: p.storage.serverAddress,
+    },
   };
 }
 
@@ -219,14 +315,14 @@ export interface PgpHost {
 
 export const CURRENT_USER = "admin";
 
-export const PGP_GROUPS = ["Default", "Prod_Group", "Service_Group", "Finance_Keys"];
-
-export const GROUP_POLICY: Record<string, string> = {
-  Default: "pol-default",
-  Prod_Group: "pol-default",
-  Service_Group: "pol-default",
-  Finance_Keys: "pol-finance",
-};
+/** Key compliance groups. Each one is covered by exactly one key policy. */
+export const KEY_GROUPS: { name: string; description: string }[] = [
+  { name: "Default_Key_Group", description: "Keys not assigned to another group" },
+  { name: "Prod_Key_Group", description: "Production application keys" },
+  { name: "Service_Key_Group", description: "Service account and automation keys" },
+  { name: "Finance_Key_Group", description: "Payment and settlement file exchange keys" },
+];
+export const PGP_GROUPS = KEY_GROUPS.map((g) => g.name);
 
 // ─── Dates ─────────────────────────────────────────────────────────────────────
 
@@ -260,7 +356,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 export function fmtDate(s: string | null | undefined): string {
   if (!s) return "";
   const d = parseIso(s);
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  return `${String(d.getDate()).padStart(2, "0")} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 // ─── Fingerprints ──────────────────────────────────────────────────────────────
@@ -306,62 +402,111 @@ export const PGP_HOSTS: PgpHost[] = [
 
 // ─── Policies ──────────────────────────────────────────────────────────────────
 
-export const SEED_POLICIES: PgpPolicy[] = [
+const SSH_DEFAULTS = {
+  sshAlgorithms: ["ECDSA:521", "RSA:2048"],
+  age: null,
+  certMaxValidity: 30,
+  certMaxValidityUnit: "Day(s)" as const,
+  extensions: [
+    "permit-agent-forwarding",
+    "permit-port-forwarding",
+    "permit-pty",
+    "permit-user-rc",
+    "permit-X11-forwarding",
+  ],
+  criticalOptions: false,
+  rotateAutomatically: false,
+  rotationKeyAlgorithm: "RSA",
+  rotationKeySize: "2048",
+  postWindowAction: "Manual Confirmation" as const,
+  hostCertAutoRotateBefore: "10 Days",
+};
+
+export const SEED_POLICIES: KeyPolicy[] = [
   {
     id: "pol-default",
     name: "Default_Key_Policy",
-    evaluate: true,
-    rsaMin: 3072,
-    ed25519: true,
-    ecdsaCurves: [],
-    maxValidityPrimary: 1095,
-    maxValiditySubkeys: 365,
-    expiringThreshold: 30,
+    description: "Default policy for SSH Keys",
+    groups: ["Default_Key_Group", "Prod_Key_Group", "Service_Key_Group"],
+    ...SSH_DEFAULTS,
+    allowedRisks: ["Expiring"],
+    storage: {
+      mode: "Optional",
+      vaultConfig: "CyberArk-Prod",
+      safeName: "SSH-Keys-Prod",
+      userName: "appviewx",
+      pamAccountName: "{key name}-appviewx",
+      serverAddress: "vault.appviewx.lab",
+      allowOverride: false,
+    },
+    evaluatePgp: true,
+    pgpAlgorithms: ["RSA:3072", "RSA:4096", "ED25519"],
+    maxValidityPrimaryMonths: 36,
+    maxValiditySubkeysMonths: 12,
     expiryRequired: false,
     revCertRequired: true,
     requiredSubkeys: ["Encrypt"],
-    rotationAlgorithm: "Ed25519",
-    rotationValidity: 365,
-    allowedRisks: ["Expiring"],
     requireApproval: true,
     approvedRepoKeys: [],
-    cyberArk: {
-      required: false,
-      vaultConfig: "CyberArk-Prod",
-      safeName: "PGP-Keys-Prod",
-      userName: "appviewx",
-      pamFormat: "pgp-{key name}",
-      serverAddress: "vault.harborbank.example",
-    },
   },
   {
     id: "pol-finance",
     name: "Finance_Key_Policy",
-    evaluate: true,
-    rsaMin: 4096,
-    ed25519: true,
-    ecdsaCurves: [],
-    maxValidityPrimary: 730,
-    maxValiditySubkeys: 365,
-    expiringThreshold: 30,
-    expiryRequired: true,
-    revCertRequired: true,
-    requiredSubkeys: ["Encrypt", "Sign"],
-    rotationAlgorithm: "Ed25519",
-    rotationValidity: 365,
+    description: "Payment and settlement keys, stored in CyberArk",
+    groups: ["Finance_Key_Group"],
+    ...SSH_DEFAULTS,
+    sshAlgorithms: ["ECDSA:521", "RSA:4096"],
     allowedRisks: ["Expiring", "Shared"],
-    requireApproval: true,
-    approvedRepoKeys: [],
-    cyberArk: {
-      required: true,
+    storage: {
+      mode: "Required",
       vaultConfig: "CyberArk-Prod",
       safeName: "PGP-Finance-Prod",
       userName: "sftp-svc",
-      pamFormat: "pgp-{key name}",
-      serverAddress: "vault.harborbank.example",
+      pamAccountName: "pgp-{key name}",
+      serverAddress: "vault.appviewx.lab",
+      allowOverride: false,
     },
+    evaluatePgp: true,
+    pgpAlgorithms: ["RSA:4096", "ED25519"],
+    maxValidityPrimaryMonths: 24,
+    maxValiditySubkeysMonths: 12,
+    expiryRequired: true,
+    revCertRequired: true,
+    requiredSubkeys: ["Encrypt", "Sign"],
+    requireApproval: true,
+    approvedRepoKeys: [],
   },
 ];
+
+/** Settings a new policy starts from on the Add page. */
+export function blankPolicy(): KeyPolicy {
+  return {
+    id: "",
+    name: "",
+    description: "",
+    groups: [],
+    ...SSH_DEFAULTS,
+    allowedRisks: [],
+    storage: {
+      mode: "Optional",
+      vaultConfig: "CyberArk-Prod",
+      safeName: "SSH-Keys-Prod",
+      userName: "appviewx",
+      pamAccountName: "{key name}-appviewx",
+      serverAddress: "vault.appviewx.lab",
+      allowOverride: false,
+    },
+    evaluatePgp: false,
+    pgpAlgorithms: ["RSA:3072", "RSA:4096", "ED25519"],
+    maxValidityPrimaryMonths: 24,
+    maxValiditySubkeysMonths: 12,
+    expiryRequired: true,
+    revCertRequired: true,
+    requiredSubkeys: ["Encrypt", "Sign"],
+    requireApproval: true,
+    approvedRepoKeys: [],
+  };
+}
 
 // ─── Seed data ─────────────────────────────────────────────────────────────────
 
@@ -445,7 +590,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [loc("recon-01", "recon", "/home/recon/.gnupg", { placedBy: "AVX SSH" })],
     management: "Managed",
     storage: "CyberArk",
-    group: "Finance_Keys",
+    group: "Finance_Key_Group",
     revCert: "Stored",
     revCertWhere: "CyberArk",
     publication: "Published",
@@ -492,7 +637,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Managed",
     storage: "AppViewX",
-    group: "Default",
+    group: "Default_Key_Group",
     revCert: "Stored",
     revCertWhere: "AppViewX",
     publication: "Published",
@@ -527,7 +672,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Discovered",
     storage: "Host only",
-    group: "Prod_Group",
+    group: "Prod_Key_Group",
     revCert: "Missing",
     publication: "Not published",
     gitRefs: [],
@@ -554,7 +699,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Managed",
     storage: "AppViewX",
-    group: "Default",
+    group: "Default_Key_Group",
     retired: true,
     revCert: "Stored",
     revCertWhere: "AppViewX",
@@ -590,7 +735,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Discovered",
     storage: "Host only",
-    group: "Default",
+    group: "Default_Key_Group",
     revCert: "Missing",
     publication: "Not published",
     gitRefs: [],
@@ -617,7 +762,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Discovered",
     storage: "Host only",
-    group: "Default",
+    group: "Default_Key_Group",
     revCert: "Missing",
     publication: "Not published",
     gitRefs: [{ host: "dev-box-07", osUser: "jdoe", level: "user" }],
@@ -654,7 +799,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Managed",
     storage: "CyberArk",
-    group: "Finance_Keys",
+    group: "Finance_Key_Group",
     revCert: "Stored",
     revCertWhere: "CyberArk",
     publication: "Not published",
@@ -697,7 +842,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Managed",
     storage: "Host only",
-    group: "Prod_Group",
+    group: "Prod_Key_Group",
     revCert: "Stored",
     revCertWhere: "AppViewX",
     publication: "Published",
@@ -738,7 +883,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Discovered",
     storage: "Host only",
-    group: "Service_Group",
+    group: "Service_Key_Group",
     revCert: "Missing",
     publication: "Not published",
     gitRefs: [],
@@ -774,7 +919,7 @@ const ownSeed: OwnKey[] = [
     publicCopies: [],
     management: "Managed",
     storage: "AppViewX",
-    group: "Default",
+    group: "Default_Key_Group",
     revCert: "Stored",
     revCertWhere: "AppViewX",
     publication: "Out of date",
@@ -842,7 +987,7 @@ const trustedSeed: TrustedKey[] = [
       note: "Fingerprint confirmed by phone with the PayWise security team",
       decision: "Approved",
     },
-    group: "Finance_Keys",
+    group: "Finance_Key_Group",
     lastDiscovered: rel(-1),
     history: [
       op("Import Key", 120, "sam.ops"),
@@ -886,7 +1031,7 @@ const trustedSeed: TrustedKey[] = [
       note: "Fingerprint read out on a call with ClearCard operations",
       decision: "Approved",
     },
-    group: "Finance_Keys",
+    group: "Finance_Key_Group",
     lastDiscovered: rel(-1),
     history: [
       op("Import Key", 340, "sam.ops"),
@@ -916,7 +1061,7 @@ const trustedSeed: TrustedKey[] = [
     source: "File",
     imported: { by: "sam.ops", at: rel(-2) },
     policyCheck: ["Algorithm Ed25519: allowed", "Expiry set: yes", "Not revoked"],
-    group: "Finance_Keys",
+    group: "Finance_Key_Group",
     history: [op("Import Key", 2, "sam.ops")],
   },
   {
@@ -949,7 +1094,7 @@ const trustedSeed: TrustedKey[] = [
       note: "Confirmed against Metro's published fingerprint letter",
       decision: "Approved",
     },
-    group: "Finance_Keys",
+    group: "Finance_Key_Group",
     lastDiscovered: rel(-1),
     history: [op("Import Key", 700, "sam.ops"), op("Approve", 699, "priya.sec")],
   },
@@ -970,7 +1115,7 @@ const trustedSeed: TrustedKey[] = [
     locations: [loc("ftp-in-02", "ftpuser", "/home/ftpuser/.gnupg", { inBaseline: undefined })],
     approval: "Not approved",
     source: "Discovered",
-    group: "Default",
+    group: "Default_Key_Group",
     lastDiscovered: rel(-1),
     history: [],
   },
@@ -999,7 +1144,7 @@ const trustedSeed: TrustedKey[] = [
     approval: "Approved",
     source: "Discovered",
     repoManager: "apt",
-    group: "Default",
+    group: "Default_Key_Group",
     lastDiscovered: rel(-1),
     history: [],
   },
@@ -1024,7 +1169,7 @@ const trustedSeed: TrustedKey[] = [
     approval: "Approved",
     source: "Discovered",
     repoManager: "rpm",
-    group: "Default",
+    group: "Default_Key_Group",
     lastDiscovered: rel(-1),
     history: [],
   },
@@ -1056,7 +1201,7 @@ const trustedSeed: TrustedKey[] = [
     source: "Keyserver",
     imported: { by: "sam.ops", at: rel(-1100) },
     decision: { by: "priya.sec", at: rel(-1099), note: "Confirmed by phone", decision: "Approved" },
-    group: "Finance_Keys",
+    group: "Finance_Key_Group",
     lastDiscovered: rel(-1),
     history: [op("Import Key", 1100, "sam.ops"), op("Approve", 1099, "priya.sec")],
   },

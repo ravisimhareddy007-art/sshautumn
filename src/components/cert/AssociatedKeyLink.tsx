@@ -44,11 +44,11 @@ export function AssociatedKeyLink({
         }}
       >
         {k ? (
-          <div className="text-[13px] text-foreground space-y-2">
+          <div className="text-[14px] text-foreground space-y-2">
             <div className="font-semibold text-[14px] truncate" title={k.name}>
               {k.name}
             </div>
-            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[12px]">
+            <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[13px]">
               <span className="text-muted-foreground">Encryption</span>
               <span>{k.encryption}</span>
               <span className="text-muted-foreground">Key Length</span>
@@ -81,18 +81,18 @@ export function AssociatedKeyLink({
             <Link
               to={targetRoute}
               search={{ highlight: k.id }}
-              className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:text-primary-hover"
+              className="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:text-primary-hover"
             >
               View in Key Inventory <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         ) : (
-          <div className="text-[13px] text-muted-foreground">
+          <div className="text-[14px] text-muted-foreground">
             Key details unavailable.
             <div className="mt-2">
               <Link
                 to={targetRoute}
-                className="inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:text-primary-hover"
+                className="inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:text-primary-hover"
               >
                 View in Key Inventory <ArrowRight className="h-3 w-3" />
               </Link>

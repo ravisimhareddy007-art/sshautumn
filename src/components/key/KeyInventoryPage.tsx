@@ -275,11 +275,12 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
   return (
     <div>
       <PageHeader breadcrumbs={props.breadcrumbs} title={props.title} />
+      <div className="page-card">
 
       {/* ── Unified compact tile bar ─────────────────────────────────────────── */}
-      <div className="bg-surface border border-border rounded-md flex overflow-hidden mb-3">
+      <div className="mb-6 flex gap-4">
         {/* Risk tiles */}
-        {props.riskKinds.map((r, i) => {
+        {props.riskKinds.map((r) => {
           const count = riskCounts[r] ?? 0;
           const isZero = count === 0;
           const col = isZero
@@ -297,21 +298,18 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 setPage(1);
               }}
               className={cn(
-                "flex-1 text-left px-4 py-2.5 border-l-[3px] transition-colors",
-                i > 0 && "border-l border-l-border",
-                active ? "bg-row-selected" : "hover:bg-muted/60",
+                "flex-1 rounded-md border border-border bg-white px-5 py-4 text-left transition-colors hover:bg-[#F9FAFB]",
+                active && "bg-row-selected ring-1 ring-primary/40",
               )}
               style={{ borderLeftColor: col.border, borderLeftWidth: 3 }}
             >
-              <div className="text-[20px] font-bold leading-none" style={{ color: col.text }}>
-                {count}
-                {props.total != null && (
-                  <span className="text-[11px] text-muted-foreground font-normal ml-0.5">/{props.total}</span>
-                )}
+              <div className="flex items-baseline">
+                <span className="text-[30px] font-semibold leading-none text-[#111827]">{count}</span>
+                {props.total != null && <span className="ml-0.5 text-[14px] text-[#6B7280]">/{props.total}</span>}
               </div>
-              <div className="mt-0.5 flex items-center gap-1 text-[10px] uppercase tracking-wider font-medium text-muted-foreground whitespace-nowrap">
+              <div className="mt-2.5 flex items-center gap-1 whitespace-nowrap text-[13px] font-medium uppercase tracking-[0.06em] text-[#374151]">
                 {r} Keys
-                <Info className="h-3 w-3" />
+                <Info className="h-3.5 w-3.5 text-[#6B7280]" />
               </div>
             </button>
           );
@@ -320,7 +318,6 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
         {/* Migration tile — only shown when migrations exist */}
         {migCounts.total > 0 && (
           <>
-            <div className="w-px bg-border my-1.5" />
             <button
               onClick={() => {
                 setMigrationFilter((f) => (f ? null : "all"));
@@ -328,17 +325,17 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 setPage(1);
               }}
               className={cn(
-                "text-left px-4 py-2.5 min-w-[200px] transition-colors",
-                migrationFilter ? "bg-row-selected" : "hover:bg-muted/60",
+                "min-w-[220px] rounded-md border border-border bg-white px-5 py-4 text-left transition-colors hover:bg-[#F9FAFB]",
+                migrationFilter && "bg-row-selected ring-1 ring-primary/40",
               )}
             >
               <div className="flex items-center gap-2">
                 <span className="text-[20px] font-bold leading-none text-primary">{migCounts.total}</span>
-                <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground">
+                <span className="text-[11px] uppercase tracking-wider font-medium text-muted-foreground">
                   Migration Activity
                 </span>
                 {migCounts.critical > 0 && (
-                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-risk-red bg-risk-red/10 px-1.5 py-0.5 rounded">
+                  <span className="flex items-center gap-0.5 text-[11px] font-bold text-risk-red bg-risk-red/10 px-1.5 py-0.5 rounded">
                     <AlertTriangle className="h-3 w-3" />
                     {migCounts.critical}
                   </span>
@@ -347,7 +344,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
               <div className="flex items-center gap-3 mt-1">
                 {migCounts.in_coexistence > 0 && (
                   <span
-                    className="text-[10px] text-risk-amber cursor-pointer hover:underline"
+                    className="text-[11px] text-risk-amber cursor-pointer hover:underline"
                     onClick={(e) => {
                       e.stopPropagation();
                       setMigrationFilter("in_coexistence");
@@ -360,7 +357,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 )}
                 {migCounts.awaiting_confirmation > 0 && (
                   <span
-                    className="text-[10px] text-risk-red font-medium cursor-pointer hover:underline"
+                    className="text-[11px] text-risk-red font-medium cursor-pointer hover:underline"
                     onClick={(e) => {
                       e.stopPropagation();
                       setMigrationFilter("awaiting_confirmation");
@@ -373,7 +370,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                 )}
                 {migCounts.decommissioned > 0 && (
                   <span
-                    className="text-[10px] text-risk-green cursor-pointer hover:underline"
+                    className="text-[11px] text-risk-green cursor-pointer hover:underline"
                     onClick={(e) => {
                       e.stopPropagation();
                       setMigrationFilter("decommissioned");
@@ -385,7 +382,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   </span>
                 )}
                 {migCounts.rolled_back > 0 && (
-                  <span className="text-[10px] text-muted-foreground">↺ {migCounts.rolled_back}</span>
+                  <span className="text-[11px] text-muted-foreground">↺ {migCounts.rolled_back}</span>
                 )}
               </div>
             </button>
@@ -403,8 +400,8 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
         }}
       />
 
-      <div className="flex items-center gap-2 bg-surface border border-border rounded-t-md px-3 py-2">
-        <span className="text-[12px] text-muted-foreground">Groups</span>
+      <div className="mb-5 flex items-center gap-2">
+        <span className="text-[13px] text-muted-foreground">Groups</span>
         <Select
           value={group}
           onValueChange={(v) => {
@@ -412,7 +409,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
             setPage(1);
           }}
         >
-          <SelectTrigger className="h-8 w-[160px] text-[13px]">
+          <SelectTrigger className="h-8 w-[160px] text-[14px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -425,7 +422,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
           </SelectContent>
         </Select>
 
-        <span className="text-[12px] text-muted-foreground ml-2">Algorithm</span>
+        <span className="text-[13px] text-muted-foreground ml-2">Algorithm</span>
         <Select
           value={algoFilter}
           onValueChange={(v) => {
@@ -433,7 +430,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
             setPage(1);
           }}
         >
-          <SelectTrigger className="h-8 w-[190px] text-[13px]">
+          <SelectTrigger className="h-8 w-[190px] text-[14px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -446,7 +443,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
         <div className="relative flex-1 max-w-md ml-2">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            className="pl-7 pr-8 h-8 text-[13px]"
+            className="pl-7 pr-8 h-8 text-[14px]"
             placeholder="Type your search and press Enter…"
             value={search_}
             onChange={(e) => {
@@ -476,10 +473,10 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
             <DropdownMenuContent align="end" className="w-64">
               {sel && (
                 <div className="px-2 py-1.5 mb-1 border-b border-border">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Combination</span>
+                  <span className="text-[11px] text-muted-foreground uppercase tracking-wider">Combination</span>
                   <div
                     className={cn(
-                      "mt-0.5 text-[11px] font-medium px-1.5 py-0.5 rounded border inline-block",
+                      "mt-0.5 text-[12px] font-medium px-1.5 py-0.5 rounded border inline-block",
                       COMBO_BADGE_CLASS[sel.combination],
                     )}
                   >
@@ -570,7 +567,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                   {sel?.migrationStatus === "rolled_back" ? "Restart Migration" : "Migrate to Certificate"}
                   <Badge
                     variant="outline"
-                    className="ml-auto text-[9px] h-4 px-1 text-primary border-primary/30 bg-primary/10"
+                    className="ml-auto text-[10px] h-4 px-1 text-primary border-primary/30 bg-primary/10"
                   >
                     {sel?.migrationStatus === "rolled_back" ? "↺" : "NEW"}
                   </Badge>
@@ -724,7 +721,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                             background: "rgba(239,68,68,0.05)",
                           }}
                         >
-                          <div className="flex items-center gap-2 py-1.5 px-3 bg-risk-red/10 border border-risk-red/30 rounded text-[12px] text-risk-red">
+                          <div className="flex items-center gap-2 py-1.5 px-3 bg-risk-red/10 border border-risk-red/30 rounded text-[13px] text-risk-red">
                             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                             <strong>Critical:</strong> Key was decommissioned and migration cert has expired. Renew cert
                             on <strong>{k.migrationHostEndpoint}</strong> immediately.
@@ -746,7 +743,7 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                             padding: "12px 48px",
                           }}
                         >
-                          <div className="grid grid-cols-3 gap-6 text-[12px]">
+                          <div className="grid grid-cols-3 gap-6 text-[13px]">
                             <KV
                               label="Fingerprint"
                               value={<span className="font-mono break-all">{k.fingerprint}</span>}
@@ -759,10 +756,10 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                           </div>
                           {k.migrationStatus && (
                             <div className="mt-4 pt-4 border-t border-border">
-                              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">
+                              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">
                                 Migration Detail
                               </div>
-                              <div className="grid grid-cols-3 gap-4 text-[12px]">
+                              <div className="grid grid-cols-3 gap-4 text-[13px]">
                                 <KV label="Host" value={k.migrationHostEndpoint ?? "--"} />
                                 <KV label="Issued" value={k.migrationIssuedAt ?? "--"} />
                                 <KV
@@ -781,10 +778,10 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
                                   )}
                                 {k.migrationRollbackStoredLine && (
                                   <div className="col-span-3">
-                                    <div className="text-[10px] text-muted-foreground mb-1">
+                                    <div className="text-[11px] text-muted-foreground mb-1">
                                       Stored authorized_keys line (rollback)
                                     </div>
-                                    <code className="text-[11px] bg-muted px-2 py-1 rounded block font-mono break-all">
+                                    <code className="text-[12px] bg-muted px-2 py-1 rounded block font-mono break-all">
                                       {k.migrationRollbackStoredLine}
                                     </code>
                                   </div>
@@ -835,6 +832,8 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
             ›
           </Button>
         </div>
+      </div>
+
       </div>
 
       <ColumnPicker
@@ -930,10 +929,10 @@ export function KeyInventoryPage(props: KeyInventoryProps) {
         title={`Change status of ${statusChangeFor?.name ?? ""}`}
         description={
           <div className="space-y-2 pt-2">
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[14px]">
               <input type="radio" checked={statusNew === "Active"} onChange={() => setStatusNew("Active")} /> Active
             </label>
-            <label className="flex items-center gap-2 text-[13px]">
+            <label className="flex items-center gap-2 text-[14px]">
               <input type="radio" checked={statusNew === "Inactive"} onChange={() => setStatusNew("Inactive")} />{" "}
               Inactive
             </label>
@@ -960,8 +959,8 @@ function Row({ children }: { children: React.ReactNode }) {
 function KV({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[10px] uppercase-tracking text-muted-foreground">{label}</div>
-      <div className="mt-0.5 text-[12px]">{value}</div>
+      <div className="text-[11px] uppercase-tracking text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-[13px]">{value}</div>
     </div>
   );
 }
@@ -990,7 +989,7 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
           <ClipboardList className="h-3 w-3 text-muted-foreground shrink-0" />
           <Badge
             variant="outline"
-            className={cn("text-[10px] h-4 px-1 shrink-0", COMBO_BADGE_CLASS[k.combination])}
+            className={cn("text-[11px] h-4 px-1 shrink-0", COMBO_BADGE_CLASS[k.combination])}
             title="Discovered combination"
           >
             {COMBO_LABEL[k.combination]}
@@ -999,13 +998,13 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
       );
 
     case "migrationStatus":
-      if (!k.migrationStatus) return <span className="text-muted-foreground text-[12px]">—</span>;
+      if (!k.migrationStatus) return <span className="text-muted-foreground text-[13px]">—</span>;
       return (
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-1.5">
             <Badge
               variant="outline"
-              className={cn("text-[10px] h-5 px-1.5 whitespace-nowrap", migrationStatusColor(k.migrationStatus))}
+              className={cn("text-[11px] h-5 px-1.5 whitespace-nowrap", migrationStatusColor(k.migrationStatus))}
             >
               {migrationStatusLabel[k.migrationStatus]}
             </Badge>
@@ -1036,13 +1035,13 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
                   }}
                 />
               </div>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[11px] text-muted-foreground">
                 {migrationDaysElapsed(k.migrationIssuedAt)}/{k.migrationWindowDays}d
               </span>
             </div>
           )}
           {k.migrationStatus === "awaiting_confirmation" && k.migrationIssuedAt && k.migrationWindowDays && (
-            <span className="text-[10px] text-risk-red">
+            <span className="text-[11px] text-risk-red">
               {migrationDaysElapsed(k.migrationIssuedAt) - k.migrationWindowDays}d overdue
             </span>
           )}
@@ -1064,14 +1063,14 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
         <span className="inline-flex items-center gap-1">
           <Badge variant="outline">{k.encryption}</Badge>
           {isHybridKey(k.encryption) && (
-            <span className="text-[9px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded">Hybrid PQC</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded">Hybrid PQC</span>
           )}
         </span>
       );
     case "length":
       return <span>{algoDef(k.encryption)?.hasLength ? k.length : "n/a"}</span>;
     case "fingerprint":
-      return <span className="font-mono text-[11px]">{k.fingerprint.slice(0, 18)}…</span>;
+      return <span className="font-mono text-[12px]">{k.fingerprint.slice(0, 18)}…</span>;
     case "comment":
       return <span className="text-muted-foreground">{k.comment || "--"}</span>;
     case "keyComplianceGroup":
@@ -1090,7 +1089,7 @@ function renderCell(k: SshKey, col: string, opts: { onCertClick: () => void }): 
         </Badge>
       );
     case "filePaths":
-      return <span className="text-[11px] font-mono">{k.filePaths.join(", ") || "--"}</span>;
+      return <span className="text-[12px] font-mono">{k.filePaths.join(", ") || "--"}</span>;
     case "riskStatus":
       return (
         <Badge variant="outline" className={riskColor(k.riskStatus)}>
@@ -1119,9 +1118,9 @@ function Truncated({ items, mono }: { items: string[]; mono?: boolean }) {
   if (items.length === 0) return <span className="text-muted-foreground">--</span>;
   return (
     <div className="flex items-center gap-1">
-      <span className={cn(mono && "font-mono text-[12px]")}>{items[0]}</span>
+      <span className={cn(mono && "font-mono text-[13px]")}>{items[0]}</span>
       {items.length > 1 && (
-        <Badge variant="outline" className="h-5 text-[10px]">
+        <Badge variant="outline" className="h-5 text-[11px]">
           +{items.length - 1}
         </Badge>
       )}

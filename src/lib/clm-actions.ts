@@ -133,8 +133,7 @@ export function certDeleteAction(certStatus: SshCert["status"]): ActionAvailabil
     return {
       show: true,
       enabled: false,
-      tooltip:
-        "Revoked certificates must remain in inventory for audit. They cannot be deleted.",
+      tooltip: "Revoked certificates must remain in inventory for audit. They cannot be deleted.",
     };
   return { show: true, enabled: true };
 }
@@ -143,16 +142,16 @@ export function certDeleteAction(certStatus: SshCert["status"]): ActionAvailabil
 
 export const COMBO_LABEL: Record<KeyCombination, string> = {
   private_public: "Private + Public",
-  private_cert:   "Private + Cert",
-  public_cert:    "Public + Cert",
-  private_only:   "Private Only",
-  public_only:    "Public Only",
+  private_cert: "Private + Cert",
+  public_cert: "Public + Cert",
+  private_only: "Private Only",
+  public_only: "Public Only",
 };
 
 export const COMBO_BADGE_CLASS: Record<KeyCombination, string> = {
   private_public: "bg-muted text-muted-foreground border-border",
-  private_cert:   "bg-risk-green/10 text-risk-green border-risk-green/30",
-  public_cert:    "bg-risk-amber/10 text-risk-amber border-risk-amber/30",
-  private_only:   "bg-risk-amber/10 text-risk-amber border-risk-amber/30",
-  public_only:    "bg-risk-red/10 text-risk-red border-risk-red/30",
+  private_cert: "bg-risk-green/10 text-risk-green border-risk-green/30",
+  public_cert: "bg-risk-amber/10 text-risk-amber border-risk-amber/30",
+  private_only: "bg-risk-amber/10 text-risk-amber border-risk-amber/30",
+  public_only: "bg-risk-red/10 text-risk-red border-risk-red/30",
 };

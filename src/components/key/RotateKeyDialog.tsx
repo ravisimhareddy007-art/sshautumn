@@ -121,7 +121,7 @@ export function RotateKeyDialog({
           <DialogHeader>
             <DialogTitle>Rotate SSH Keys</DialogTitle>
           </DialogHeader>
-          <div className="text-[13px] space-y-3">
+          <div className="text-[14px] space-y-3">
             <div className="bg-risk-amber/10 border border-risk-amber/30 rounded-md p-3 flex gap-2">
               <AlertTriangle className="h-4 w-4 text-risk-amber shrink-0 mt-0.5" />
               <span>
@@ -144,7 +144,7 @@ export function RotateKeyDialog({
           <DialogHeader>
             <DialogTitle>Rotate Key — Certificate {associatedCert?.status}</DialogTitle>
           </DialogHeader>
-          <div className="text-[13px] space-y-3">
+          <div className="text-[14px] space-y-3">
             <div className="bg-risk-amber/10 border border-risk-amber/30 rounded-md p-3 flex gap-2">
               <AlertTriangle className="h-4 w-4 text-risk-amber shrink-0 mt-0.5" />
               <span>
@@ -190,9 +190,9 @@ export function RotateKeyDialog({
           </DialogHeader>
 
           {associatedCert && (
-            <div className="grid grid-cols-2 gap-3 text-[12px]">
+            <div className="grid grid-cols-2 gap-3 text-[13px]">
               <div className="rounded border border-border p-3 bg-surface">
-                <div className="text-[11px] uppercase-tracking font-semibold text-muted-foreground mb-2">
+                <div className="text-[12px] uppercase-tracking font-semibold text-muted-foreground mb-2">
                   Current Certificate Parameters
                 </div>
                 <KV k="CA / Issuer" v={associatedCert.caName} />
@@ -201,7 +201,7 @@ export function RotateKeyDialog({
                 <KV k="Extensions" v={associatedCert.extensions.join(", ") || "—"} />
               </div>
               <div className="rounded border border-primary/40 p-3 bg-surface">
-                <div className="text-[11px] uppercase-tracking font-semibold text-muted-foreground mb-2">
+                <div className="text-[12px] uppercase-tracking font-semibold text-muted-foreground mb-2">
                   New Certificate Parameters (Current Policy)
                 </div>
                 <KV k="CA / Issuer" v={associatedCert.caName} />
@@ -212,7 +212,7 @@ export function RotateKeyDialog({
             </div>
           )}
 
-          <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[12px] flex gap-2">
+          <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[13px] flex gap-2">
             <AlertTriangle className="h-4 w-4 text-risk-amber shrink-0 mt-0.5" />
             <span>
               Policy changes detected. The new certificate will reflect the current policy. Review
@@ -220,7 +220,7 @@ export function RotateKeyDialog({
             </span>
           </div>
 
-          <label className="flex items-start gap-2 text-[13px] cursor-pointer select-none">
+          <label className="flex items-start gap-2 text-[14px] cursor-pointer select-none">
             <Checkbox
               checked={reviewAck}
               onCheckedChange={(v) => setReviewAck(!!v)}
@@ -294,11 +294,11 @@ function OptionCard({
           : "border-border bg-surface hover:bg-muted/40",
       )}
     >
-      <div className="flex items-center gap-2 font-medium text-[13px]">
+      <div className="flex items-center gap-2 font-medium text-[14px]">
         <span className={cn(selected ? "text-primary" : "text-muted-foreground")}>{icon}</span>
         {title}
       </div>
-      <div className="text-[12px] text-muted-foreground mt-1">{description}</div>
+      <div className="text-[13px] text-muted-foreground mt-1">{description}</div>
     </button>
   );
 }

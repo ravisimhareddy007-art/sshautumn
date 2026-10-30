@@ -31,17 +31,17 @@ function Page() {
         }
       />
       <div className="bg-surface border border-border rounded-md overflow-hidden">
-        <table className="w-full text-[13px]">
-          <thead className="bg-muted/50 text-[11px] uppercase-tracking text-muted-foreground">
+        <table className="w-full text-[14px]">
+          <thead className="bg-[#EEF1F8] text-[14px] text-[#374151] [&_th]:font-medium">
             <tr>
-              <th className="text-left px-3 py-2">Cert Key ID</th>
-              <th className="text-left px-3 py-2">Cert Type</th>
-              <th className="text-left px-3 py-2">Deleted On</th>
-              <th className="text-left px-3 py-2">Deleted By</th>
-              <th className="text-left px-3 py-2">Reason</th>
-              <th className="text-left px-3 py-2">Last Known Endpoint(s)</th>
-              <th className="text-left px-3 py-2">Restore</th>
-              <th className="text-left px-3 py-2 w-12">Actions</th>
+              <th className="text-left px-4 py-3">Cert Key ID</th>
+              <th className="text-left px-4 py-3">Cert Type</th>
+              <th className="text-left px-4 py-3">Deleted On</th>
+              <th className="text-left px-4 py-3">Deleted By</th>
+              <th className="text-left px-4 py-3">Reason</th>
+              <th className="text-left px-4 py-3">Last Known Endpoint(s)</th>
+              <th className="text-left px-4 py-3">Restore</th>
+              <th className="text-left px-4 py-3 w-12">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -52,7 +52,7 @@ function Page() {
                 <td className="px-3 py-2">{c.deletedOn}</td>
                 <td className="px-3 py-2">{c.deletedBy}</td>
                 <td className="px-3 py-2">{c.reason}</td>
-                <td className="px-3 py-2 font-mono text-[12px]">{c.lastKnownEndpoints.join(", ")}</td>
+                <td className="px-3 py-2 font-mono text-[13px]">{c.lastKnownEndpoints.join(", ")}</td>
                 <td className="px-3 py-2">
                   <Button size="sm" variant="outline" onClick={() => setRestore(c)}>
                     Restore
@@ -88,9 +88,9 @@ function Page() {
             <>
               <SheetHeader className="pb-4 border-b border-border">
                 <SheetTitle className="text-[16px]">{details.certKeyId}</SheetTitle>
-                <div className="text-[12px] text-muted-foreground">Deleted certificate details</div>
+                <div className="text-[13px] text-muted-foreground">Deleted certificate details</div>
               </SheetHeader>
-              <div className="py-4 space-y-3 text-[13px]">
+              <div className="py-4 space-y-3 text-[14px]">
                 <KV label="Cert Type" value={details.certType} />
                 <KV label="Deleted On" value={details.deletedOn} />
                 <KV label="Deleted By" value={details.deletedBy} />
@@ -103,7 +103,7 @@ function Page() {
                   mono
                 />
                 <div className="grid grid-cols-[140px_1fr] gap-2">
-                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <div className="text-[12px] uppercase tracking-wider text-muted-foreground">
                     Revocation Status
                   </div>
                   <div>
@@ -134,8 +134,8 @@ function Page() {
 function KV({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="grid grid-cols-[140px_1fr] gap-2">
-      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={mono ? "font-mono text-[12px]" : ""}>{value}</div>
+      <div className="text-[12px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className={mono ? "font-mono text-[13px]" : ""}>{value}</div>
     </div>
   );
 }

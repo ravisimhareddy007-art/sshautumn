@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/common/Placeholder";
+import { TagsPage } from "@/components/groups/GroupPages";
 
 export const Route = createFileRoute("/_app/administration/tags")({
-  component: () => <Placeholder breadcrumbs={["ADMINISTRATION", "Tags"]} title="Tags" />,
+  component: TagsPage,
 });

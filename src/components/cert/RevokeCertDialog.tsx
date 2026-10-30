@@ -50,14 +50,14 @@ export function RevokeCertDialog({
             <DialogTitle>Revoke Certificate</DialogTitle>
           </DialogHeader>
 
-          <div className="rounded-md border border-border bg-muted/40 p-3 text-[12px] grid grid-cols-2 gap-2">
+          <div className="rounded-md border border-border bg-muted/40 p-3 text-[13px] grid grid-cols-2 gap-2">
             <Info label="Cert Key ID" value={cert.certKeyId} />
             <Info label="CA" value={cert.caName} />
             <Info label="Principals" value={cert.principals.join(", ") || "—"} />
             <Info label="Valid To" value={cert.validTo} />
           </div>
 
-          <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[12px] flex gap-2">
+          <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[13px] flex gap-2">
             <AlertTriangle className="h-4 w-4 text-risk-amber shrink-0 mt-0.5" />
             <span>
               Revoking this certificate will update the KRL and push the update to all endpoints
@@ -66,10 +66,10 @@ export function RevokeCertDialog({
           </div>
 
           <div>
-            <div className="text-[12px] uppercase-tracking font-semibold text-muted-foreground mb-1">
+            <div className="text-[13px] uppercase-tracking font-semibold text-muted-foreground mb-1">
               Endpoints receiving KRL update
             </div>
-            <ul className="text-[13px] max-h-[120px] overflow-y-auto border border-border rounded-md p-2 bg-surface">
+            <ul className="text-[14px] max-h-[120px] overflow-y-auto border border-border rounded-md p-2 bg-surface">
               {cert.endpoints.map((e) => (
                 <li key={e} className="font-mono">• {e}</li>
               ))}
@@ -77,12 +77,12 @@ export function RevokeCertDialog({
           </div>
 
           <div>
-            <div className="text-[12px] uppercase-tracking font-semibold text-muted-foreground mb-2">
+            <div className="text-[13px] uppercase-tracking font-semibold text-muted-foreground mb-2">
               Reason for revocation (select at least one)
             </div>
             <div className="space-y-2">
               {REASONS.map((r) => (
-                <label key={r} className="flex items-center gap-2 text-[13px]">
+                <label key={r} className="flex items-center gap-2 text-[14px]">
                   <Checkbox
                     checked={reasons.includes(r)}
                     onCheckedChange={(v) =>
@@ -140,8 +140,8 @@ export function RevokeCertDialog({
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-muted-foreground text-[10px] uppercase-tracking">{label}</div>
-      <div className="text-[13px] font-medium">{value}</div>
+      <div className="text-muted-foreground text-[11px] uppercase-tracking">{label}</div>
+      <div className="text-[14px] font-medium">{value}</div>
     </div>
   );
 }

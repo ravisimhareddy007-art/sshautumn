@@ -42,7 +42,7 @@ export const Route = createFileRoute("/_app/inventory/keys/rotated")({
                   <td>{k.length}</td>
                   <td>{k.rotatedOn}</td>
                   <td>{k.rotatedBy}</td>
-                  <td className="font-mono text-[12px]" title={k.endpoints.join(", ")}>
+                  <td className="font-mono text-[13px]" title={k.endpoints.join(", ")}>
                     <span className="truncate-inner">{k.endpoints.join(", ") || "—"}</span>
                   </td>
                   <td>

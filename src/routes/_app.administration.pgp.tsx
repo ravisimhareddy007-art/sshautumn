@@ -29,9 +29,9 @@ function PgpSettingsPage() {
   const dirty = keyserver !== s.settings.keyserver || wkd !== s.settings.wkdDomain;
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <PageHeader breadcrumbs={["ADMINISTRATION", "PGP Settings"]} title="PGP Settings" />
-      <div className="bg-surface border border-border rounded-md p-6">
+      <div className="rounded-xl border border-border bg-white px-12 py-10">
         <FormSection title="Publishing">
           <FormRow
             label="Keyserver address"
@@ -56,7 +56,7 @@ function PgpSettingsPage() {
               </Button>
             </div>
             {tested === keyserver && keyserver && (
-              <div className="text-[11px] text-[#15803D] mt-1">Reachable</div>
+              <div className="text-[12px] text-[#15803D] mt-1">Reachable</div>
             )}
           </FormRow>
           <FormRow
@@ -69,13 +69,13 @@ function PgpSettingsPage() {
 
         <FormSection title="Recent PGP activity">
           {s.audit.length === 0 ? (
-            <div className="text-[12px] text-muted-foreground py-2">
+            <div className="text-[13px] text-muted-foreground py-2">
               No PGP actions in this session yet.
             </div>
           ) : (
-            <table className="w-full text-[12px]">
+            <table className="w-full text-[13px]">
               <thead>
-                <tr className="text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr className="text-left text-[13px] text-[#6B7280]">
                   <th className="py-1 font-medium">Date</th>
                   <th className="py-1 font-medium">Key</th>
                   <th className="py-1 font-medium">Action</th>

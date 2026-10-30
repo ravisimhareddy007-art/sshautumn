@@ -31,7 +31,7 @@ export function FilterChips({
       {chips.length > 0 && onClearAll && (
         <button
           onClick={onClearAll}
-          className="text-[12px] text-muted-foreground hover:text-foreground underline"
+          className="text-[13px] text-muted-foreground hover:text-foreground underline"
         >
           Clear All
         </button>

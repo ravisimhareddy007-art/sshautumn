@@ -62,7 +62,7 @@ export function ProvisionDialog({
           <Field label="Extensions">
             <div className="grid grid-cols-2 gap-2">
               {EXTS.map((e) => (
-                <label key={e} className="flex items-center gap-2 text-[13px]">
+                <label key={e} className="flex items-center gap-2 text-[14px]">
                   <Checkbox
                     checked={exts.includes(e)}
                     onCheckedChange={(v) =>
@@ -96,7 +96,7 @@ export function ProvisionDialog({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <Label className="text-[12px] text-muted-foreground">{label}</Label>
+      <Label className="text-[13px] text-muted-foreground">{label}</Label>
       {children}
     </div>
   );

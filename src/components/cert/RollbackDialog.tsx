@@ -58,7 +58,7 @@ export function RollbackDialog({
             />
           ) : (
             <>
-              <ul className="space-y-2 text-[13px]">
+              <ul className="space-y-2 text-[14px]">
                 <Guard ok label="Revocation Guard — Certificate is not in the KRL" />
                 <Guard ok label={`Validity Guard — Previous certificate valid until ${cert.previousValidTo}`} />
                 <Guard ok label="Endpoint Availability — All original endpoints are available" />
@@ -69,7 +69,7 @@ export function RollbackDialog({
                 <Guard ok label="Associated Key Exists — Parent key found in inventory" />
               </ul>
 
-              <label className="flex items-center gap-2 text-[13px] mt-2 p-2 bg-risk-amber/10 rounded border border-risk-amber/30">
+              <label className="flex items-center gap-2 text-[14px] mt-2 p-2 bg-risk-amber/10 rounded border border-risk-amber/30">
                 <Checkbox checked={confirm} onCheckedChange={(v) => setConfirm(!!v)} />
                 Confirm to proceed despite duplicate active certificate
               </label>
@@ -122,7 +122,7 @@ function HardBlock({
 }) {
   return (
     <>
-      <ul className="space-y-2 text-[13px]">
+      <ul className="space-y-2 text-[14px]">
         <li className="flex items-start gap-2">
           <X className="h-4 w-4 text-risk-red mt-0.5 shrink-0" />
           <div>

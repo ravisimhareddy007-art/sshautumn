@@ -57,7 +57,7 @@ export function RestoreDialog({
             />
           ) : (
             <>
-              <ul className="space-y-2 text-[13px]">
+              <ul className="space-y-2 text-[14px]">
                 <Guard ok label="Revocation Guard — Certificate is not in the KRL" />
                 <Guard ok label={`Validity Guard — Certificate valid until ${cert.validTo}`} />
                 <Guard ok label={`Associated Key Exists — ${cert.associatedKeyName} found in inventory`} />
@@ -114,7 +114,7 @@ function HardBlock({
 }) {
   return (
     <>
-      <ul className="space-y-2 text-[13px]">
+      <ul className="space-y-2 text-[14px]">
         <li className="flex items-start gap-2">
           <X className="h-4 w-4 text-risk-red mt-0.5 shrink-0" />
           <div>

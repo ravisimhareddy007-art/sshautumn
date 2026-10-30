@@ -18,7 +18,7 @@ import {
   type PgpAlgo,
   type PgpKey,
   type PgpLocation,
-  type PgpPolicy,
+  type KeyPolicy,
   type Purpose,
   type Subkey,
   type TrustedKey,
@@ -26,6 +26,16 @@ import {
   type VaultConfig,
 } from "@/data/pgp";
 import { isUsable, policyFor } from "@/lib/pgp-rules";
+import {
+  SEED_INFRA_GROUPS,
+  SEED_RUNS,
+  SEED_SCHEDULES,
+  ipToNumber,
+  type DiscoverTarget,
+  type DiscoveryRun,
+  type DiscoverySchedule,
+  type InfraAccessGroup,
+} from "@/data/discovery";
 
 export interface PgpSettings {
   keyserver: string;
@@ -40,9 +50,12 @@ export interface AuditEntry extends Operation {
 }
 
 export interface PgpState {
+  runs: DiscoveryRun[];
+  schedules: DiscoverySchedule[];
+  infraGroups: InfraAccessGroup[];
   own: OwnKey[];
   trusted: TrustedKey[];
-  policies: PgpPolicy[];
+  policies: KeyPolicy[];
   deleted: DeletedPgpKey[];
   audit: AuditEntry[];
   settings: PgpSettings;
@@ -54,6 +67,9 @@ export interface PgpState {
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 
 let state: PgpState = {
+  runs: clone(SEED_RUNS),
+  schedules: clone(SEED_SCHEDULES),
+  infraGroups: clone(SEED_INFRA_GROUPS),
   own: clone(SEED_OWN_KEYS),
   trusted: clone(SEED_TRUSTED_KEYS),
   policies: clone(SEED_POLICIES),
@@ -718,9 +734,37 @@ export function deleteTrusted(ids: string[]) {
 
 // ─── Policy, settings, discovery ───────────────────────────────────────────────
 
-export function savePolicy(p: PgpPolicy) {
-  set({ policies: state.policies.map((x) => (x.id === p.id ? p : x)) });
+/** Creates the policy when it has no id yet, otherwise replaces it. Groups move to this policy. */
+export function saveKeyPolicy(p: KeyPolicy): KeyPolicy {
+  const saved = p.id ? p : { ...p, id: `pol-${Date.now()}` };
+  const others = state.policies
+    .filter((x) => x.id !== saved.id)
+    .map((x) => ({ ...x, groups: x.groups.filter((g) => !saved.groups.includes(g)) }));
+  const exists = state.policies.some((x) => x.id === saved.id);
+  set({
+    policies: exists
+      ? state.policies.map((x) =>
+          x.id === saved.id ? saved : (others.find((o) => o.id === x.id) ?? x),
+        )
+      : [...others, saved],
+  });
+  return saved;
 }
+
+export function deleteKeyPolicies(ids: string[]) {
+  const fallback = state.policies.find((x) => x.id === "pol-default");
+  const moved = state.policies.filter((x) => ids.includes(x.id)).flatMap((x) => x.groups);
+  set({
+    policies: state.policies
+      .filter((x) => !ids.includes(x.id))
+      .map((x) =>
+        fallback && x.id === fallback.id
+          ? { ...x, groups: [...new Set([...x.groups, ...moved])] }
+          : x,
+      ),
+  });
+}
+
 export function saveSettings(s: PgpSettings) {
   set({ settings: s });
 }
@@ -752,3 +796,137 @@ export const fileSafe = (s: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
+
+// ─── Discovery ─────────────────────────────────────────────────────────────────
+
+export interface NetworkScanInput {
+  mode: "Instant" | "Scheduled";
+  name: string;
+  startIp: string;
+  endIp: string;
+  discover: DiscoverTarget[];
+  pgpPaths: string[];
+  infraGroups: string[];
+  keyGroup: string;
+  inventoryAction: DiscoveryRun["inventoryAction"];
+  frequency: DiscoverySchedule["frequency"];
+  time: string;
+}
+
+const nowStamp = () => {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+
+/** Starts a scan now, or saves it as a schedule. Returns the id of the run or schedule. */
+export function startNetworkScan(input: NetworkScanInput): string {
+  const range = `${input.startIp} - ${input.endIp}`;
+  const newGroups = input.infraGroups
+    .filter((g) => !state.infraGroups.some((x) => x.name === g))
+    .map((g) => ({
+      name: g,
+      description: "Created from Network Scan",
+      hosts: 0,
+      createdBy: CURRENT_USER,
+    }));
+  if (input.discover.includes("PGP Keys"))
+    state = { ...state, discovery: { enabled: true, paths: input.pgpPaths } };
+  if (input.mode === "Scheduled") {
+    const id = `sch-${Date.now()}`;
+    const sch: DiscoverySchedule = {
+      id,
+      name: input.name,
+      range,
+      frequency: input.frequency,
+      time: input.time,
+      nextRun: `${rel(1)} ${input.time}`,
+      discover: input.discover,
+      enabled: true,
+      by: CURRENT_USER,
+    };
+    set({
+      schedules: [sch, ...state.schedules],
+      infraGroups: [...state.infraGroups, ...newGroups],
+    });
+    return id;
+  }
+  const id = `run-${Date.now()}`;
+  const size = Math.max(1, (ipToNumber(input.endIp) ?? 0) - (ipToNumber(input.startIp) ?? 0) + 1);
+  const run: DiscoveryRun = {
+    id,
+    name: input.name,
+    range,
+    startedAt: nowStamp(),
+    by: CURRENT_USER,
+    mode: "Instant",
+    status: "Running",
+    discover: input.discover,
+    hostsScanned: size,
+    hostsReached: 0,
+    userKeys: 0,
+    hostKeys: 0,
+    pgpKeys: 0,
+    keyGroup: input.keyGroup,
+    inventoryAction: input.inventoryAction,
+  };
+  set({ runs: [run, ...state.runs], infraGroups: [...state.infraGroups, ...newGroups] });
+  setTimeout(() => {
+    const reached = Math.max(1, Math.round(size * 0.18));
+    set({
+      runs: state.runs.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              status: "Completed",
+              hostsReached: reached,
+              userKeys: input.discover.includes("User Keys") ? reached * 2 : 0,
+              hostKeys: input.discover.includes("Host Keys") ? reached : 0,
+              pgpKeys: input.discover.includes("PGP Keys") ? Math.round(reached * 0.4) : 0,
+            }
+          : r,
+      ),
+    });
+  }, 4000);
+  return id;
+}
+
+export function setScheduleEnabled(id: string, enabled: boolean) {
+  set({ schedules: state.schedules.map((x) => (x.id === id ? { ...x, enabled } : x)) });
+}
+
+export function deleteSchedules(ids: string[]) {
+  set({ schedules: state.schedules.filter((x) => !ids.includes(x.id)) });
+}
+
+export function runScheduleNow(id: string) {
+  const sch = state.schedules.find((x) => x.id === id);
+  if (!sch) return;
+  const [startIp, endIp] = sch.range.split(" - ");
+  startNetworkScan({
+    mode: "Instant",
+    name: sch.name,
+    startIp,
+    endIp,
+    discover: sch.discover,
+    pgpPaths: state.discovery.paths,
+    infraGroups: [],
+    keyGroup: "Default_Key_Group",
+    inventoryAction: "Manage",
+    frequency: sch.frequency,
+    time: sch.time,
+  });
+}
+
+/** Moves a key compliance group to another key policy. */
+export function assignGroupPolicy(group: string, policyId: string) {
+  set({
+    policies: state.policies.map((p) => ({
+      ...p,
+      groups:
+        p.id === policyId
+          ? [...new Set([...p.groups, group])]
+          : p.groups.filter((g) => g !== group),
+    })),
+  });
+}

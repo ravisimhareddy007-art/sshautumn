@@ -23,10 +23,10 @@ import type { OwnKey } from "@/data/pgp";
 
 export function allowedAlgorithms(p: PgpPolicy): string[] {
   const out: string[] = [];
-  if (p.ed25519) out.push("Ed25519");
-  if (p.rsaMin !== null)
-    for (const n of [2048, 3072, 4096]) if (n >= p.rsaMin) out.push(`RSA ${n}`);
-  for (const c of p.ecdsaCurves) out.push(`ECDSA ${c}`);
+  if (p.algorithms.includes("ED25519")) out.push("Ed25519");
+  for (const n of [2048, 3072, 4096]) if (p.algorithms.includes(`RSA:${n}`)) out.push(`RSA ${n}`);
+  for (const c of ["P-256", "P-384", "P-521"])
+    if (p.algorithms.includes(`ECDSA:${c}`)) out.push(`ECDSA ${c}`);
   return out;
 }
 
@@ -35,7 +35,7 @@ const PURPOSES: Purpose[] = ["Encrypt", "Sign", "Authenticate"];
 export function GeneratePgpKeyPage() {
   const s = usePgp();
   const navigate = useNavigate();
-  const [group, setGroup] = useState("Default");
+  const [group, setGroup] = useState("Default_Key_Group");
   const policy = policyFor(group, s.policies);
   const algos = useMemo(() => allowedAlgorithms(policy), [policy]);
 
@@ -155,31 +155,31 @@ export function GeneratePgpKeyPage() {
 
   if (created) {
     return (
-      <div className="max-w-3xl">
+      <div>
         <PageHeader
-          breadcrumbs={["INVENTORY", "PGP KEY INVENTORY", "Own Keys", "Generate PGP Key"]}
+          parents={[{ label: "PGP Key Inventory", to: "/inventory/pgp", search: { tab: "own" } }]}
           title="Generate PGP Key"
         />
-        <div className="bg-surface border border-border rounded-md p-6">
+        <div className="rounded-xl border border-border bg-white px-12 py-10">
           <div className="flex items-center gap-2 text-[15px] font-semibold">
             <CheckCircle2 className="h-5 w-5 text-risk-green" /> {keyName(created)} is ready
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-4 text-[13px]">
+          <div className="mt-4 grid grid-cols-2 gap-4 text-[14px]">
             <div>
-              <div className="text-[11px] text-muted-foreground">Fingerprint</div>
-              <div className="font-mono text-[12px]">{groupedFp(created.primary.fingerprint)}</div>
+              <div className="text-[12px] text-muted-foreground">Fingerprint</div>
+              <div className="font-mono text-[13px]">{groupedFp(created.primary.fingerprint)}</div>
             </div>
             <div>
-              <div className="text-[11px] text-muted-foreground">Stored in</div>
+              <div className="text-[12px] text-muted-foreground">Stored in</div>
               {created.storage}
               {created.vault && `, safe ${created.vault.safeName}`}
             </div>
             <div>
-              <div className="text-[11px] text-muted-foreground">Revocation certificate</div>
+              <div className="text-[12px] text-muted-foreground">Revocation certificate</div>
               Created and stored in {created.revCertWhere}
             </div>
             <div>
-              <div className="text-[11px] text-muted-foreground">In Own Keys as</div>
+              <div className="text-[12px] text-muted-foreground">In Own Keys as</div>
               Managed, Hosts: Not provisioned
             </div>
           </div>
@@ -192,7 +192,9 @@ export function GeneratePgpKeyPage() {
               Provision PGP Key
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/inventory/pgp/own">Go to Own Keys</Link>
+              <Link to="/inventory/pgp" search={{ tab: "own" }}>
+                Go to Own Keys
+              </Link>
             </Button>
           </div>
         </div>
@@ -203,12 +205,12 @@ export function GeneratePgpKeyPage() {
   const show = (k: string) => (submitted ? errors[k] : undefined);
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <PageHeader
-        breadcrumbs={["INVENTORY", "PGP KEY INVENTORY", "Own Keys", "Generate PGP Key"]}
+        parents={[{ label: "PGP Key Inventory", to: "/inventory/pgp", search: { tab: "own" } }]}
         title="Generate PGP Key"
       />
-      <div className="bg-surface border border-border rounded-md p-6">
+      <div className="rounded-xl border border-border bg-white px-12 py-10">
         <FormSection title="Key group">
           <FormRow label="Key group" required hint={`Settings below follow ${policy.name}.`}>
             <Select value={group} onValueChange={setGroup}>
@@ -347,9 +349,9 @@ export function GeneratePgpKeyPage() {
                 onChange={(e) => setPrimaryDays(e.target.value)}
                 className="w-32"
               />
-              <span className="text-[12px] text-muted-foreground">days</span>
+              <span className="text-[13px] text-muted-foreground">days</span>
               {!policy.expiryRequired && policy.maxValidityPrimary === null && (
-                <label className="flex items-center gap-1.5 text-[12px] ml-3">
+                <label className="flex items-center gap-1.5 text-[13px] ml-3">
                   <Checkbox
                     checked={primaryNoExpiry}
                     onCheckedChange={(v) => setPrimaryNoExpiry(!!v)}
@@ -368,7 +370,7 @@ export function GeneratePgpKeyPage() {
                 const req = policy.requiredSubkeys.includes(p);
                 return (
                   <div key={p} className="flex items-center gap-3">
-                    <label className="flex items-center gap-2 w-[150px] text-[13px]">
+                    <label className="flex items-center gap-2 w-[150px] text-[14px]">
                       <Checkbox
                         checked={subs[p].on}
                         disabled={req}
@@ -394,12 +396,12 @@ export function GeneratePgpKeyPage() {
                       }
                       className="w-28 h-8"
                     />
-                    <span className="text-[12px] text-muted-foreground">days</span>
+                    <span className="text-[13px] text-muted-foreground">days</span>
                     {req && (
-                      <span className="text-[11px] text-muted-foreground">Required by policy</span>
+                      <span className="text-[12px] text-muted-foreground">Required by policy</span>
                     )}
                     {show(`sub-${p}`) && (
-                      <span className="text-[11px] text-risk-red">{show(`sub-${p}`)}</span>
+                      <span className="text-[12px] text-risk-red">{show(`sub-${p}`)}</span>
                     )}
                   </div>
                 );
@@ -415,11 +417,11 @@ export function GeneratePgpKeyPage() {
               onValueChange={(v) => setPassMode(v as typeof passMode)}
               className="space-y-2"
             >
-              <label className="flex items-center gap-2 text-[13px]">
+              <label className="flex items-center gap-2 text-[14px]">
                 <RadioGroupItem value="Generated" /> Generate a strong passphrase and store it with
                 the key
               </label>
-              <label className="flex items-center gap-2 text-[13px]">
+              <label className="flex items-center gap-2 text-[14px]">
                 <RadioGroupItem value="Entered" /> Enter a passphrase
               </label>
             </RadioGroup>
@@ -463,7 +465,7 @@ export function GeneratePgpKeyPage() {
                 <VaultField label="Safe name" value={policy.cyberArk.safeName} />
                 <VaultField label="User name" value={policy.cyberArk.userName} />
                 <div>
-                  <div className="text-[11px] text-muted-foreground mb-1">PAM account name</div>
+                  <div className="text-[12px] text-muted-foreground mb-1">PAM account name</div>
                   <Input
                     className="h-8"
                     value={pamName}
@@ -472,7 +474,7 @@ export function GeneratePgpKeyPage() {
                   />
                 </div>
                 <VaultField label="Server address" value={policy.cyberArk.serverAddress} />
-                <div className="text-[11px] text-muted-foreground self-end">
+                <div className="text-[12px] text-muted-foreground self-end">
                   From the key group's policy
                 </div>
               </div>
@@ -495,7 +497,9 @@ export function GeneratePgpKeyPage() {
 
         <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-border">
           <Button variant="outline" asChild>
-            <Link to="/inventory/pgp/own">Cancel</Link>
+            <Link to="/inventory/pgp" search={{ tab: "own" }}>
+              Cancel
+            </Link>
           </Button>
           <Button onClick={submit}>Generate</Button>
         </div>
@@ -507,8 +511,8 @@ export function GeneratePgpKeyPage() {
 function VaultField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[11px] text-muted-foreground mb-1">{label}</div>
-      <div className="h-8 px-2 flex items-center rounded border border-border bg-muted/50 text-[12px]">
+      <div className="text-[12px] text-muted-foreground mb-1">{label}</div>
+      <div className="h-8 px-2 flex items-center rounded border border-border bg-muted/50 text-[13px]">
         {value}
       </div>
     </div>

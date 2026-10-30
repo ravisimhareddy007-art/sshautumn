@@ -10,13 +10,9 @@ export interface RiskTileDef {
   info?: string;
 }
 
-const colorMap = {
-  red: { border: "border-l-risk-red", text: "text-risk-red" },
-  amber: { border: "border-l-risk-amber", text: "text-risk-amber" },
-  orange: { border: "border-l-risk-orange", text: "text-risk-orange" },
-  green: { border: "border-l-risk-green", text: "text-risk-green" },
-};
+const BORDER = { red: "#E5484D", amber: "#D4A017", orange: "#F97316", green: "#22C55E" };
 
+/** Risk tiles in the product style: white card, coloured left edge, large count over its total. */
 export function RiskTileBar({
   tiles,
   activeKey,
@@ -27,36 +23,39 @@ export function RiskTileBar({
   onSelect?: (key: string) => void;
 }) {
   return (
-    <div className="bg-surface border border-border rounded-md flex overflow-hidden mb-4">
-      {tiles.map((t, i) => {
-        const isZero = t.count === 0;
-        const effectiveColor = isZero ? "green" : t.color;
-        const c = colorMap[effectiveColor];
+    <div
+      className="mb-6 grid gap-4"
+      style={{ gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))` }}
+    >
+      {tiles.map((t) => {
         const active = activeKey === t.key;
         return (
           <button
             key={t.key}
+            type="button"
+            title={t.info}
             onClick={() => onSelect?.(t.key)}
+            aria-pressed={active}
             className={cn(
-              "flex-1 text-left px-5 py-3 border-l-4 transition-colors",
-              c.border,
-              i > 0 && "border-l border-l-border",
-              i > 0 && c.border, // re-apply colored left border via inline style
-              active ? "bg-row-selected" : "hover:bg-muted/60",
+              "rounded-md border border-border bg-white px-5 py-4 text-left transition-colors hover:bg-[#F9FAFB]",
+              active && "bg-row-selected ring-1 ring-primary/40",
             )}
-            style={{ borderLeftWidth: 4, borderLeftColor: undefined }}
+            style={{
+              borderLeftWidth: 3,
+              borderLeftColor: BORDER[t.count === 0 ? "green" : t.color],
+            }}
           >
-            <div className={cn("text-[28px] font-bold leading-none", c.text)}>
-              {t.count}
+            <div className="flex items-baseline">
+              <span className="text-[30px] font-semibold leading-none text-[#111827]">
+                {t.count}
+              </span>
               {t.total != null && (
-                <span className="text-[14px] text-muted-foreground font-normal ml-1">
-                  /{t.total}
-                </span>
+                <span className="ml-0.5 text-[14px] text-[#6B7280]">/{t.total}</span>
               )}
             </div>
-            <div className="mt-1 flex items-center gap-1 text-[11px] uppercase-tracking font-medium text-muted-foreground">
+            <div className="mt-2.5 flex items-center gap-1 whitespace-nowrap text-[13px] font-medium uppercase tracking-[0.06em] text-[#374151]">
               {t.label}
-              {t.info && <Info className="h-3 w-3" />}
+              {t.info && <Info className="h-3.5 w-3.5 text-[#6B7280]" />}
             </div>
           </button>
         );

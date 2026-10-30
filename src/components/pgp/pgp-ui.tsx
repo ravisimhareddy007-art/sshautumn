@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { fmtDate, type PgpKey, type PgpPolicy, type Purpose } from "@/data/pgp";
+import { fmtDate, type KeyPolicy, type PgpKey, type PgpPolicy, type Purpose } from "@/data/pgp";
 import {
   RISK_HELP,
   compliance,
@@ -29,7 +29,7 @@ export function StatusBadge({ status }: { status: KeyStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded border px-1.5 py-0.5 text-[11px] font-medium",
+        "inline-flex items-center rounded border px-1.5 py-0.5 text-[12px] font-medium",
         STATUS_CLASS[status],
       )}
     >
@@ -51,7 +51,7 @@ export function Pill({
     <span
       title={title}
       className={cn(
-        "inline-flex items-center rounded border border-border bg-muted/60 px-1.5 py-0.5 text-[11px] font-medium text-foreground/80 whitespace-nowrap",
+        "inline-flex items-center whitespace-nowrap rounded border border-[#D1D5DB] bg-[#F9FAFB] px-2 py-0.5 text-[13px] text-[#1F2937]",
         className,
       )}
     >
@@ -71,7 +71,7 @@ const RED_RISKS = [
 ];
 
 export function RiskList({ risks }: { risks: string[] }) {
-  if (!risks.length) return <span className="text-[12px] text-muted-foreground">None</span>;
+  if (!risks.length) return <span className="text-[13px] text-muted-foreground">None</span>;
   return (
     <div className="flex items-center gap-1 overflow-hidden">
       {risks.map((r) => (
@@ -79,7 +79,7 @@ export function RiskList({ risks }: { risks: string[] }) {
           <TooltipTrigger asChild>
             <span
               className={cn(
-                "inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium whitespace-nowrap border",
+                "inline-flex items-center rounded px-1.5 py-0.5 text-[12px] font-medium whitespace-nowrap border",
                 RED_RISKS.includes(r)
                   ? "bg-risk-red/10 text-risk-red border-risk-red/30"
                   : "bg-risk-amber/10 text-[#B45309] border-risk-amber/40",
@@ -97,11 +97,11 @@ export function RiskList({ risks }: { risks: string[] }) {
 
 export function ComplianceCell({ c }: { c: Compliance }) {
   if (c.state === "Compliant")
-    return <span className="text-[12px] font-medium text-[#15803D]">Compliant</span>;
+    return <span className="text-[13px] font-medium text-[#15803D]">Compliant</span>;
   if (c.state === "Not evaluated")
     return (
       <span
-        className="text-[12px] text-muted-foreground"
+        className="text-[13px] text-muted-foreground"
         title="Evaluate PGP Keys is off in the key policy"
       >
         Not evaluated
@@ -110,7 +110,7 @@ export function ComplianceCell({ c }: { c: Compliance }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="text-[12px] font-medium text-risk-red cursor-help underline decoration-dotted">
+        <span className="text-[13px] font-medium text-risk-red cursor-help underline decoration-dotted">
           Non-Compliant ({c.reasons.length})
         </span>
       </TooltipTrigger>
@@ -127,23 +127,25 @@ export function ComplianceCell({ c }: { c: Compliance }) {
 
 export function NextExpiryCell({ k, status }: { k: PgpKey; status: KeyStatus }) {
   const d = nextExpiryDisplay(k, status);
-  if (d.kind === "blank") return <span className="text-muted-foreground"> </span>;
+  if (d.kind === "blank") return <span className="text-[#6B7280]">—</span>;
   if (d.kind === "none")
-    return <span className="text-[12px] text-muted-foreground">No expiry</span>;
+    return <span className="text-[14px] text-muted-foreground">No expiry</span>;
   return (
-    <span className={cn("text-[12px]", status === "Expiring" && "text-[#B45309] font-medium")}>
-      {fmtDate(d.date)}{" "}
-      <span className="text-muted-foreground">({d.days === 0 ? "today" : `${d.days}d`})</span>
+    <span
+      className={cn("text-[14px]", status === "Expiring" && "font-medium text-[#B45309]")}
+      title={d.days === 0 ? "Expires today" : `${d.days} days from today`}
+    >
+      {fmtDate(d.date)}
     </span>
   );
 }
 
 export function PurposeList({ list }: { list: Purpose[] }) {
-  if (!list.length) return <span className="text-[12px] text-muted-foreground">None</span>;
+  if (!list.length) return <span className="text-[13px] text-muted-foreground">None</span>;
   return (
     <div className="flex gap-1">
       {list.map((p) => (
-        <Pill key={p}>{p}</Pill>
+        <Pill key={p}>{p === "Authenticate" ? "Auth" : p}</Pill>
       ))}
     </div>
   );
@@ -160,8 +162,8 @@ export function KV({
 }) {
   return (
     <div className={className}>
-      <div className="text-[10px] uppercase-tracking text-muted-foreground">{label}</div>
-      <div className="mt-0.5 text-[12px] break-words">{value}</div>
+      <div className="text-[11px] uppercase-tracking text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-[13px] break-words">{value}</div>
     </div>
   );
 }
@@ -212,7 +214,7 @@ export interface Derived {
   compliance?: Compliance;
 }
 
-export function derive(k: PgpKey, policies: PgpPolicy[]): Derived {
+export function derive(k: PgpKey, policies: KeyPolicy[]): Derived {
   const policy = policyFor(k.group, policies);
   const status = keyStatus(k, policy.expiringThreshold);
   if (k.kind === "own")
@@ -238,7 +240,7 @@ export function Section({
   return (
     <div className="border-t border-border pt-4 mt-4 first:border-t-0 first:pt-0 first:mt-0">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
           {title}
         </div>
         {right}

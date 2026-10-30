@@ -96,6 +96,7 @@ export function CertInventoryPage({
     <div>
       <PageHeader breadcrumbs={breadcrumbs} title={title} />
 
+      <div className="page-card">
       <RiskTileBar
         tiles={tiles}
         activeKey={tileFilter}
@@ -110,19 +111,19 @@ export function CertInventoryPage({
         onRemove={() => { setTileFilter(null); navigate({ to: ".", search: {} as never }); }}
       />
 
-      <div className="flex items-center gap-2 bg-surface border border-border rounded-t-md px-3 py-2">
+      <div className="mb-5 flex items-center gap-2">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            className="pl-7 h-8 text-[13px]"
+            className="pl-7 h-8 text-[14px]"
             placeholder="Search certificates…"
             value={search_}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <span className="text-[12px] text-muted-foreground ml-2">Algorithm</span>
+        <span className="text-[13px] text-muted-foreground ml-2">Algorithm</span>
         <Select value={algoFilter} onValueChange={(v) => setAlgoFilter(v as AlgorithmFamily | "All")}>
-          <SelectTrigger className="h-8 w-[190px] text-[13px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-8 w-[190px] text-[14px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All algorithms</SelectItem>
             <SelectItem value="Classical">Classical</SelectItem>
@@ -240,7 +241,7 @@ export function CertInventoryPage({
                     <td className="sl" style={{ left: 36, minWidth: 240, maxWidth: 240 }} title={`${c.certKeyId} · ${c.certName}`}>
                       <span className="truncate-inner">
                         <span className="font-medium">{c.certKeyId}</span>
-                        <span className="text-[11px] text-muted-foreground ml-1">{c.certName}</span>
+                        <span className="text-[12px] text-muted-foreground ml-1">{c.certName}</span>
                       </span>
                     </td>
                     <td onClick={(e) => e.stopPropagation()} title={c.associatedKeyName}>
@@ -262,7 +263,7 @@ export function CertInventoryPage({
                           <span className="inline-flex items-center gap-1">
                             {a}
                             {isHybridKey(a) && (
-                              <span className="text-[9px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded">Hybrid PQC</span>
+                              <span className="text-[10px] font-semibold uppercase tracking-wider bg-primary/10 text-primary px-1 rounded">Hybrid PQC</span>
                             )}
                           </span>
                         );
@@ -297,6 +298,7 @@ export function CertInventoryPage({
             </tbody>
           </table>
         </div>
+      </div>
       </div>
 
       <CertDetailDrawer

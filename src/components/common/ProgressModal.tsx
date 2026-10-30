@@ -46,7 +46,7 @@ export function ProgressModal({
             const done = i < completed;
             const active = i === completed;
             return (
-              <li key={i} className="flex items-start gap-3 text-[13px]">
+              <li key={i} className="flex items-start gap-3 text-[14px]">
                 <span className="mt-0.5">
                   {done ? (
                     <Check className="h-4 w-4 text-risk-green" />
@@ -64,7 +64,7 @@ export function ProgressModal({
           })}
         </ol>
         {completed >= steps.length && finalToast && (
-          <div className="text-[12px] text-risk-green pt-2">{finalToast}</div>
+          <div className="text-[13px] text-risk-green pt-2">{finalToast}</div>
         )}
         <div className="flex justify-end pt-2">
           <Button variant="ghost" size="sm" onClick={onClose}>

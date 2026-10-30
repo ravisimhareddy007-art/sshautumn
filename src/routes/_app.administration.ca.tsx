@@ -10,15 +10,15 @@ export const Route = createFileRoute("/_app/administration/ca")({
     <div>
       <PageHeader breadcrumbs={["ADMINISTRATION", "Certificate Authority"]} title="Certificate Authority" />
       <div className="bg-surface border border-border rounded-md overflow-hidden">
-        <table className="w-full text-[13px]">
-          <thead className="bg-muted/50 text-[11px] uppercase-tracking text-muted-foreground">
+        <table className="w-full text-[14px]">
+          <thead className="bg-[#EEF1F8] text-[14px] text-[#374151] [&_th]:font-medium">
             <tr>
-              <th className="text-left px-3 py-2">CA Name</th>
-              <th className="text-left px-3 py-2">Type</th>
-              <th className="text-left px-3 py-2">Status</th>
-              <th className="text-left px-3 py-2">Signing Algorithm</th>
-              <th className="text-left px-3 py-2">Expiry</th>
-              <th className="text-left px-3 py-2">Actions</th>
+              <th className="text-left px-4 py-3">CA Name</th>
+              <th className="text-left px-4 py-3">Type</th>
+              <th className="text-left px-4 py-3">Status</th>
+              <th className="text-left px-4 py-3">Signing Algorithm</th>
+              <th className="text-left px-4 py-3">Expiry</th>
+              <th className="text-left px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_app/administration/ca")({
                   <span className="inline-flex items-center gap-2">
                     {c.name}
                     {c.pqcCapable && (
-                      <Badge variant="outline" className="bg-risk-green/10 text-risk-green border-risk-green/30 text-[10px]" title={`${c.keyType} CA key`}>
+                      <Badge variant="outline" className="bg-risk-green/10 text-risk-green border-risk-green/30 text-[11px]" title={`${c.keyType} CA key`}>
                         PQC-capable CA
                       </Badge>
                     )}
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/_app/administration/ca")({
                     {c.status}
                   </Badge>
                 </td>
-                <td className="px-3 py-2 font-mono text-[12px]">{c.signingAlgorithm}</td>
+                <td className="px-3 py-2 font-mono text-[13px]">{c.signingAlgorithm}</td>
                 <td className="px-3 py-2">{c.expiry}</td>
                 <td className="px-3 py-2 flex gap-1">
                   <Button size="sm" variant="ghost" onClick={() => toast.info("View details — coming soon")}>View</Button>

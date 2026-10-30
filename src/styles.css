@@ -33,9 +33,9 @@
   --color-brand-accent: #E63946;
 
   /* Nav */
-  --color-nav: #1B2437;
-  --color-nav-hover: #243050;
-  --color-nav-active: #2D3A56;
+  --color-nav: #2B3245;
+  --color-nav-hover: #353D51;
+  --color-nav-active: #3D4659;
   --color-nav-text: #FFFFFF;
   --color-nav-section: #8899AA;
 
@@ -65,6 +65,7 @@
   html, body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-size: 14px;
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
@@ -87,9 +88,17 @@
     background: #FFFFFF;
     border: 1px solid var(--color-border);
     border-top: 0;
-    border-radius: 0 0 6px 6px;
+    border-radius: 0 0 8px 8px;
     overflow: hidden;
   }
+  /* White rounded card that holds tiles, toolbar and table on inventory and list pages */
+  .page-card {
+    background: #FFFFFF;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .page-card .inv-frame { border: 0; border-radius: 0; }
   .inv-frame.inv-frame--standalone {
     border-top: 1px solid var(--color-border);
     border-radius: 6px;
@@ -103,22 +112,20 @@
     color: var(--color-foreground);
   }
   .inv-table thead th {
-    height: 36px;
-    padding: 0 12px;
+    height: 46px;
+    padding: 0 14px;
     text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748B;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
     white-space: nowrap;
-    background: #F1F5F9;
+    background: #EEF1F8;
     border-bottom: 1px solid var(--color-border);
   }
   .inv-table tbody td {
-    height: 48px;
-    padding: 0 12px;
-    font-size: 13px;
+    height: 52px;
+    padding: 0 14px;
+    font-size: 14px;
     line-height: 1.2;
     vertical-align: middle;
     white-space: nowrap;
@@ -135,8 +142,7 @@
     white-space: nowrap;
     display: block;
   }
-  .inv-table tbody tr:nth-child(even) td { background: #F9FAFB; }
-  .inv-table tbody tr:hover td { background: #EEF2FF; }
+  .inv-table tbody tr:hover td { background: #F7F8FC; }
   .inv-table tbody tr.row-selected td { background: var(--color-row-selected); }
   .inv-table tbody tr.row-highlight td {
     background: color-mix(in oklab, var(--color-primary) 10%, white);
@@ -152,8 +158,8 @@
     justify-content: flex-end;
     align-items: center;
     gap: 4px;
-    padding: 8px 12px;
-    font-size: 12px;
+    padding: 10px 14px;
+    font-size: 13px;
     color: var(--color-muted-foreground);
     background: #FFFFFF;
     border-top: 1px solid var(--color-border);

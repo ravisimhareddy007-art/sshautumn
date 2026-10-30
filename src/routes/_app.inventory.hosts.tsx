@@ -43,11 +43,11 @@ function ReadinessBadge({ host }: { host: Host }) {
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[320px] p-3">
-        <div className="text-[12px] font-semibold mb-2">MLDSA44-ED25519 support on {host.deviceName}</div>
+        <div className="text-[13px] font-semibold mb-2">MLDSA44-ED25519 support on {host.deviceName}</div>
         {host.hybridUses ? (
           <ul className="space-y-1.5">
             {HYBRID_USE_LABELS.map((u) => (
-              <li key={u.key} className="flex items-center gap-2 text-[12px]">
+              <li key={u.key} className="flex items-center gap-2 text-[13px]">
                 {host.hybridUses![u.key] ? (
                   <Check className="h-3.5 w-3.5 text-risk-green" />
                 ) : (
@@ -58,7 +58,7 @@ function ReadinessBadge({ host }: { host: Host }) {
             ))}
           </ul>
         ) : (
-          <div className="text-[12px] text-muted-foreground">The host configuration could not be read during discovery.</div>
+          <div className="text-[13px] text-muted-foreground">The host configuration could not be read during discovery.</div>
         )}
       </PopoverContent>
     </Popover>
@@ -114,9 +114,9 @@ function Page() {
       />
 
       <div className="flex items-center gap-2 bg-surface border border-border border-b-0 rounded-t-md px-3 py-2">
-        <span className="text-[12px] text-muted-foreground">OpenSSH Version</span>
+        <span className="text-[13px] text-muted-foreground">OpenSSH Version</span>
         <Select value={version} onValueChange={setVersion}>
-          <SelectTrigger className="h-8 w-[150px] text-[13px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-8 w-[150px] text-[14px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All versions</SelectItem>
             {versions.map((v) => (
@@ -125,9 +125,9 @@ function Page() {
             <SelectItem value="Unknown">Unknown</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-[12px] text-muted-foreground ml-2">Hybrid Key Readiness</span>
+        <span className="text-[13px] text-muted-foreground ml-2">Hybrid Key Readiness</span>
         <Select value={readiness} onValueChange={(v) => setReadiness(v as HybridReadiness | "All")}>
-          <SelectTrigger className="h-8 w-[170px] text-[13px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-8 w-[170px] text-[14px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="All">All</SelectItem>
             <SelectItem value="Ready">Ready</SelectItem>

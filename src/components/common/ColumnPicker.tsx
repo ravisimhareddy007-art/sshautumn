@@ -55,7 +55,7 @@ export function ColumnPicker({
           className="mb-3"
         />
 
-        <div className="flex items-center justify-between mb-2 text-[12px]">
+        <div className="flex items-center justify-between mb-2 text-[13px]">
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 rounded bg-risk-orange/15 text-risk-orange font-semibold">
               {draft.length}
@@ -85,7 +85,7 @@ export function ColumnPicker({
             return (
               <label
                 key={c.key}
-                className="flex items-center gap-2 text-[13px] cursor-pointer"
+                className="flex items-center gap-2 text-[14px] cursor-pointer"
               >
                 <Checkbox
                   checked={checked}

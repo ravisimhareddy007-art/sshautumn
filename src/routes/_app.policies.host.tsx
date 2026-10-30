@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Placeholder } from "@/components/common/Placeholder";
+import { HostPolicyPage } from "@/components/groups/GroupPages";
 
 export const Route = createFileRoute("/_app/policies/host")({
-  component: () => <Placeholder breadcrumbs={["POLICIES", "Host Policy"]} title="Host Policy" />,
+  component: HostPolicyPage,
 });

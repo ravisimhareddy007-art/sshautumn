@@ -123,11 +123,11 @@ export function DeleteKeyWithCertDialog({
             <DialogTitle>Delete Key and Certificate</DialogTitle>
           </DialogHeader>
 
-          <div className="text-[13px]">
+          <div className="text-[14px]">
             <div className="mb-2">
               Key: <span className="font-medium">{ssKey.name}</span>
             </div>
-            <div className="text-[11px] uppercase-tracking font-semibold text-muted-foreground mb-1">
+            <div className="text-[12px] uppercase-tracking font-semibold text-muted-foreground mb-1">
               Associated Certificates
             </div>
             <div className="border border-border rounded-md divide-y">
@@ -143,14 +143,14 @@ export function DeleteKeyWithCertDialog({
                     />
                     <span className="flex-1">
                       {c.certKeyId} — {c.certName}{" "}
-                      <span className="text-muted-foreground text-[11px]">(auto-selected)</span>
+                      <span className="text-muted-foreground text-[12px]">(auto-selected)</span>
                     </span>
-                    <span className={`text-[11px] font-medium ${certStatusColor(c.status)}`}>
+                    <span className={`text-[12px] font-medium ${certStatusColor(c.status)}`}>
                       {certStatusLabel(c.status)}
                     </span>
                   </label>
                   {warnUncheck === c.id && (
-                    <div className="px-3 pb-2 bg-risk-amber/10 border-t border-risk-amber/30 text-[12px] flex items-start gap-2">
+                    <div className="px-3 pb-2 bg-risk-amber/10 border-t border-risk-amber/30 text-[13px] flex items-start gap-2">
                       <AlertTriangle className="h-4 w-4 text-risk-amber shrink-0 mt-1" />
                       <div className="flex-1 pt-1">
                         This certificate will remain active on endpoints for its remaining
@@ -182,7 +182,7 @@ export function DeleteKeyWithCertDialog({
             </div>
           </div>
 
-          <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[12px] flex gap-2">
+          <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[13px] flex gap-2">
             <AlertTriangle className="h-4 w-4 text-risk-amber shrink-0 mt-0.5" />
             <span>{infoText}</span>
           </div>

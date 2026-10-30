@@ -81,13 +81,13 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
 
   if (!k) {
     return (
-      <div className="max-w-3xl">
+      <div>
         <PageHeader
-          breadcrumbs={["INVENTORY", "PGP KEY INVENTORY", "Own Keys", "Provision PGP Key"]}
+          parents={[{ label: "PGP Key Inventory", to: "/inventory/pgp", search: { tab: "own" } }]}
           title="Provision PGP Key"
         />
-        <div className="bg-surface border border-border rounded-md p-6 space-y-3">
-          <div className="text-[13px]">
+        <div className="space-y-3 rounded-xl border border-border bg-white px-12 py-10">
+          <div className="text-[14px]">
             Choose a key to provision. Only managed keys held in AppViewX or CyberArk that are not
             revoked, retired or expired are listed.
           </div>
@@ -153,9 +153,9 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
   };
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <PageHeader
-        breadcrumbs={["INVENTORY", "PGP KEY INVENTORY", "Own Keys", "Provision PGP Key"]}
+        parents={[{ label: "PGP Key Inventory", to: "/inventory/pgp", search: { tab: "own" } }]}
         title={`Provision PGP Key: ${keyName(k)}`}
       />
 
@@ -168,7 +168,7 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
             <div key={label} className="flex items-center gap-2">
               <div
                 className={cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-1 text-[12px]",
+                  "flex items-center gap-2 rounded-full border px-3 py-1 text-[13px]",
                   i === step && !results
                     ? "border-primary bg-primary/10 text-primary font-medium"
                     : doneStep && !skipped
@@ -187,7 +187,7 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
         })}
       </div>
 
-      <div className="bg-surface border border-border rounded-md p-6">
+      <div className="rounded-xl border border-border bg-white px-12 py-10">
         {!canProvision && !results && (
           <Note tone="danger">
             This key cannot be provisioned. It must be managed, held in AppViewX or CyberArk, and
@@ -206,14 +206,14 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
         ) : step === 0 ? (
           <div className="space-y-4">
             <h3 className="text-[14px] font-semibold">Key Summary</h3>
-            <div className="grid grid-cols-3 gap-4 text-[13px]">
+            <div className="grid grid-cols-3 gap-4 text-[14px]">
               <Info2 label="Name" value={keyName(k)} />
               <Info2 label="Status" value={<StatusBadge status={d.status} />} />
               <Info2 label="Algorithm" value={algoLabel(k.primary.algo)} />
               <Info2
                 label="Fingerprint"
                 value={
-                  <span className="font-mono text-[12px]">{groupedFp(k.primary.fingerprint)}</span>
+                  <span className="font-mono text-[13px]">{groupedFp(k.primary.fingerprint)}</span>
                 }
                 className="col-span-2"
               />
@@ -247,16 +247,16 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
           <div className="space-y-5">
             <h3 className="text-[14px] font-semibold">Destination Configuration</h3>
             <div>
-              <div className="text-[12px] font-medium mb-1">Private key owner</div>
-              <div className="text-[11px] text-muted-foreground mb-2">
+              <div className="text-[13px] font-medium mb-1">Private key owner</div>
+              <div className="text-[12px] text-muted-foreground mb-2">
                 Exactly one host and OS user gets the private key on each run. It is imported into
                 that user's GnuPG keyring.
               </div>
               <DestPicker value={owner} onChange={setOwner} k={k} role="Private key" />
             </div>
             <div>
-              <div className="text-[12px] font-medium mb-1">Public copies (optional)</div>
-              <div className="text-[11px] text-muted-foreground mb-2">
+              <div className="text-[13px] font-medium mb-1">Public copies (optional)</div>
+              <div className="text-[12px] text-muted-foreground mb-2">
                 Hosts that only need to encrypt to this key or verify its signatures.
               </div>
               <div className="space-y-2">
@@ -292,7 +292,7 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
         ) : step === 2 ? (
           <div className="space-y-4">
             <h3 className="text-[14px] font-semibold">Vault Configuration</h3>
-            <div className="text-[12px] text-muted-foreground">
+            <div className="text-[13px] text-muted-foreground">
               Set at key creation. The private key and passphrase are fetched from CyberArk when
               placed on the host.
             </div>
@@ -308,8 +308,8 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
                   ] as const
                 ).map(([l, v]) => (
                   <div key={l}>
-                    <div className="text-[11px] text-muted-foreground mb-1">{l}</div>
-                    <div className="h-8 px-2 flex items-center rounded border border-border bg-muted/50 text-[12px]">
+                    <div className="text-[12px] text-muted-foreground mb-1">{l}</div>
+                    <div className="h-8 px-2 flex items-center rounded border border-border bg-muted/50 text-[13px]">
                       {v}
                     </div>
                   </div>
@@ -329,7 +329,9 @@ export function ProvisionPgpKeyPage({ keyId }: { keyId?: string }) {
         {!results && (
           <div className="flex justify-between mt-6 pt-4 border-t border-border">
             <Button variant="outline" asChild>
-              <Link to="/inventory/pgp/own">Cancel</Link>
+              <Link to="/inventory/pgp" search={{ tab: "own" }}>
+                Cancel
+              </Link>
             </Button>
             <div className="flex gap-2">
               {step > 0 && (
@@ -375,7 +377,7 @@ function Info2({
 }) {
   return (
     <div className={className}>
-      <div className="text-[11px] text-muted-foreground">{label}</div>
+      <div className="text-[12px] text-muted-foreground">{label}</div>
       <div className="mt-0.5">{value}</div>
     </div>
   );
@@ -402,7 +404,7 @@ function DestPicker({
           onChange({ host: v, osUser: PGP_HOSTS.find((h) => h.name === v)?.users[0] ?? "" })
         }
       >
-        <SelectTrigger className="h-8 w-[200px] text-[13px]" aria-label={`${role} host`}>
+        <SelectTrigger className="h-8 w-[200px] text-[14px]" aria-label={`${role} host`}>
           <SelectValue placeholder="Host" />
         </SelectTrigger>
         <SelectContent>
@@ -418,7 +420,7 @@ function DestPicker({
         onValueChange={(v) => onChange({ ...value, osUser: v })}
         disabled={!host}
       >
-        <SelectTrigger className="h-8 w-[150px] text-[13px]" aria-label={`${role} OS user`}>
+        <SelectTrigger className="h-8 w-[150px] text-[14px]" aria-label={`${role} OS user`}>
           <SelectValue placeholder="OS user" />
         </SelectTrigger>
         <SelectContent>
@@ -430,7 +432,7 @@ function DestPicker({
         </SelectContent>
       </Select>
       {pc && pc.ok && pc.already && <Pill>Already present, will be skipped</Pill>}
-      {pc && !pc.ok && <span className="text-[11px] text-risk-red">{pc.reason}</span>}
+      {pc && !pc.ok && <span className="text-[12px] text-risk-red">{pc.reason}</span>}
     </div>
   );
 }
@@ -453,10 +455,10 @@ function Review({
   return (
     <div className="space-y-4">
       <h3 className="text-[14px] font-semibold">Review & Confirm</h3>
-      <div className="text-[12px] text-muted-foreground">
+      <div className="text-[13px] text-muted-foreground">
         Pre-checks run against each location before anything is placed.
       </div>
-      <table className="w-full text-[12px] border border-border rounded">
+      <table className="w-full text-[13px] border border-border rounded">
         <thead className="bg-muted/50">
           <tr className="text-left">
             <th className="px-3 py-2 font-medium">Host / OS user</th>
@@ -510,7 +512,7 @@ function Review({
           disabled={!keyserver}
           label="Publish public key"
         />
-        <div className="text-[12px]">
+        <div className="text-[13px]">
           <div className="font-medium">Publish the public key after provisioning</div>
           <div className="text-muted-foreground">
             {keyserver
@@ -564,10 +566,12 @@ function RunView({
           Run again to add public copies
         </Button>
         <Button variant="outline" asChild>
-          <Link to="/inventory/pgp/own">Back to Own Keys</Link>
+          <Link to="/inventory/pgp" search={{ tab: "own" }}>
+            Back to Own Keys
+          </Link>
         </Button>
       </div>
-      <div className="text-[11px] text-muted-foreground">
+      <div className="text-[12px] text-muted-foreground">
         {keyName(k)} now has {k.privateLocations.length} private key location
         {k.privateLocations.length === 1 ? "" : "s"} and {k.publicCopies.length} public cop
         {k.publicCopies.length === 1 ? "y" : "ies"}.

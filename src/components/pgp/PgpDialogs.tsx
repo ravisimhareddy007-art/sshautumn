@@ -95,11 +95,11 @@ function Shell({
           <DialogTitle>{title}</DialogTitle>
           {description && (
             <DialogDescription asChild>
-              <div className="text-[13px]">{description}</div>
+              <div className="text-[14px]">{description}</div>
             </DialogDescription>
           )}
         </DialogHeader>
-        <div className="space-y-4 text-[13px]">{children}</div>
+        <div className="space-y-4 text-[14px]">{children}</div>
         <DialogFooter>{footer}</DialogFooter>
       </DialogContent>
     </Dialog>
@@ -117,9 +117,9 @@ function Field({
 }) {
   return (
     <div>
-      <div className="text-[12px] font-medium mb-1">{label}</div>
+      <div className="text-[13px] font-medium mb-1">{label}</div>
       {children}
-      {hint && <div className="text-[11px] text-muted-foreground mt-1">{hint}</div>}
+      {hint && <div className="text-[12px] text-muted-foreground mt-1">{hint}</div>}
     </div>
   );
 }
@@ -139,7 +139,7 @@ export function Note({
         : "border-primary/20 bg-primary/5 text-foreground";
   const Icon = tone === "info" ? Info : AlertTriangle;
   return (
-    <div className={cn("flex gap-2 rounded border px-3 py-2 text-[12px]", cls)}>
+    <div className={cn("flex gap-2 rounded border px-3 py-2 text-[13px]", cls)}>
       <Icon className="h-3.5 w-3.5 mt-0.5 shrink-0" />
       <div>{children}</div>
     </div>
@@ -151,8 +151,8 @@ function Opt({ value, label, hint }: { value: string; label: string; hint?: stri
     <label className="flex items-start gap-2 cursor-pointer">
       <RadioGroupItem value={value} className="mt-0.5" />
       <span>
-        <span className="text-[13px]">{label}</span>
-        {hint && <span className="block text-[11px] text-muted-foreground">{hint}</span>}
+        <span className="text-[14px]">{label}</span>
+        {hint && <span className="block text-[12px] text-muted-foreground">{hint}</span>}
       </span>
     </label>
   );
@@ -220,7 +220,7 @@ export function OnboardDialog({ k, onClose }: { k: OwnKey | null; onClose: () =>
               hint="Reads the private key from the first readable location. Needs the key's passphrase."
             />
           ) : (
-            <div className="text-[11px] text-muted-foreground pl-6">
+            <div className="text-[12px] text-muted-foreground pl-6">
               The private key cannot be read from any location, so it can only stay on the hosts.
             </div>
           )}
@@ -403,18 +403,18 @@ export function RotateSubkeyDialog({ k, onClose }: { k: OwnKey | null; onClose: 
         </RadioGroup>
       </Field>
       {chosen && (
-        <div className="grid grid-cols-2 gap-3 rounded border border-border p-3 text-[12px]">
+        <div className="grid grid-cols-2 gap-3 rounded border border-border p-3 text-[13px]">
           <div>
-            <div className="text-muted-foreground text-[11px]">New subkey algorithm</div>
+            <div className="text-muted-foreground text-[12px]">New subkey algorithm</div>
             {newAlgo} <span className="text-muted-foreground">(policy)</span>
           </div>
           <div>
-            <div className="text-muted-foreground text-[11px]">New subkey expires</div>
+            <div className="text-muted-foreground text-[12px]">New subkey expires</div>
             {fmtDate(rel(p.rotationValidity))}{" "}
             <span className="text-muted-foreground">({p.rotationValidity} days)</span>
           </div>
           <div className="col-span-2">
-            <div className="text-muted-foreground text-[11px]">Updated on</div>
+            <div className="text-muted-foreground text-[12px]">Updated on</div>
             {locCount(k)} location{locCount(k) === 1 ? "" : "s"}
             {k.publication === "Published" && ". The published copy is marked Out of date."}
           </div>
@@ -503,7 +503,7 @@ export function RevokeDialog({ k, onClose }: { k: OwnKey | null; onClose: () => 
             ))}
         </RadioGroup>
         {discovered && (
-          <div className="text-[11px] text-muted-foreground mt-1">
+          <div className="text-[12px] text-muted-foreground mt-1">
             Onboard the key to revoke a single subkey or user ID.
           </div>
         )}
@@ -568,7 +568,7 @@ export function RetireDialog({ k, onClose }: { k: OwnKey | null; onClose: () => 
         <Checkbox checked={remove} onCheckedChange={(v) => setRemove(!!v)} className="mt-0.5" />
         <span>
           Also remove the key from its {locCount(k)} location{locCount(k) === 1 ? "" : "s"}
-          <span className="block text-[11px] text-muted-foreground">
+          <span className="block text-[12px] text-muted-foreground">
             Leave this off if hosts still need to decrypt older files.
           </span>
         </span>
@@ -623,7 +623,7 @@ export function DeleteOwnDialog({
                 mode,
               );
               toast.success(
-                `${keys.length} key${keys.length > 1 ? "s" : ""} deleted ${mode.toLowerCase()}. See Recently Deleted PGP Keys.`,
+                `${keys.length} key${keys.length > 1 ? "s" : ""} deleted ${mode.toLowerCase()}. See Recently Deleted Keys > PGP Keys.`,
               );
               onClose();
             }}
@@ -727,7 +727,7 @@ export function ImportKeyDialog({
   const [source, setSource] = useState<ImportSource>("File");
   const [type, setType] = useState<"Partner" | "Repository">("Partner");
   const [label, setLabel] = useState("");
-  const [group, setGroup] = useState("Default");
+  const [group, setGroup] = useState("Default_Key_Group");
   const [text, setText] = useState("");
   const [email, setEmail] = useState("");
   const [fileName, setFileName] = useState("");
@@ -751,7 +751,7 @@ export function ImportKeyDialog({
     setSource("File");
     setType("Partner");
     setLabel(replacing ? `${replacing.label ?? keyName(replacing)} (new)` : "");
-    setGroup(replacing?.group ?? "Default");
+    setGroup(replacing?.group ?? "Default_Key_Group");
     setText("");
     setEmail(replacing?.userIds[0]?.email ?? "");
     setFileName("");
@@ -934,7 +934,7 @@ export function ImportKeyDialog({
               ))}
             </RadioGroup>
           ) : (
-            <div className="text-[12px] text-muted-foreground">
+            <div className="text-[13px] text-muted-foreground">
               No other partner keys are available.
             </div>
           )}
@@ -959,7 +959,7 @@ export function ImportKeyDialog({
         <Field label="Public key">
           <Textarea
             rows={5}
-            className="font-mono text-[11px]"
+            className="font-mono text-[12px]"
             value={text}
             onChange={(e) => (setText(e.target.value), reset())}
             placeholder="-----BEGIN PGP PUBLIC KEY BLOCK-----"
@@ -991,14 +991,14 @@ export function ImportKeyDialog({
             <Input value={label} onChange={(e) => setLabel(e.target.value)} />
           </Field>
           <div>
-            <div className="text-[11px] text-muted-foreground">Fingerprint</div>
-            <div className="font-mono text-[13px] tracking-wide">
+            <div className="text-[12px] text-muted-foreground">Fingerprint</div>
+            <div className="font-mono text-[14px] tracking-wide">
               {groupedFp(parsed.primary.fingerprint)}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-[12px]">
+          <div className="grid grid-cols-2 gap-3 text-[13px]">
             <div>
-              <div className="text-[11px] text-muted-foreground">User IDs</div>
+              <div className="text-[12px] text-muted-foreground">User IDs</div>
               {parsed.userIds.map((u, i) => (
                 <div key={i}>
                   {u.name}{" "}
@@ -1007,7 +1007,7 @@ export function ImportKeyDialog({
               ))}
             </div>
             <div>
-              <div className="text-[11px] text-muted-foreground">Subkeys</div>
+              <div className="text-[12px] text-muted-foreground">Subkeys</div>
               {parsed.subkeys.map((x) => (
                 <div key={x.id}>
                   {x.purpose} · {algoLabel(x.algo)}
@@ -1016,8 +1016,8 @@ export function ImportKeyDialog({
             </div>
           </div>
           <div>
-            <div className="text-[11px] text-muted-foreground mb-1">Policy check ({p.name})</div>
-            <ul className="space-y-0.5 text-[12px]">
+            <div className="text-[12px] text-muted-foreground mb-1">Policy check ({p.name})</div>
+            <ul className="space-y-0.5 text-[13px]">
               {checks.map((c) => (
                 <li key={c.label} className="flex items-center gap-1.5">
                   {c.ok ? (
@@ -1090,14 +1090,14 @@ export function DecideDialog({ k, onClose }: { k: TrustedKey | null; onClose: ()
       }
     >
       <div>
-        <div className="text-[11px] text-muted-foreground">
+        <div className="text-[12px] text-muted-foreground">
           Fingerprint to confirm with the partner
         </div>
         <div className="font-mono text-[15px] tracking-wide mt-1">
           {groupedFp(k.primary.fingerprint)}
         </div>
       </div>
-      <div className="text-[12px]">
+      <div className="text-[13px]">
         {k.userIds.map((u, i) => (
           <div key={i}>
             {u.name} {u.email && <span className="text-muted-foreground">&lt;{u.email}&gt;</span>}
@@ -1187,7 +1187,7 @@ export function DistributeDialog({ k, onClose }: { k: TrustedKey | null; onClose
       )}
       {!results ? (
         <div className="max-h-[320px] overflow-y-auto rounded border border-border">
-          <table className="w-full text-[12px]">
+          <table className="w-full text-[13px]">
             <tbody>
               {combos.map((c) => {
                 const id = `${c.host}|${c.osUser}`;
@@ -1222,7 +1222,7 @@ export function DistributeDialog({ k, onClose }: { k: TrustedKey | null; onClose
 
 export function ResultList({ results }: { results: RunResult[] }) {
   return (
-    <ul className="space-y-1 text-[12px]">
+    <ul className="space-y-1 text-[13px]">
       {results.map((r, i) => (
         <li key={i} className="flex items-center gap-2">
           {r.outcome === "Succeeded" ? (
@@ -1299,7 +1299,7 @@ export function RemoveFromHostsDialog({
           return (
             <label
               key={id}
-              className="flex items-center gap-2 px-2 py-1.5 border-b border-border last:border-0 text-[12px]"
+              className="flex items-center gap-2 px-2 py-1.5 border-b border-border last:border-0 text-[13px]"
             >
               <Checkbox
                 checked={picked.includes(id)}
@@ -1308,7 +1308,7 @@ export function RemoveFromHostsDialog({
                 }
               />
               {l.host} / {l.osUser}{" "}
-              <span className="text-muted-foreground font-mono text-[11px]">{l.path}</span>
+              <span className="text-muted-foreground font-mono text-[12px]">{l.path}</span>
             </label>
           );
         })}

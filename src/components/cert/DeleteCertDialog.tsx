@@ -60,7 +60,7 @@ export function DeleteCertDialog({
           </DialogHeader>
 
           {isActive && (
-            <div className="rounded-md bg-risk-red/10 border border-risk-red/30 p-3 text-[12px] flex gap-2">
+            <div className="rounded-md bg-risk-red/10 border border-risk-red/30 p-3 text-[13px] flex gap-2">
               <AlertTriangle className="h-4 w-4 text-risk-red shrink-0 mt-0.5" />
               <span>
                 This certificate is currently active. Deleting it will first revoke it via KRL update
@@ -69,7 +69,7 @@ export function DeleteCertDialog({
             </div>
           )}
           {isExpired && (
-            <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[12px] flex gap-2">
+            <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[13px] flex gap-2">
               <InfoIcon className="h-4 w-4 text-risk-amber shrink-0 mt-0.5" />
               <span>
                 This certificate has already expired and is no longer valid on any endpoint. No KRL
@@ -78,7 +78,7 @@ export function DeleteCertDialog({
             </div>
           )}
           {isRevoked && (
-            <div className="rounded-md bg-muted border border-border p-3 text-[12px] flex gap-2">
+            <div className="rounded-md bg-muted border border-border p-3 text-[13px] flex gap-2">
               <InfoIcon className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
               <span>
                 This certificate has already been revoked and is in the KRL. No further KRL update is
@@ -87,7 +87,7 @@ export function DeleteCertDialog({
             </div>
           )}
 
-          <div className="rounded-md border border-border bg-muted/40 p-3 text-[12px] grid grid-cols-2 gap-2">
+          <div className="rounded-md border border-border bg-muted/40 p-3 text-[13px] grid grid-cols-2 gap-2">
             <Info label="Cert Key ID" value={cert.certKeyId} />
             <Info label="CA" value={cert.caName} />
             <Info label="Valid To" value={cert.validTo} />
@@ -149,8 +149,8 @@ export function DeleteCertDialog({
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-muted-foreground text-[10px] uppercase-tracking">{label}</div>
-      <div className="text-[13px] font-medium">{value}</div>
+      <div className="text-muted-foreground text-[11px] uppercase-tracking">{label}</div>
+      <div className="text-[14px] font-medium">{value}</div>
     </div>
   );
 }

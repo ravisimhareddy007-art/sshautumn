@@ -231,7 +231,7 @@ function StepIndicator({ step }: { step: number }) {
           <div className="flex flex-col items-center gap-1">
             <div
               className={cn(
-                "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors",
+                "w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-bold transition-colors",
                 i < step
                   ? "bg-risk-green text-white"
                   : i === step
@@ -243,7 +243,7 @@ function StepIndicator({ step }: { step: number }) {
             </div>
             <span
               className={cn(
-                "text-[10px] whitespace-nowrap",
+                "text-[11px] whitespace-nowrap",
                 i === step ? "text-primary font-medium" : "text-muted-foreground",
               )}
             >
@@ -269,7 +269,7 @@ function EligibilityStep({ k, eligibility }: { k: SshKey; eligibility: Eligibili
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-2 p-3 bg-muted/40 rounded-md border border-border text-[12px]">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-2 p-3 bg-muted/40 rounded-md border border-border text-[13px]">
         {[
           ["Key", k.name],
           ["Algorithm", `${k.encryption} / ${k.length}`],
@@ -300,23 +300,23 @@ function EligibilityStep({ k, eligibility }: { k: SshKey; eligibility: Eligibili
         <span
           className={cn(
             meta.badgeClass,
-            "flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded border shrink-0 mt-0.5",
+            "flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded border shrink-0 mt-0.5",
           )}
         >
           {meta.icon}
           {meta.label}
         </span>
-        <p className="text-[12px] text-foreground leading-relaxed">{eligibility.reason}</p>
+        <p className="text-[13px] text-foreground leading-relaxed">{eligibility.reason}</p>
       </div>
 
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Eligibility checks</p>
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Eligibility checks</p>
         <div className="space-y-1.5">
           {eligibility.checks.map((c) => (
             <div
               key={c.label}
               className={cn(
-                "flex items-start gap-2 p-2 rounded text-[12px] border",
+                "flex items-start gap-2 p-2 rounded text-[13px] border",
                 c.pass ? "bg-risk-green/5 border-risk-green/20" : "bg-risk-red/5 border-risk-red/20",
               )}
             >
@@ -350,16 +350,16 @@ function PermissionStep({
 
   return (
     <div className="space-y-4">
-      <p className="text-[12px] text-muted-foreground leading-relaxed">
+      <p className="text-[13px] text-muted-foreground leading-relaxed">
         Every restriction in the authorized_keys line must be faithfully carried into the certificate. The certificate
         is built <span className="font-medium text-foreground">clear-then-add</span>: starting from zero permissions so
         a missed translation fails closed rather than open. Hover over each option to inspect the translation.
       </p>
 
       {/* Transformation card */}
-      <div className="grid grid-cols-[1fr_28px_1fr] rounded-md overflow-hidden border border-border text-[12px] font-mono">
+      <div className="grid grid-cols-[1fr_28px_1fr] rounded-md overflow-hidden border border-border text-[13px] font-mono">
         <div className="bg-[#0B1220] p-3 space-y-0.5">
-          <p className="text-[10px] uppercase tracking-wider text-[#4A5A7A] mb-2 font-sans">authorized_keys line</p>
+          <p className="text-[11px] uppercase tracking-wider text-[#4A5A7A] mb-2 font-sans">authorized_keys line</p>
           {SAMPLE_OPTIONS.map((o) => (
             <span
               key={o.raw}
@@ -397,7 +397,7 @@ function PermissionStep({
           <div className="h-6" />
         </div>
         <div className="bg-[#061410] p-3 space-y-0.5">
-          <p className="text-[10px] uppercase tracking-wider text-[#2A5A4A] mb-2 font-sans">certificate fields</p>
+          <p className="text-[11px] uppercase tracking-wider text-[#2A5A4A] mb-2 font-sans">certificate fields</p>
           {SAMPLE_OPTIONS.map((o) => (
             <div
               key={o.raw}
@@ -431,14 +431,14 @@ function PermissionStep({
       {h && (
         <div
           className={cn(
-            "flex items-start gap-3 p-3 rounded-md border text-[12px]",
+            "flex items-start gap-3 p-3 rounded-md border text-[13px]",
             h.type === "critical" ? "bg-risk-red/5 border-risk-red/30" : "bg-risk-amber/5 border-risk-amber/30",
           )}
         >
           <Badge
             variant="outline"
             className={cn(
-              "shrink-0 text-[10px]",
+              "shrink-0 text-[11px]",
               h.type === "critical"
                 ? "text-risk-red border-risk-red/40 bg-risk-red/10"
                 : "text-risk-amber border-risk-amber/40 bg-risk-amber/10",
@@ -453,7 +453,7 @@ function PermissionStep({
         </div>
       )}
 
-      <div className="flex items-center gap-6 p-2.5 bg-muted/40 rounded-md border border-border text-[11px]">
+      <div className="flex items-center gap-6 p-2.5 bg-muted/40 rounded-md border border-border text-[12px]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-sm bg-risk-red" />
           <span>
@@ -468,7 +468,7 @@ function PermissionStep({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 p-2.5 bg-risk-green/5 border border-risk-green/20 rounded-md text-[12px] text-risk-green">
+      <div className="flex items-center gap-2 p-2.5 bg-risk-green/5 border border-risk-green/20 rounded-md text-[13px] text-risk-green">
         <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
         All 4 restrictions successfully mapped. Certificate will be built clear-then-add.
       </div>
@@ -487,7 +487,7 @@ function CertPreviewStep({ k }: { k: SshKey }) {
 
   return (
     <div className="space-y-4">
-      <div className="p-3 bg-primary/5 border border-primary/20 rounded-md text-[12px] text-primary leading-relaxed">
+      <div className="p-3 bg-primary/5 border border-primary/20 rounded-md text-[13px] text-primary leading-relaxed">
         <Shield className="inline h-3.5 w-3.5 mr-1.5 -mt-0.5" />
         <span className="font-medium">Policy-driven:</span> CA, max validity, extensions, and critical options are
         inherited from <span className="font-medium">Default_Key_Policy</span>. These fields are read-only — not
@@ -513,30 +513,30 @@ function CertPreviewStep({ k }: { k: SshKey }) {
         ].map(({ label, value, src }) => (
           <div key={label} className="p-2.5 bg-muted/40 rounded-md border border-border">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-muted-foreground">{label}</span>
-              <Badge variant="outline" className="text-[9px] h-4 px-1">
+              <span className="text-[11px] text-muted-foreground">{label}</span>
+              <Badge variant="outline" className="text-[10px] h-4 px-1">
                 {src}
               </Badge>
             </div>
-            <p className="text-[12px] font-medium break-all">{value}</p>
+            <p className="text-[13px] font-medium break-all">{value}</p>
           </div>
         ))}
       </div>
 
       <div>
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
           Coexistence settings (from Default_Key_Policy)
         </p>
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-muted/40 rounded-md border border-border">
-            <p className="text-[10px] text-muted-foreground mb-1">Coexistence Duration</p>
+            <p className="text-[11px] text-muted-foreground mb-1">Coexistence Duration</p>
             <p className="text-[18px] font-bold">14 days</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Both key + cert remain active after issuance</p>
+            <p className="text-[12px] text-muted-foreground mt-1">Both key + cert remain active after issuance</p>
           </div>
           <div className="p-3 bg-primary/5 rounded-md border border-primary/20">
-            <p className="text-[10px] text-muted-foreground mb-1">Post-Window Action</p>
+            <p className="text-[11px] text-muted-foreground mb-1">Post-Window Action</p>
             <p className="text-[14px] font-bold text-primary">Manual Confirmation</p>
-            <p className="text-[11px] text-muted-foreground mt-1">Admin must approve key removal after window closes</p>
+            <p className="text-[12px] text-muted-foreground mt-1">Admin must approve key removal after window closes</p>
           </div>
         </div>
       </div>
@@ -549,7 +549,7 @@ function CertPreviewStep({ k }: { k: SshKey }) {
 function ConfirmStep({ k, confirmed, onConfirm }: { k: SshKey; confirmed: boolean; onConfirm: (v: boolean) => void }) {
   return (
     <div className="space-y-4">
-      <div className="space-y-0 text-[12px] divide-y divide-border border border-border rounded-md overflow-hidden">
+      <div className="space-y-0 text-[13px] divide-y divide-border border border-border rounded-md overflow-hidden">
         {[
           ["Certificate will be issued for", `${k.name} on ${k.hostEndpoints[0] ?? "target host"}`],
           ["Signing", "Existing public key — no new key material generated"],
@@ -566,7 +566,7 @@ function ConfirmStep({ k, confirmed, onConfirm }: { k: SshKey; confirmed: boolea
         ))}
       </div>
 
-      <div className="p-3 bg-risk-amber/5 border border-risk-amber/30 rounded-md text-[12px] leading-relaxed">
+      <div className="p-3 bg-risk-amber/5 border border-risk-amber/30 rounded-md text-[13px] leading-relaxed">
         <AlertTriangle className="inline h-3.5 w-3.5 text-risk-amber mr-1.5 -mt-0.5" />
         <span className="font-medium text-risk-amber">Important:</span> The original authorized_keys entry will remain
         active for 14 days. It will only be removed after you confirm decommission in the inventory. This is the Manual
@@ -575,7 +575,7 @@ function ConfirmStep({ k, confirmed, onConfirm }: { k: SshKey; confirmed: boolea
 
       <label className="flex items-start gap-2 cursor-pointer">
         <Checkbox className="mt-0.5" checked={confirmed} onCheckedChange={(v) => onConfirm(!!v)} />
-        <span className="text-[13px]">
+        <span className="text-[14px]">
           I understand that the original key will remain active during the coexistence window and that decommission
           requires manual confirmation.
         </span>
@@ -655,7 +655,7 @@ export function MigrateToCertDialog({
       <DialogContent className="sm:max-w-[680px] max-h-[88vh] overflow-y-auto">
         <DialogHeader className="pb-0">
           <DialogTitle>Migrate to Certificate</DialogTitle>
-          <p className="text-[12px] text-muted-foreground mt-0.5">
+          <p className="text-[13px] text-muted-foreground mt-0.5">
             {ssKey.name} · {ssKey.encryption} · {ssKey.hostEndpoints[0] ?? "no host endpoint"}
           </p>
         </DialogHeader>

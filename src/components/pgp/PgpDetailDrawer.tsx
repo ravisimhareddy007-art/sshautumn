@@ -58,7 +58,7 @@ function Body({ k }: { k: PgpKey }) {
           {k.kind === "own" ? <Pill>{k.management}</Pill> : <Pill>{k.type} key</Pill>}
         </div>
         <div className="flex items-center gap-2 mt-1">
-          <code className="text-[11px] font-mono text-muted-foreground">
+          <code className="text-[12px] font-mono text-muted-foreground">
             {groupedFp(k.primary.fingerprint)}
           </code>
           <button onClick={copy} className="p-1 rounded hover:bg-muted" title="Copy fingerprint">
@@ -103,11 +103,11 @@ function Body({ k }: { k: PgpKey }) {
 
         <Section title="Risks">
           {d.risks.length === 0 ? (
-            <div className="text-[12px] text-muted-foreground">No risks found.</div>
+            <div className="text-[13px] text-muted-foreground">No risks found.</div>
           ) : (
             <ul className="space-y-1.5">
               {d.risks.map((r) => (
-                <li key={r} className="flex gap-2 text-[12px]">
+                <li key={r} className="flex gap-2 text-[13px]">
                   <AlertTriangle className="h-3.5 w-3.5 mt-0.5 text-risk-amber shrink-0" />
                   <span>
                     <span className="font-medium">{r}.</span> {RISK_HELP[r]}
@@ -120,7 +120,7 @@ function Body({ k }: { k: PgpKey }) {
             </ul>
           )}
           {d.compliance?.state === "Non-Compliant" && (
-            <div className="mt-3 rounded border border-risk-red/30 bg-risk-red/5 px-3 py-2 text-[12px]">
+            <div className="mt-3 rounded border border-risk-red/30 bg-risk-red/5 px-3 py-2 text-[13px]">
               <div className="font-medium text-risk-red mb-1">Why it is non-compliant</div>
               <ul className="list-disc pl-4 space-y-0.5">
                 {d.compliance.reasons.map((r) => (
@@ -134,7 +134,7 @@ function Body({ k }: { k: PgpKey }) {
         {k.kind === "trusted" && <ApprovalSection k={k} />}
 
         <Section title="User IDs">
-          <table className="w-full text-[12px]">
+          <table className="w-full text-[13px]">
             <tbody>
               {k.userIds.map((u, i) => (
                 <tr key={i} className="border-b border-border last:border-0">
@@ -177,14 +177,14 @@ function Body({ k }: { k: PgpKey }) {
 
         <Section title="History">
           {k.history.length === 0 ? (
-            <div className="text-[12px] text-muted-foreground">
+            <div className="text-[13px] text-muted-foreground">
               No operations yet. Found by discovery{" "}
               {k.lastDiscovered ? fmtDate(k.lastDiscovered) : ""}.
             </div>
           ) : (
             <ul className="space-y-1">
               {[...k.history].reverse().map((o, i) => (
-                <li key={i} className="flex gap-2 text-[12px]">
+                <li key={i} className="flex gap-2 text-[13px]">
                   <span className="w-[92px] shrink-0 text-muted-foreground">{fmtDate(o.at)}</span>
                   <span className="font-medium">{o.action}</span>
                   <span className="text-muted-foreground">by {o.user}</span>
@@ -254,9 +254,9 @@ function SubkeyTable({
     })),
   ];
   return (
-    <table className="w-full text-[12px]">
+    <table className="w-full text-[13px]">
       <thead>
-        <tr className="text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+        <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
           <th className="py-1 font-medium">Type</th>
           <th className="py-1 font-medium">Purpose</th>
           <th className="py-1 font-medium">Algorithm</th>
@@ -278,9 +278,9 @@ function SubkeyTable({
               ) : (
                 <span className="text-muted-foreground">Key status</span>
               )}
-              {r.note && <div className="text-[11px] text-muted-foreground mt-0.5">{r.note}</div>}
+              {r.note && <div className="text-[12px] text-muted-foreground mt-0.5">{r.note}</div>}
             </td>
-            <td className="py-1.5 font-mono text-[11px]" title={r.fp}>
+            <td className="py-1.5 font-mono text-[12px]" title={r.fp}>
               {shortFp(r.fp)}
             </td>
           </tr>
@@ -305,11 +305,11 @@ function Locations({
   return (
     <Section title={`${title} (${list.length})`} right={right}>
       {list.length === 0 ? (
-        <div className="text-[12px] text-muted-foreground">{empty}</div>
+        <div className="text-[13px] text-muted-foreground">{empty}</div>
       ) : (
-        <table className="w-full text-[12px]">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="text-left text-[10px] uppercase tracking-wider text-muted-foreground">
+            <tr className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
               <th className="py-1 font-medium">Host</th>
               <th className="py-1 font-medium">OS user</th>
               <th className="py-1 font-medium">Path</th>
@@ -322,20 +322,20 @@ function Locations({
               <tr key={i} className="border-t border-border align-top">
                 <td className="py-1.5">{l.host}</td>
                 <td className="py-1.5">{l.osUser}</td>
-                <td className="py-1.5 font-mono text-[11px] break-all">
+                <td className="py-1.5 font-mono text-[12px] break-all">
                   {l.path}
                   {l.misplaced && (
-                    <div className="text-risk-red font-sans text-[11px]">
+                    <div className="text-risk-red font-sans text-[12px]">
                       Misplaced: {l.misplaced}
                     </div>
                   )}
                   {l.read === "Inaccessible" && (
-                    <div className="text-[#B45309] font-sans text-[11px]">
+                    <div className="text-[#B45309] font-sans text-[12px]">
                       Inaccessible: {l.inaccessibleReason}
                     </div>
                   )}
                   {l.inBaseline === false && (
-                    <div className="text-risk-red font-sans text-[11px]">
+                    <div className="text-risk-red font-sans text-[12px]">
                       Not in the host's PGP baseline
                     </div>
                   )}
@@ -348,7 +348,7 @@ function Locations({
         </table>
       )}
       {list.length > shown.length && (
-        <div className="text-[11px] text-muted-foreground mt-1">
+        <div className="text-[12px] text-muted-foreground mt-1">
           and {list.length - shown.length} more
         </div>
       )}
@@ -376,7 +376,7 @@ function OwnLocations({ k }: { k: OwnKey }) {
         }
         right={
           k.management === "Managed" && k.storage !== "Host only" ? (
-            <Button asChild size="sm" variant="outline" className="h-7 text-[12px]">
+            <Button asChild size="sm" variant="outline" className="h-7 text-[13px]">
               <Link to="/inventory/pgp/provision" search={{ key: k.id }}>
                 Provision
               </Link>
@@ -393,12 +393,12 @@ function OwnLocations({ k }: { k: OwnKey }) {
         <Section
           title={`Failed locations (${k.failedLocations.length})`}
           right={
-            <Button size="sm" variant="outline" className="h-7 text-[12px]" onClick={retry}>
+            <Button size="sm" variant="outline" className="h-7 text-[13px]" onClick={retry}>
               <RotateCw className="h-3 w-3 mr-1" /> Retry failed
             </Button>
           }
         >
-          <ul className="space-y-1 text-[12px]">
+          <ul className="space-y-1 text-[13px]">
             {k.failedLocations.map((f, i) => (
               <li key={i}>
                 <span className="font-medium">

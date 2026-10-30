@@ -64,13 +64,13 @@ export function CertificatesOfKeyModal({
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
-                className="pl-7 h-8 text-[13px]"
+                className="pl-7 h-8 text-[14px]"
                 placeholder="Search…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-3 text-[12px] text-muted-foreground">
+            <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
               <span>1 to {filtered.length} of {filtered.length}</span>
               <button className="p-1 hover:bg-muted rounded">
                 <RefreshCw className="h-3.5 w-3.5" />
@@ -79,8 +79,8 @@ export function CertificatesOfKeyModal({
           </div>
 
           <div className="border border-border rounded-md overflow-hidden">
-            <table className="w-full text-[13px]">
-              <thead className="bg-muted/60 text-[11px] uppercase-tracking text-muted-foreground">
+            <table className="w-full text-[14px]">
+              <thead className="bg-muted/60 text-[12px] uppercase-tracking text-muted-foreground">
                 <tr>
                   <th className="text-left px-3 py-2">Principals</th>
                   <th className="text-left px-3 py-2">CA Name</th>
@@ -107,7 +107,7 @@ export function CertificatesOfKeyModal({
                     >
                       <td className="px-3 py-2">{c.principals.join(", ") || "--"}</td>
                       <td className="px-3 py-2">{c.caName}</td>
-                      <td className="px-3 py-2 font-mono text-[12px]">{c.serialNumber}…</td>
+                      <td className="px-3 py-2 font-mono text-[13px]">{c.serialNumber}…</td>
                       <td className="px-3 py-2"><StatusBadge status={c.status} /></td>
                       <td className="px-3 py-2">{c.validFrom}</td>
                       <td className={cn("px-3 py-2", c.expiresInDays <= 0 ? "text-risk-red" : c.expiresInDays <= 30 ? "text-risk-amber" : "")}>

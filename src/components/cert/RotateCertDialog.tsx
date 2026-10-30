@@ -34,7 +34,7 @@ export function RotateCertDialog({
             <DialogTitle>Rotate Certificate — Independent Rotation</DialogTitle>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-3 text-[12px]">
+          <div className="grid grid-cols-2 gap-3 text-[13px]">
             <Panel title="Current Cert Parameters">
               <KV k="Principals" v={cert.principals.join(", ") || "—"} />
               <KV k="Valid To" v={cert.validTo} />
@@ -50,7 +50,7 @@ export function RotateCertDialog({
           </div>
 
           {hasDiff && (
-            <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[12px] flex gap-2">
+            <div className="rounded-md bg-risk-amber/10 border border-risk-amber/30 p-3 text-[13px] flex gap-2">
               <AlertTriangle className="h-4 w-4 text-risk-amber shrink-0 mt-0.5" />
               <span>
                 Policy changes detected — current cert has{" "}
@@ -107,7 +107,7 @@ function Panel({
         highlight ? "border-primary/40" : "border-border",
       )}
     >
-      <div className="text-[11px] uppercase-tracking font-semibold text-muted-foreground mb-2">
+      <div className="text-[12px] uppercase-tracking font-semibold text-muted-foreground mb-2">
         {title}
       </div>
       <div className="space-y-1">{children}</div>

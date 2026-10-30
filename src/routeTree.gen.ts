@@ -11,26 +11,26 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppGroupsRouteImport } from './routes/_app.groups'
+import { Route as AppGetStartedRouteImport } from './routes/_app.get-started'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
-import { Route as AppPoliciesKeyRouteImport } from './routes/_app.policies.key'
 import { Route as AppPoliciesHostRouteImport } from './routes/_app.policies.host'
 import { Route as AppInventoryHostsRouteImport } from './routes/_app.inventory.hosts'
+import { Route as AppGroupsKeyRouteImport } from './routes/_app.groups.key'
+import { Route as AppGroupsInfraRouteImport } from './routes/_app.groups.infra'
+import { Route as AppGroupsHostRouteImport } from './routes/_app.groups.host'
 import { Route as AppDiscoveryStatusRouteImport } from './routes/_app.discovery.status'
-import { Route as AppDiscoveryRunsRouteImport } from './routes/_app.discovery.runs'
-import { Route as AppDiscoveryProfilesRouteImport } from './routes/_app.discovery.profiles'
-import { Route as AppAgentMcpRouteImport } from './routes/_app.agent.mcp'
+import { Route as AppDiscoverySchedulerRouteImport } from './routes/_app.discovery.scheduler'
+import { Route as AppDiscoveryNetworkScanRouteImport } from './routes/_app.discovery.network-scan'
+import { Route as AppDiscoveryDevicesRouteImport } from './routes/_app.discovery.devices'
 import { Route as AppAdministrationTagsRouteImport } from './routes/_app.administration.tags'
-import { Route as AppAdministrationSettingsRouteImport } from './routes/_app.administration.settings'
 import { Route as AppAdministrationPgpRouteImport } from './routes/_app.administration.pgp'
-import { Route as AppAdministrationMcpRouteImport } from './routes/_app.administration.mcp'
-import { Route as AppAdministrationDevicesRouteImport } from './routes/_app.administration.devices'
 import { Route as AppAdministrationCaRouteImport } from './routes/_app.administration.ca'
-import { Route as AppInventoryPgpTrustedRouteImport } from './routes/_app.inventory.pgp.trusted'
+import { Route as AppPoliciesKeyIndexRouteImport } from './routes/_app.policies.key.index'
+import { Route as AppInventoryPgpIndexRouteImport } from './routes/_app.inventory.pgp.index'
+import { Route as AppPoliciesKeyNewRouteImport } from './routes/_app.policies.key.new'
+import { Route as AppPoliciesKeyPolicyIdRouteImport } from './routes/_app.policies.key.$policyId'
 import { Route as AppInventoryPgpProvisionRouteImport } from './routes/_app.inventory.pgp.provision'
-import { Route as AppInventoryPgpOwnRouteImport } from './routes/_app.inventory.pgp.own'
 import { Route as AppInventoryPgpGenerateRouteImport } from './routes/_app.inventory.pgp.generate'
-import { Route as AppInventoryPgpDeletedRouteImport } from './routes/_app.inventory.pgp.deleted'
 import { Route as AppInventoryKeysUserRouteImport } from './routes/_app.inventory.keys.user'
 import { Route as AppInventoryKeysRotatedRouteImport } from './routes/_app.inventory.keys.rotated'
 import { Route as AppInventoryKeysHostRouteImport } from './routes/_app.inventory.keys.host'
@@ -49,19 +49,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppGroupsRoute = AppGroupsRouteImport.update({
-  id: '/groups',
-  path: '/groups',
+const AppGetStartedRoute = AppGetStartedRouteImport.update({
+  id: '/get-started',
+  path: '/get-started',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppPoliciesKeyRoute = AppPoliciesKeyRouteImport.update({
-  id: '/policies/key',
-  path: '/policies/key',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPoliciesHostRoute = AppPoliciesHostRouteImport.update({
@@ -74,24 +69,39 @@ const AppInventoryHostsRoute = AppInventoryHostsRouteImport.update({
   path: '/inventory/hosts',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGroupsKeyRoute = AppGroupsKeyRouteImport.update({
+  id: '/groups/key',
+  path: '/groups/key',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGroupsInfraRoute = AppGroupsInfraRouteImport.update({
+  id: '/groups/infra',
+  path: '/groups/infra',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGroupsHostRoute = AppGroupsHostRouteImport.update({
+  id: '/groups/host',
+  path: '/groups/host',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDiscoveryStatusRoute = AppDiscoveryStatusRouteImport.update({
   id: '/discovery/status',
   path: '/discovery/status',
   getParentRoute: () => AppRoute,
 } as any)
-const AppDiscoveryRunsRoute = AppDiscoveryRunsRouteImport.update({
-  id: '/discovery/runs',
-  path: '/discovery/runs',
+const AppDiscoverySchedulerRoute = AppDiscoverySchedulerRouteImport.update({
+  id: '/discovery/scheduler',
+  path: '/discovery/scheduler',
   getParentRoute: () => AppRoute,
 } as any)
-const AppDiscoveryProfilesRoute = AppDiscoveryProfilesRouteImport.update({
-  id: '/discovery/profiles',
-  path: '/discovery/profiles',
+const AppDiscoveryNetworkScanRoute = AppDiscoveryNetworkScanRouteImport.update({
+  id: '/discovery/network-scan',
+  path: '/discovery/network-scan',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAgentMcpRoute = AppAgentMcpRouteImport.update({
-  id: '/agent/mcp',
-  path: '/agent/mcp',
+const AppDiscoveryDevicesRoute = AppDiscoveryDevicesRouteImport.update({
+  id: '/discovery/devices',
+  path: '/discovery/devices',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAdministrationTagsRoute = AppAdministrationTagsRouteImport.update({
@@ -99,36 +109,34 @@ const AppAdministrationTagsRoute = AppAdministrationTagsRouteImport.update({
   path: '/administration/tags',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdministrationSettingsRoute =
-  AppAdministrationSettingsRouteImport.update({
-    id: '/administration/settings',
-    path: '/administration/settings',
-    getParentRoute: () => AppRoute,
-  } as any)
 const AppAdministrationPgpRoute = AppAdministrationPgpRouteImport.update({
   id: '/administration/pgp',
   path: '/administration/pgp',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAdministrationMcpRoute = AppAdministrationMcpRouteImport.update({
-  id: '/administration/mcp',
-  path: '/administration/mcp',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAdministrationDevicesRoute =
-  AppAdministrationDevicesRouteImport.update({
-    id: '/administration/devices',
-    path: '/administration/devices',
-    getParentRoute: () => AppRoute,
-  } as any)
 const AppAdministrationCaRoute = AppAdministrationCaRouteImport.update({
   id: '/administration/ca',
   path: '/administration/ca',
   getParentRoute: () => AppRoute,
 } as any)
-const AppInventoryPgpTrustedRoute = AppInventoryPgpTrustedRouteImport.update({
-  id: '/inventory/pgp/trusted',
-  path: '/inventory/pgp/trusted',
+const AppPoliciesKeyIndexRoute = AppPoliciesKeyIndexRouteImport.update({
+  id: '/policies/key/',
+  path: '/policies/key/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventoryPgpIndexRoute = AppInventoryPgpIndexRouteImport.update({
+  id: '/inventory/pgp/',
+  path: '/inventory/pgp/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPoliciesKeyNewRoute = AppPoliciesKeyNewRouteImport.update({
+  id: '/policies/key/new',
+  path: '/policies/key/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPoliciesKeyPolicyIdRoute = AppPoliciesKeyPolicyIdRouteImport.update({
+  id: '/policies/key/$policyId',
+  path: '/policies/key/$policyId',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInventoryPgpProvisionRoute =
@@ -137,19 +145,9 @@ const AppInventoryPgpProvisionRoute =
     path: '/inventory/pgp/provision',
     getParentRoute: () => AppRoute,
   } as any)
-const AppInventoryPgpOwnRoute = AppInventoryPgpOwnRouteImport.update({
-  id: '/inventory/pgp/own',
-  path: '/inventory/pgp/own',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppInventoryPgpGenerateRoute = AppInventoryPgpGenerateRouteImport.update({
   id: '/inventory/pgp/generate',
   path: '/inventory/pgp/generate',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppInventoryPgpDeletedRoute = AppInventoryPgpDeletedRouteImport.update({
-  id: '/inventory/pgp/deleted',
-  path: '/inventory/pgp/deleted',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInventoryKeysUserRoute = AppInventoryKeysUserRouteImport.update({
@@ -200,20 +198,19 @@ const AppInventoryCertificatesDeletedRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
-  '/groups': typeof AppGroupsRoute
+  '/get-started': typeof AppGetStartedRoute
   '/administration/ca': typeof AppAdministrationCaRoute
-  '/administration/devices': typeof AppAdministrationDevicesRoute
-  '/administration/mcp': typeof AppAdministrationMcpRoute
   '/administration/pgp': typeof AppAdministrationPgpRoute
-  '/administration/settings': typeof AppAdministrationSettingsRoute
   '/administration/tags': typeof AppAdministrationTagsRoute
-  '/agent/mcp': typeof AppAgentMcpRoute
-  '/discovery/profiles': typeof AppDiscoveryProfilesRoute
-  '/discovery/runs': typeof AppDiscoveryRunsRoute
+  '/discovery/devices': typeof AppDiscoveryDevicesRoute
+  '/discovery/network-scan': typeof AppDiscoveryNetworkScanRoute
+  '/discovery/scheduler': typeof AppDiscoverySchedulerRoute
   '/discovery/status': typeof AppDiscoveryStatusRoute
+  '/groups/host': typeof AppGroupsHostRoute
+  '/groups/infra': typeof AppGroupsInfraRoute
+  '/groups/key': typeof AppGroupsKeyRoute
   '/inventory/hosts': typeof AppInventoryHostsRoute
   '/policies/host': typeof AppPoliciesHostRoute
-  '/policies/key': typeof AppPoliciesKeyRoute
   '/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
   '/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
   '/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
@@ -222,29 +219,29 @@ export interface FileRoutesByFullPath {
   '/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
   '/inventory/keys/user': typeof AppInventoryKeysUserRoute
-  '/inventory/pgp/deleted': typeof AppInventoryPgpDeletedRoute
   '/inventory/pgp/generate': typeof AppInventoryPgpGenerateRoute
-  '/inventory/pgp/own': typeof AppInventoryPgpOwnRoute
   '/inventory/pgp/provision': typeof AppInventoryPgpProvisionRoute
-  '/inventory/pgp/trusted': typeof AppInventoryPgpTrustedRoute
+  '/policies/key/$policyId': typeof AppPoliciesKeyPolicyIdRoute
+  '/policies/key/new': typeof AppPoliciesKeyNewRoute
+  '/inventory/pgp/': typeof AppInventoryPgpIndexRoute
+  '/policies/key/': typeof AppPoliciesKeyIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
-  '/groups': typeof AppGroupsRoute
+  '/get-started': typeof AppGetStartedRoute
   '/administration/ca': typeof AppAdministrationCaRoute
-  '/administration/devices': typeof AppAdministrationDevicesRoute
-  '/administration/mcp': typeof AppAdministrationMcpRoute
   '/administration/pgp': typeof AppAdministrationPgpRoute
-  '/administration/settings': typeof AppAdministrationSettingsRoute
   '/administration/tags': typeof AppAdministrationTagsRoute
-  '/agent/mcp': typeof AppAgentMcpRoute
-  '/discovery/profiles': typeof AppDiscoveryProfilesRoute
-  '/discovery/runs': typeof AppDiscoveryRunsRoute
+  '/discovery/devices': typeof AppDiscoveryDevicesRoute
+  '/discovery/network-scan': typeof AppDiscoveryNetworkScanRoute
+  '/discovery/scheduler': typeof AppDiscoverySchedulerRoute
   '/discovery/status': typeof AppDiscoveryStatusRoute
+  '/groups/host': typeof AppGroupsHostRoute
+  '/groups/infra': typeof AppGroupsInfraRoute
+  '/groups/key': typeof AppGroupsKeyRoute
   '/inventory/hosts': typeof AppInventoryHostsRoute
   '/policies/host': typeof AppPoliciesHostRoute
-  '/policies/key': typeof AppPoliciesKeyRoute
   '/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
   '/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
   '/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
@@ -253,31 +250,31 @@ export interface FileRoutesByTo {
   '/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
   '/inventory/keys/user': typeof AppInventoryKeysUserRoute
-  '/inventory/pgp/deleted': typeof AppInventoryPgpDeletedRoute
   '/inventory/pgp/generate': typeof AppInventoryPgpGenerateRoute
-  '/inventory/pgp/own': typeof AppInventoryPgpOwnRoute
   '/inventory/pgp/provision': typeof AppInventoryPgpProvisionRoute
-  '/inventory/pgp/trusted': typeof AppInventoryPgpTrustedRoute
+  '/policies/key/$policyId': typeof AppPoliciesKeyPolicyIdRoute
+  '/policies/key/new': typeof AppPoliciesKeyNewRoute
+  '/inventory/pgp': typeof AppInventoryPgpIndexRoute
+  '/policies/key': typeof AppPoliciesKeyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
-  '/_app/groups': typeof AppGroupsRoute
+  '/_app/get-started': typeof AppGetStartedRoute
   '/_app/administration/ca': typeof AppAdministrationCaRoute
-  '/_app/administration/devices': typeof AppAdministrationDevicesRoute
-  '/_app/administration/mcp': typeof AppAdministrationMcpRoute
   '/_app/administration/pgp': typeof AppAdministrationPgpRoute
-  '/_app/administration/settings': typeof AppAdministrationSettingsRoute
   '/_app/administration/tags': typeof AppAdministrationTagsRoute
-  '/_app/agent/mcp': typeof AppAgentMcpRoute
-  '/_app/discovery/profiles': typeof AppDiscoveryProfilesRoute
-  '/_app/discovery/runs': typeof AppDiscoveryRunsRoute
+  '/_app/discovery/devices': typeof AppDiscoveryDevicesRoute
+  '/_app/discovery/network-scan': typeof AppDiscoveryNetworkScanRoute
+  '/_app/discovery/scheduler': typeof AppDiscoverySchedulerRoute
   '/_app/discovery/status': typeof AppDiscoveryStatusRoute
+  '/_app/groups/host': typeof AppGroupsHostRoute
+  '/_app/groups/infra': typeof AppGroupsInfraRoute
+  '/_app/groups/key': typeof AppGroupsKeyRoute
   '/_app/inventory/hosts': typeof AppInventoryHostsRoute
   '/_app/policies/host': typeof AppPoliciesHostRoute
-  '/_app/policies/key': typeof AppPoliciesKeyRoute
   '/_app/inventory/certificates/deleted': typeof AppInventoryCertificatesDeletedRoute
   '/_app/inventory/certificates/host': typeof AppInventoryCertificatesHostRoute
   '/_app/inventory/certificates/rotated': typeof AppInventoryCertificatesRotatedRoute
@@ -286,31 +283,31 @@ export interface FileRoutesById {
   '/_app/inventory/keys/host': typeof AppInventoryKeysHostRoute
   '/_app/inventory/keys/rotated': typeof AppInventoryKeysRotatedRoute
   '/_app/inventory/keys/user': typeof AppInventoryKeysUserRoute
-  '/_app/inventory/pgp/deleted': typeof AppInventoryPgpDeletedRoute
   '/_app/inventory/pgp/generate': typeof AppInventoryPgpGenerateRoute
-  '/_app/inventory/pgp/own': typeof AppInventoryPgpOwnRoute
   '/_app/inventory/pgp/provision': typeof AppInventoryPgpProvisionRoute
-  '/_app/inventory/pgp/trusted': typeof AppInventoryPgpTrustedRoute
+  '/_app/policies/key/$policyId': typeof AppPoliciesKeyPolicyIdRoute
+  '/_app/policies/key/new': typeof AppPoliciesKeyNewRoute
+  '/_app/inventory/pgp/': typeof AppInventoryPgpIndexRoute
+  '/_app/policies/key/': typeof AppPoliciesKeyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/dashboard'
-    | '/groups'
+    | '/get-started'
     | '/administration/ca'
-    | '/administration/devices'
-    | '/administration/mcp'
     | '/administration/pgp'
-    | '/administration/settings'
     | '/administration/tags'
-    | '/agent/mcp'
-    | '/discovery/profiles'
-    | '/discovery/runs'
+    | '/discovery/devices'
+    | '/discovery/network-scan'
+    | '/discovery/scheduler'
     | '/discovery/status'
+    | '/groups/host'
+    | '/groups/infra'
+    | '/groups/key'
     | '/inventory/hosts'
     | '/policies/host'
-    | '/policies/key'
     | '/inventory/certificates/deleted'
     | '/inventory/certificates/host'
     | '/inventory/certificates/rotated'
@@ -319,29 +316,29 @@ export interface FileRouteTypes {
     | '/inventory/keys/host'
     | '/inventory/keys/rotated'
     | '/inventory/keys/user'
-    | '/inventory/pgp/deleted'
     | '/inventory/pgp/generate'
-    | '/inventory/pgp/own'
     | '/inventory/pgp/provision'
-    | '/inventory/pgp/trusted'
+    | '/policies/key/$policyId'
+    | '/policies/key/new'
+    | '/inventory/pgp/'
+    | '/policies/key/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
-    | '/groups'
+    | '/get-started'
     | '/administration/ca'
-    | '/administration/devices'
-    | '/administration/mcp'
     | '/administration/pgp'
-    | '/administration/settings'
     | '/administration/tags'
-    | '/agent/mcp'
-    | '/discovery/profiles'
-    | '/discovery/runs'
+    | '/discovery/devices'
+    | '/discovery/network-scan'
+    | '/discovery/scheduler'
     | '/discovery/status'
+    | '/groups/host'
+    | '/groups/infra'
+    | '/groups/key'
     | '/inventory/hosts'
     | '/policies/host'
-    | '/policies/key'
     | '/inventory/certificates/deleted'
     | '/inventory/certificates/host'
     | '/inventory/certificates/rotated'
@@ -350,30 +347,30 @@ export interface FileRouteTypes {
     | '/inventory/keys/host'
     | '/inventory/keys/rotated'
     | '/inventory/keys/user'
-    | '/inventory/pgp/deleted'
     | '/inventory/pgp/generate'
-    | '/inventory/pgp/own'
     | '/inventory/pgp/provision'
-    | '/inventory/pgp/trusted'
+    | '/policies/key/$policyId'
+    | '/policies/key/new'
+    | '/inventory/pgp'
+    | '/policies/key'
   id:
     | '__root__'
     | '/'
     | '/_app'
     | '/_app/dashboard'
-    | '/_app/groups'
+    | '/_app/get-started'
     | '/_app/administration/ca'
-    | '/_app/administration/devices'
-    | '/_app/administration/mcp'
     | '/_app/administration/pgp'
-    | '/_app/administration/settings'
     | '/_app/administration/tags'
-    | '/_app/agent/mcp'
-    | '/_app/discovery/profiles'
-    | '/_app/discovery/runs'
+    | '/_app/discovery/devices'
+    | '/_app/discovery/network-scan'
+    | '/_app/discovery/scheduler'
     | '/_app/discovery/status'
+    | '/_app/groups/host'
+    | '/_app/groups/infra'
+    | '/_app/groups/key'
     | '/_app/inventory/hosts'
     | '/_app/policies/host'
-    | '/_app/policies/key'
     | '/_app/inventory/certificates/deleted'
     | '/_app/inventory/certificates/host'
     | '/_app/inventory/certificates/rotated'
@@ -382,11 +379,12 @@ export interface FileRouteTypes {
     | '/_app/inventory/keys/host'
     | '/_app/inventory/keys/rotated'
     | '/_app/inventory/keys/user'
-    | '/_app/inventory/pgp/deleted'
     | '/_app/inventory/pgp/generate'
-    | '/_app/inventory/pgp/own'
     | '/_app/inventory/pgp/provision'
-    | '/_app/inventory/pgp/trusted'
+    | '/_app/policies/key/$policyId'
+    | '/_app/policies/key/new'
+    | '/_app/inventory/pgp/'
+    | '/_app/policies/key/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -410,11 +408,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/groups': {
-      id: '/_app/groups'
-      path: '/groups'
-      fullPath: '/groups'
-      preLoaderRoute: typeof AppGroupsRouteImport
+    '/_app/get-started': {
+      id: '/_app/get-started'
+      path: '/get-started'
+      fullPath: '/get-started'
+      preLoaderRoute: typeof AppGetStartedRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/dashboard': {
@@ -422,13 +420,6 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/policies/key': {
-      id: '/_app/policies/key'
-      path: '/policies/key'
-      fullPath: '/policies/key'
-      preLoaderRoute: typeof AppPoliciesKeyRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/policies/host': {
@@ -445,6 +436,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryHostsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/groups/key': {
+      id: '/_app/groups/key'
+      path: '/groups/key'
+      fullPath: '/groups/key'
+      preLoaderRoute: typeof AppGroupsKeyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/groups/infra': {
+      id: '/_app/groups/infra'
+      path: '/groups/infra'
+      fullPath: '/groups/infra'
+      preLoaderRoute: typeof AppGroupsInfraRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/groups/host': {
+      id: '/_app/groups/host'
+      path: '/groups/host'
+      fullPath: '/groups/host'
+      preLoaderRoute: typeof AppGroupsHostRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/discovery/status': {
       id: '/_app/discovery/status'
       path: '/discovery/status'
@@ -452,25 +464,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDiscoveryStatusRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/discovery/runs': {
-      id: '/_app/discovery/runs'
-      path: '/discovery/runs'
-      fullPath: '/discovery/runs'
-      preLoaderRoute: typeof AppDiscoveryRunsRouteImport
+    '/_app/discovery/scheduler': {
+      id: '/_app/discovery/scheduler'
+      path: '/discovery/scheduler'
+      fullPath: '/discovery/scheduler'
+      preLoaderRoute: typeof AppDiscoverySchedulerRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/discovery/profiles': {
-      id: '/_app/discovery/profiles'
-      path: '/discovery/profiles'
-      fullPath: '/discovery/profiles'
-      preLoaderRoute: typeof AppDiscoveryProfilesRouteImport
+    '/_app/discovery/network-scan': {
+      id: '/_app/discovery/network-scan'
+      path: '/discovery/network-scan'
+      fullPath: '/discovery/network-scan'
+      preLoaderRoute: typeof AppDiscoveryNetworkScanRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/agent/mcp': {
-      id: '/_app/agent/mcp'
-      path: '/agent/mcp'
-      fullPath: '/agent/mcp'
-      preLoaderRoute: typeof AppAgentMcpRouteImport
+    '/_app/discovery/devices': {
+      id: '/_app/discovery/devices'
+      path: '/discovery/devices'
+      fullPath: '/discovery/devices'
+      preLoaderRoute: typeof AppDiscoveryDevicesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/administration/tags': {
@@ -480,32 +492,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdministrationTagsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/administration/settings': {
-      id: '/_app/administration/settings'
-      path: '/administration/settings'
-      fullPath: '/administration/settings'
-      preLoaderRoute: typeof AppAdministrationSettingsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/administration/pgp': {
       id: '/_app/administration/pgp'
       path: '/administration/pgp'
       fullPath: '/administration/pgp'
       preLoaderRoute: typeof AppAdministrationPgpRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/administration/mcp': {
-      id: '/_app/administration/mcp'
-      path: '/administration/mcp'
-      fullPath: '/administration/mcp'
-      preLoaderRoute: typeof AppAdministrationMcpRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/administration/devices': {
-      id: '/_app/administration/devices'
-      path: '/administration/devices'
-      fullPath: '/administration/devices'
-      preLoaderRoute: typeof AppAdministrationDevicesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/administration/ca': {
@@ -515,11 +506,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdministrationCaRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/inventory/pgp/trusted': {
-      id: '/_app/inventory/pgp/trusted'
-      path: '/inventory/pgp/trusted'
-      fullPath: '/inventory/pgp/trusted'
-      preLoaderRoute: typeof AppInventoryPgpTrustedRouteImport
+    '/_app/policies/key/': {
+      id: '/_app/policies/key/'
+      path: '/policies/key'
+      fullPath: '/policies/key/'
+      preLoaderRoute: typeof AppPoliciesKeyIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventory/pgp/': {
+      id: '/_app/inventory/pgp/'
+      path: '/inventory/pgp'
+      fullPath: '/inventory/pgp/'
+      preLoaderRoute: typeof AppInventoryPgpIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/policies/key/new': {
+      id: '/_app/policies/key/new'
+      path: '/policies/key/new'
+      fullPath: '/policies/key/new'
+      preLoaderRoute: typeof AppPoliciesKeyNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/policies/key/$policyId': {
+      id: '/_app/policies/key/$policyId'
+      path: '/policies/key/$policyId'
+      fullPath: '/policies/key/$policyId'
+      preLoaderRoute: typeof AppPoliciesKeyPolicyIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/inventory/pgp/provision': {
@@ -529,25 +541,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryPgpProvisionRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/inventory/pgp/own': {
-      id: '/_app/inventory/pgp/own'
-      path: '/inventory/pgp/own'
-      fullPath: '/inventory/pgp/own'
-      preLoaderRoute: typeof AppInventoryPgpOwnRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/inventory/pgp/generate': {
       id: '/_app/inventory/pgp/generate'
       path: '/inventory/pgp/generate'
       fullPath: '/inventory/pgp/generate'
       preLoaderRoute: typeof AppInventoryPgpGenerateRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/inventory/pgp/deleted': {
-      id: '/_app/inventory/pgp/deleted'
-      path: '/inventory/pgp/deleted'
-      fullPath: '/inventory/pgp/deleted'
-      preLoaderRoute: typeof AppInventoryPgpDeletedRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/inventory/keys/user': {
@@ -611,20 +609,19 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
-  AppGroupsRoute: typeof AppGroupsRoute
+  AppGetStartedRoute: typeof AppGetStartedRoute
   AppAdministrationCaRoute: typeof AppAdministrationCaRoute
-  AppAdministrationDevicesRoute: typeof AppAdministrationDevicesRoute
-  AppAdministrationMcpRoute: typeof AppAdministrationMcpRoute
   AppAdministrationPgpRoute: typeof AppAdministrationPgpRoute
-  AppAdministrationSettingsRoute: typeof AppAdministrationSettingsRoute
   AppAdministrationTagsRoute: typeof AppAdministrationTagsRoute
-  AppAgentMcpRoute: typeof AppAgentMcpRoute
-  AppDiscoveryProfilesRoute: typeof AppDiscoveryProfilesRoute
-  AppDiscoveryRunsRoute: typeof AppDiscoveryRunsRoute
+  AppDiscoveryDevicesRoute: typeof AppDiscoveryDevicesRoute
+  AppDiscoveryNetworkScanRoute: typeof AppDiscoveryNetworkScanRoute
+  AppDiscoverySchedulerRoute: typeof AppDiscoverySchedulerRoute
   AppDiscoveryStatusRoute: typeof AppDiscoveryStatusRoute
+  AppGroupsHostRoute: typeof AppGroupsHostRoute
+  AppGroupsInfraRoute: typeof AppGroupsInfraRoute
+  AppGroupsKeyRoute: typeof AppGroupsKeyRoute
   AppInventoryHostsRoute: typeof AppInventoryHostsRoute
   AppPoliciesHostRoute: typeof AppPoliciesHostRoute
-  AppPoliciesKeyRoute: typeof AppPoliciesKeyRoute
   AppInventoryCertificatesDeletedRoute: typeof AppInventoryCertificatesDeletedRoute
   AppInventoryCertificatesHostRoute: typeof AppInventoryCertificatesHostRoute
   AppInventoryCertificatesRotatedRoute: typeof AppInventoryCertificatesRotatedRoute
@@ -633,29 +630,29 @@ interface AppRouteChildren {
   AppInventoryKeysHostRoute: typeof AppInventoryKeysHostRoute
   AppInventoryKeysRotatedRoute: typeof AppInventoryKeysRotatedRoute
   AppInventoryKeysUserRoute: typeof AppInventoryKeysUserRoute
-  AppInventoryPgpDeletedRoute: typeof AppInventoryPgpDeletedRoute
   AppInventoryPgpGenerateRoute: typeof AppInventoryPgpGenerateRoute
-  AppInventoryPgpOwnRoute: typeof AppInventoryPgpOwnRoute
   AppInventoryPgpProvisionRoute: typeof AppInventoryPgpProvisionRoute
-  AppInventoryPgpTrustedRoute: typeof AppInventoryPgpTrustedRoute
+  AppPoliciesKeyPolicyIdRoute: typeof AppPoliciesKeyPolicyIdRoute
+  AppPoliciesKeyNewRoute: typeof AppPoliciesKeyNewRoute
+  AppInventoryPgpIndexRoute: typeof AppInventoryPgpIndexRoute
+  AppPoliciesKeyIndexRoute: typeof AppPoliciesKeyIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
-  AppGroupsRoute: AppGroupsRoute,
+  AppGetStartedRoute: AppGetStartedRoute,
   AppAdministrationCaRoute: AppAdministrationCaRoute,
-  AppAdministrationDevicesRoute: AppAdministrationDevicesRoute,
-  AppAdministrationMcpRoute: AppAdministrationMcpRoute,
   AppAdministrationPgpRoute: AppAdministrationPgpRoute,
-  AppAdministrationSettingsRoute: AppAdministrationSettingsRoute,
   AppAdministrationTagsRoute: AppAdministrationTagsRoute,
-  AppAgentMcpRoute: AppAgentMcpRoute,
-  AppDiscoveryProfilesRoute: AppDiscoveryProfilesRoute,
-  AppDiscoveryRunsRoute: AppDiscoveryRunsRoute,
+  AppDiscoveryDevicesRoute: AppDiscoveryDevicesRoute,
+  AppDiscoveryNetworkScanRoute: AppDiscoveryNetworkScanRoute,
+  AppDiscoverySchedulerRoute: AppDiscoverySchedulerRoute,
   AppDiscoveryStatusRoute: AppDiscoveryStatusRoute,
+  AppGroupsHostRoute: AppGroupsHostRoute,
+  AppGroupsInfraRoute: AppGroupsInfraRoute,
+  AppGroupsKeyRoute: AppGroupsKeyRoute,
   AppInventoryHostsRoute: AppInventoryHostsRoute,
   AppPoliciesHostRoute: AppPoliciesHostRoute,
-  AppPoliciesKeyRoute: AppPoliciesKeyRoute,
   AppInventoryCertificatesDeletedRoute: AppInventoryCertificatesDeletedRoute,
   AppInventoryCertificatesHostRoute: AppInventoryCertificatesHostRoute,
   AppInventoryCertificatesRotatedRoute: AppInventoryCertificatesRotatedRoute,
@@ -664,11 +661,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppInventoryKeysHostRoute: AppInventoryKeysHostRoute,
   AppInventoryKeysRotatedRoute: AppInventoryKeysRotatedRoute,
   AppInventoryKeysUserRoute: AppInventoryKeysUserRoute,
-  AppInventoryPgpDeletedRoute: AppInventoryPgpDeletedRoute,
   AppInventoryPgpGenerateRoute: AppInventoryPgpGenerateRoute,
-  AppInventoryPgpOwnRoute: AppInventoryPgpOwnRoute,
   AppInventoryPgpProvisionRoute: AppInventoryPgpProvisionRoute,
-  AppInventoryPgpTrustedRoute: AppInventoryPgpTrustedRoute,
+  AppPoliciesKeyPolicyIdRoute: AppPoliciesKeyPolicyIdRoute,
+  AppPoliciesKeyNewRoute: AppPoliciesKeyNewRoute,
+  AppInventoryPgpIndexRoute: AppInventoryPgpIndexRoute,
+  AppPoliciesKeyIndexRoute: AppPoliciesKeyIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

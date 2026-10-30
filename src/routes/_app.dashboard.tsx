@@ -32,9 +32,9 @@ function Dashboard() {
         title="SSH Dashboard"
         actions={
           <div className="flex items-center gap-2">
-            <span className="text-[12px] text-muted-foreground">Groups</span>
+            <span className="text-[13px] text-muted-foreground">Groups</span>
             <Select value={group} onValueChange={setGroup}>
-              <SelectTrigger className="h-8 w-[180px] text-[13px]">
+              <SelectTrigger className="h-8 w-[180px] text-[14px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -122,7 +122,7 @@ function StatCard({
       <Card className="p-4 border-l-4 border-l-primary hover:shadow-md transition-shadow cursor-pointer">
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[11px] uppercase-tracking text-muted-foreground">{label}</div>
+            <div className="text-[12px] uppercase-tracking text-muted-foreground">{label}</div>
             <div className="text-[28px] font-bold leading-tight mt-1">{value}</div>
           </div>
           <div className="p-2 rounded-md bg-primary/10">{icon}</div>
@@ -193,18 +193,18 @@ function PostureTile({
     >
       <div className="p-4">
         <div className="flex items-start justify-between mb-1">
-          <div className="text-[11px] uppercase-tracking font-semibold text-[#64748B]">{label}</div>
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase-tracking" style={{ background: `${color}1A`, color }}>
+          <div className="text-[12px] uppercase-tracking font-semibold text-[#64748B]">{label}</div>
+          <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded uppercase-tracking" style={{ background: `${color}1A`, color }}>
             {tag}
           </span>
         </div>
         <div className="text-[34px] font-bold leading-none" style={{ color }}>{count}</div>
-        <div className="text-[13px] text-[#64748B] mt-1.5">of {total} total keys</div>
-        <div className="text-[12px] text-[#64748B] mt-1">
+        <div className="text-[14px] text-[#64748B] mt-1.5">of {total} total keys</div>
+        <div className="text-[13px] text-[#64748B] mt-1">
           User: {user} <span className="mx-1">·</span> Host: {host}
         </div>
       </div>
-      <div className="px-4 py-2 text-[11px] text-[#94A3B8] border-t border-border">{footer}</div>
+      <div className="px-4 py-2 text-[12px] text-[#94A3B8] border-t border-border">{footer}</div>
     </Link>
   );
 }
@@ -241,18 +241,18 @@ function CertStatusTile() {
     >
       <div className="p-4">
         <div className="flex items-start justify-between mb-1">
-          <div className="text-[11px] uppercase-tracking font-semibold text-[#64748B]">Expired Certs</div>
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase-tracking bg-[#EF4444]/10 text-[#EF4444]">
+          <div className="text-[12px] uppercase-tracking font-semibold text-[#64748B]">Expired Certs</div>
+          <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded uppercase-tracking bg-[#EF4444]/10 text-[#EF4444]">
             VIOLATION
           </span>
         </div>
         <div className="text-[34px] font-bold leading-none text-[#EF4444]">{expiredUser + expiredHost}</div>
-        <div className="text-[13px] text-[#64748B] mt-1.5">of {total} total certificates</div>
-        <div className="text-[12px] text-[#64748B] mt-1">
+        <div className="text-[14px] text-[#64748B] mt-1.5">of {total} total certificates</div>
+        <div className="text-[13px] text-[#64748B] mt-1">
           User: {expiredUser} <span className="mx-1">·</span> Host: {expiredHost}
         </div>
       </div>
-      <div className="px-4 py-2 text-[11px] text-[#94A3B8] border-t border-border">Updated just now</div>
+      <div className="px-4 py-2 text-[12px] text-[#94A3B8] border-t border-border">Updated just now</div>
     </Link>
   );
 }
@@ -409,7 +409,7 @@ function ActivityCenter() {
 
         <div className="flex items-center gap-2 mt-5 mb-3">
           <div className="text-[14px] font-semibold text-foreground">Cert Actions</div>
-          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase-tracking">NEW</span>
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase-tracking">NEW</span>
         </div>
         <div className="space-y-2">
           <ActionButton icon={<FileText className="h-4 w-4" />} label="Provision Certificate" tone="indigo" />
@@ -432,7 +432,7 @@ function ActivityCenter() {
 
         <div className="flex items-center gap-2 mt-5 mb-3">
           <div className="text-[14px] font-semibold text-foreground">Cert Adoption</div>
-          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase-tracking">NEW</span>
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase-tracking">NEW</span>
         </div>
         <div className="space-y-2">
           <AdoptionRow label="Certs Provisioned" value={6} />
@@ -455,7 +455,7 @@ function ActionButton({
     <button
       type="button"
       className={cn(
-        "w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-md text-white text-[13px] font-medium cursor-pointer transition-colors",
+        "w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-md text-white text-[14px] font-medium cursor-pointer transition-colors",
         cls,
       )}
     >
@@ -471,7 +471,7 @@ function ActionButton({
 function AdoptionRow({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex items-center justify-between border-l-2 border-l-primary bg-muted/50 rounded-r px-3 py-2">
-      <span className="text-[12px] text-foreground">{label}</span>
+      <span className="text-[13px] text-foreground">{label}</span>
       <span className="text-[14px] font-semibold tabular-nums">{value}</span>
     </div>
   );
@@ -493,7 +493,6 @@ function PgpKeyStatus({ group }: { group: string }) {
   const expired = rows.filter((r) => r.st === "Expired").length;
   const expiring = rows.filter((r) => withinWindow(r.k, r.st, w));
   const soonest = [...expiring].sort((a, b) => (nextExpiryRaw(a.k) ?? "").localeCompare(nextExpiryRaw(b.k) ?? "")).slice(0, 4);
-  const to = scope === "own" ? "/inventory/pgp/own" : "/inventory/pgp/trusted";
   return (
     <Panel>
       <SectionHeader
@@ -510,7 +509,7 @@ function PgpKeyStatus({ group }: { group: string }) {
               onChange={(v) => setScope(v as "own" | "trusted")}
             />
             <Select value={win} onValueChange={setWin}>
-              <SelectTrigger className="h-7 w-[124px] text-[12px]" aria-label="PGP expiry window">
+              <SelectTrigger className="h-7 w-[124px] text-[13px]" aria-label="PGP expiry window">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -525,34 +524,34 @@ function PgpKeyStatus({ group }: { group: string }) {
         }
       />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Link to={to} search={{ tile: "Expired" }}>
+        <Link to="/inventory/pgp" search={{ tab: scope, tile: "Expired" }}>
           <Card className="p-4 border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: expired ? "#EF4444" : "#22C55E" }}>
-            <div className="text-[11px] uppercase-tracking text-muted-foreground">Expired</div>
+            <div className="text-[12px] uppercase-tracking text-muted-foreground">Expired</div>
             <div className="text-[28px] font-bold leading-tight mt-1" style={{ color: expired ? "#EF4444" : undefined }}>
               {expired}
-              <span className="text-[12px] text-muted-foreground font-normal ml-1">of {keys.length}</span>
+              <span className="text-[13px] text-muted-foreground font-normal ml-1">of {keys.length}</span>
             </div>
           </Card>
         </Link>
-        <Link to={to} search={{ tile: "Expiring", window: w }}>
+        <Link to="/inventory/pgp" search={{ tab: scope, tile: "Expiring", window: w }}>
           <Card className="p-4 border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: expiring.length ? "#F59E0B" : "#22C55E" }}>
-            <div className="text-[11px] uppercase-tracking text-muted-foreground">Expiring in {w} days</div>
+            <div className="text-[12px] uppercase-tracking text-muted-foreground">Expiring in {w} days</div>
             <div className="text-[28px] font-bold leading-tight mt-1" style={{ color: expiring.length ? "#B45309" : undefined }}>
               {expiring.length}
-              <span className="text-[12px] text-muted-foreground font-normal ml-1">of {keys.length}</span>
+              <span className="text-[13px] text-muted-foreground font-normal ml-1">of {keys.length}</span>
             </div>
           </Card>
         </Link>
         <div className="rounded-lg border border-border p-3">
-          <div className="text-[11px] uppercase-tracking text-muted-foreground mb-1.5">Expiring soonest</div>
+          <div className="text-[12px] uppercase-tracking text-muted-foreground mb-1.5">Expiring soonest</div>
           {soonest.length === 0 ? (
-            <div className="text-[12px] text-muted-foreground">Nothing expires in the next {w} days.</div>
+            <div className="text-[13px] text-muted-foreground">Nothing expires in the next {w} days.</div>
           ) : (
             <ul className="space-y-1">
               {soonest.map(({ k }) => {
                 const nx = nextExpiryRaw(k)!;
                 return (
-                  <li key={k.id} className="flex justify-between gap-2 text-[12px]">
+                  <li key={k.id} className="flex justify-between gap-2 text-[13px]">
                     <span className="truncate">{keyName(k)}</span>
                     <span className="text-muted-foreground whitespace-nowrap">
                       {fmtDate(nx)} ({daysFromToday(nx)}d)
@@ -582,9 +581,9 @@ function SectionHeader({
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
-        <div className="text-[11px] uppercase-tracking font-semibold text-muted-foreground">{title}</div>
+        <div className="text-[12px] uppercase-tracking font-semibold text-muted-foreground">{title}</div>
         {badge && (
-          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase-tracking">
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase-tracking">
             {badge}
           </span>
         )}
@@ -604,7 +603,7 @@ function PillToggle<T extends string>({
           key={o.value}
           onClick={() => onChange(o.value)}
           className={cn(
-            "text-[11px] px-2.5 py-1 rounded-full cursor-pointer transition-colors",
+            "text-[12px] px-2.5 py-1 rounded-full cursor-pointer transition-colors",
             value === o.value
               ? "bg-foreground text-white"
               : "text-muted-foreground hover:text-foreground",
@@ -618,5 +617,5 @@ function PillToggle<T extends string>({
 }
 
 function Timestamp({ text }: { text: string }) {
-  return <span className="text-[11px] text-text-muted">{text}</span>;
+  return <span className="text-[12px] text-text-muted">{text}</span>;
 }

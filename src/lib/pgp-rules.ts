@@ -2,7 +2,8 @@
 import {
   daysBetween,
   daysFromToday,
-  GROUP_POLICY,
+  toPgpPolicy,
+  type KeyPolicy,
   type OwnKey,
   type PgpAlgo,
   type PgpKey,
@@ -58,9 +59,13 @@ export const RISK_HELP: Record<string, string> = {
     "The repository signing key is not on the policy's Approved Repository Keys list.",
 };
 
-export function policyFor(group: string, policies: PgpPolicy[]): PgpPolicy {
-  const id = GROUP_POLICY[group] ?? "pol-default";
-  return policies.find((p) => p.id === id) ?? policies[0];
+/** The PGP view of the key policy that covers a key compliance group. */
+export function policyFor(group: string, policies: KeyPolicy[]): PgpPolicy {
+  const p =
+    policies.find((x) => x.groups.includes(group)) ??
+    policies.find((x) => x.id === "pol-default") ??
+    policies[0];
+  return toPgpPolicy(p);
 }
 
 export const isPast = (d: string | null) => d !== null && daysFromToday(d) < 0;
@@ -110,7 +115,7 @@ export function purposes(k: PgpKey, status: KeyStatus): Purpose[] {
   const set = new Set<Purpose>();
   if (k.primary.canSign) set.add("Sign");
   for (const s of k.subkeys) if (isUsable(s)) set.add(s.purpose);
-  const order: Purpose[] = ["Encrypt", "Sign", "Authenticate"];
+  const order: Purpose[] = ["Sign", "Encrypt", "Authenticate"];
   return order.filter((p) => set.has(p));
 }
 
@@ -190,13 +195,13 @@ export function trustedRisks(k: TrustedKey, policy: PgpPolicy): TrustedRisk[] {
 export function algoAllowed(a: PgpAlgo, p: PgpPolicy): boolean {
   switch (a.family) {
     case "RSA":
-      return p.rsaMin !== null && (a.size ?? 0) >= p.rsaMin;
+      return p.algorithms.includes(`RSA:${a.size}`);
     case "Ed25519":
     case "Cv25519":
-      return p.ed25519;
+      return p.algorithms.includes("ED25519");
     case "ECDSA":
     case "ECDH":
-      return !!a.curve && p.ecdsaCurves.includes(a.curve);
+      return !!a.curve && p.algorithms.includes(`ECDSA:${a.curve}`);
     default:
       return false;
   }

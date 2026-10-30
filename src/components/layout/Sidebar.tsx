@@ -1,47 +1,65 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState, type ComponentType } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, ChevronRight, Search, Diamond } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ClipboardCheck,
+  Copy,
+  LayoutGrid,
+  Lightbulb,
+  Minus,
+  Plus,
+  Radar,
+  Search,
+  Shield,
+  SlidersHorizontal,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavLeaf {
   label: string;
   to: string;
 }
-interface NavGroup {
+interface NavItem {
   label: string;
-  children?: NavGroup[];
   to?: string;
+  /** Items with children open a flyout to the right of the menu. */
+  children?: NavLeaf[];
 }
-
-type Section = {
+interface Section {
   header: string;
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
   to?: string;
   defaultOpen?: boolean;
-  children?: NavGroup[];
-};
+  items?: NavItem[];
+}
 
-const SECTIONS: Section[] = [
-  { header: "GET STARTED", to: "/dashboard" },
-  { header: "DASHBOARD", to: "/dashboard" },
+export const NAV: Section[] = [
+  { header: "Get Started", icon: Lightbulb, to: "/get-started" },
+  { header: "Dashboard", icon: LayoutGrid, to: "/dashboard" },
   {
-    header: "DISCOVERY",
-    defaultOpen: false,
-    children: [
-      { label: "Discovery Profiles", to: "/discovery/profiles" },
-      { label: "Discovery Runs", to: "/discovery/runs" },
+    header: "Discovery",
+    icon: Radar,
+    defaultOpen: true,
+    items: [
+      { label: "Network Scan", children: [{ label: "IP Range", to: "/discovery/network-scan" }] },
+      { label: "Managed Devices", to: "/discovery/devices" },
       { label: "Discovery Status", to: "/discovery/status" },
+      { label: "Scheduler", to: "/discovery/scheduler" },
     ],
   },
   {
-    header: "INVENTORY",
+    header: "Inventory",
+    icon: ClipboardCheck,
     defaultOpen: true,
-    children: [
+    items: [
       {
         label: "Key Inventory",
         children: [
           { label: "User Key Inventory", to: "/inventory/keys/user" },
           { label: "Host Key Inventory", to: "/inventory/keys/host" },
+          { label: "PGP Key Inventory", to: "/inventory/pgp" },
           { label: "Recently Deleted Keys", to: "/inventory/keys/deleted" },
           { label: "Recently Rotated Keys", to: "/inventory/keys/rotated" },
         ],
@@ -51,193 +69,124 @@ const SECTIONS: Section[] = [
         children: [
           { label: "User Certificate Inventory", to: "/inventory/certificates/user" },
           { label: "Host Certificate Inventory", to: "/inventory/certificates/host" },
-          { label: "Recently Rotated Certificates", to: "/inventory/certificates/rotated" },
           { label: "Recently Deleted Certificates", to: "/inventory/certificates/deleted" },
-        ],
-      },
-      {
-        label: "PGP Key Inventory",
-        children: [
-          { label: "Own Keys", to: "/inventory/pgp/own" },
-          { label: "Trusted Keys", to: "/inventory/pgp/trusted" },
-          { label: "Recently Deleted PGP Keys", to: "/inventory/pgp/deleted" },
+          { label: "Recently Rotated Certificates", to: "/inventory/certificates/rotated" },
         ],
       },
       { label: "Host Inventory", to: "/inventory/hosts" },
     ],
   },
-  { header: "GROUPS", to: "/groups" },
   {
-    header: "AI AGENT",
+    header: "Groups",
+    icon: Copy,
     defaultOpen: true,
-    children: [
-      { label: "MCP Console", to: "/agent/mcp" },
+    items: [
+      { label: "Host Compliance Group", to: "/groups/host" },
+      { label: "Key Compliance Group", to: "/groups/key" },
+      { label: "Infra Access Group", to: "/groups/infra" },
     ],
   },
   {
-    header: "POLICIES",
-    defaultOpen: false,
-    children: [
+    header: "Policies",
+    icon: Shield,
+    defaultOpen: true,
+    items: [
       { label: "Host Policy", to: "/policies/host" },
       { label: "Key Policy", to: "/policies/key" },
     ],
   },
   {
-    header: "ADMINISTRATION",
+    header: "Administration",
+    icon: SlidersHorizontal,
     defaultOpen: false,
-    children: [
-      { label: "Device Management", to: "/administration/devices" },
+    items: [
       { label: "Certificate Authority", to: "/administration/ca" },
-      { label: "MCP Tools", to: "/administration/mcp" },
-      { label: "Advanced Settings", to: "/administration/settings" },
       { label: "PGP Settings", to: "/administration/pgp" },
       { label: "Tags", to: "/administration/tags" },
     ],
   },
 ];
 
-function NavItem({
-  label,
-  to,
-  active,
-  depth = 0,
-  badge,
-}: {
-  label: string;
-  to: string;
-  active: boolean;
-  depth?: number;
-  badge?: string;
-}) {
-  return (
-    <Link
-      to={to}
-      className={cn(
-        "relative flex items-center gap-2 px-4 py-2 text-[13px] text-nav-text/80 hover:bg-nav-hover hover:text-nav-text transition-colors",
-        active && "bg-nav-active text-nav-text",
-      )}
-      style={{ paddingLeft: 16 + depth * 16 }}
-    >
-      {active && (
-        <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
-      )}
-      <span className="truncate">{label}</span>
-      {badge && (
-        <span className="ml-auto text-[10px] text-nav-text/60">{badge}</span>
-      )}
-    </Link>
-  );
-}
+/** A route belongs to a menu entry when it is that path or a page beneath it. */
+const matches = (pathname: string, to: string) => pathname === to || pathname.startsWith(`${to}/`);
+const itemActive = (pathname: string, item: NavItem) =>
+  item.to ? matches(pathname, item.to) : !!item.children?.some((c) => matches(pathname, c.to));
+const sectionActive = (pathname: string, s: Section) =>
+  s.to ? matches(pathname, s.to) : !!s.items?.some((i) => itemActive(pathname, i));
 
-function GroupNode({
-  group,
-  pathname,
-}: {
-  group: NavGroup;
-  pathname: string;
-}) {
-  const hasChildren = !!group.children?.length;
+const NAV_BG = "#2B3245";
+const NAV_ACTIVE = "#3D4659";
+
+function Flyout({ item, pathname }: { item: NavItem; pathname: string }) {
   const [open, setOpen] = useState(false);
-  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [top, setTop] = useState(0);
+  const [left, setLeft] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  const active = itemActive(pathname, item);
 
-  if (!hasChildren && group.to) {
-    return (
-      <NavItem
-        label={group.label}
-        to={group.to}
-        active={pathname === group.to}
-        depth={1}
-      />
-    );
-  }
-
-  const childActive =
-    !!group.children?.some((c) => c.to && pathname === c.to);
-
-  const openNow = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (wrapRef.current) {
-      const r = wrapRef.current.getBoundingClientRect();
-      setCoords({ top: r.top, left: r.right });
+  const show = () => {
+    if (timer.current) clearTimeout(timer.current);
+    const r = ref.current?.getBoundingClientRect();
+    if (r) {
+      setTop(r.top);
+      setLeft(r.right + 4);
     }
     setOpen(true);
   };
-  const closeSoon = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setOpen(false), 150);
+  const hide = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setOpen(false), 120);
   };
 
   return (
-    <div
-      ref={wrapRef}
-      className="relative"
-      onMouseEnter={openNow}
-      onMouseLeave={closeSoon}
-    >
+    <div ref={ref} onMouseEnter={show} onMouseLeave={hide}>
       <button
         type="button"
+        onClick={show}
         className={cn(
-          "relative w-full flex items-center gap-2 px-4 py-2 text-[13px] text-nav-text/80 hover:bg-nav-hover hover:text-nav-text",
-          childActive && "bg-nav-active text-nav-text",
+          "mx-2 flex h-10 w-[calc(100%-16px)] items-center rounded-md pl-[42px] pr-3 text-left text-[14px] text-white/85 transition-colors hover:text-white",
+          (active || open) && "text-white",
         )}
-        style={{ paddingLeft: 16 + 16 }}
+        style={{ background: active || open ? NAV_ACTIVE : undefined }}
       >
-        {childActive && (
-          <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
-        )}
-        <span className="truncate">{group.label}</span>
-        <ChevronRight className="ml-auto h-3 w-3 opacity-70" />
+        <span className="truncate">{item.label}</span>
+        <ChevronRight className="ml-auto h-3.5 w-3.5 text-white/45" />
       </button>
-      {open && coords && group.children && mounted &&
+      {open &&
+        mounted &&
         createPortal(
           <div
-            className="fixed z-[100] min-w-[240px] py-2"
-            style={{
-              top: coords.top,
-              left: coords.left,
-              background: "#1B2437",
-              borderRadius: "0 6px 6px 0",
-              boxShadow: "4px 0 12px rgba(0,0,0,0.2)",
-            }}
-            onMouseEnter={openNow}
-            onMouseLeave={closeSoon}
+            className="fixed z-[100] min-w-[244px] rounded-md py-2 shadow-xl"
+            style={{ top, left, background: NAV_BG }}
+            onMouseEnter={show}
+            onMouseLeave={hide}
           >
-            {group.children.map((c) =>
-              c.to ? (
+            {item.children?.map((c) => {
+              const on = matches(pathname, c.to);
+              return (
                 <Link
                   key={c.to}
                   to={c.to}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "block text-[13px] transition-colors",
-                    pathname === c.to
-                      ? "text-white font-medium"
-                      : "text-white/75 hover:text-white",
+                    "mx-2 block rounded-md px-4 py-2.5 text-[14px] transition-colors",
+                    on ? "font-medium text-white" : "text-white/85 hover:text-white",
                   )}
-                  style={{
-                    padding: "10px 20px",
-                    background:
-                      pathname === c.to ? "#243050" : "transparent",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#243050")
+                  style={{ background: on ? NAV_ACTIVE : undefined }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) =>
+                    (e.currentTarget.style.background = NAV_ACTIVE)
                   }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background =
-                      pathname === c.to ? "#243050" : "transparent")
+                  onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) =>
+                    (e.currentTarget.style.background = on ? NAV_ACTIVE : "transparent")
                   }
                 >
                   {c.label}
                 </Link>
-              ) : null,
-            )}
+              );
+            })}
           </div>,
           document.body,
         )}
@@ -245,78 +194,134 @@ function GroupNode({
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { pathname } = useLocation();
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(
-    () =>
-      Object.fromEntries(SECTIONS.map((s) => [s.header, s.defaultOpen ?? true])),
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(NAV.map((s) => [s.header, s.defaultOpen ?? true])),
   );
+  // Keep the section holding the current page open.
+  useEffect(() => {
+    const s = NAV.find((x) => x.items && sectionActive(pathname, x));
+    if (s && !openSections[s.header]) setOpenSections((p) => ({ ...p, [s.header]: true }));
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <aside className="w-[240px] shrink-0 bg-nav text-nav-text h-screen sticky top-0 flex flex-col">
-      {/* Product label */}
-      <div className="h-[52px] flex items-center justify-between px-4 border-b border-white/5">
-        <div className="flex items-center gap-2">
-          <Diamond className="h-4 w-4 text-brand-accent fill-brand-accent" />
-          <span className="text-[16px] font-bold tracking-tight">SSH</span>
-        </div>
-        <button
-          className="p-1.5 rounded hover:bg-nav-hover"
-          title="Search nav"
+    <aside
+      className={cn(
+        "relative shrink-0 text-white transition-[width] duration-200",
+        collapsed ? "w-[68px]" : "w-[256px]",
+      )}
+      style={{ background: NAV_BG }}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={collapsed ? "Expand menu" : "Collapse menu"}
+        className="absolute -right-[15px] top-[22px] z-30 flex h-[30px] w-[30px] items-center justify-center rounded-full border border-border bg-white shadow-sm hover:bg-muted"
+      >
+        <ChevronLeft
+          className={cn("h-4 w-4 text-[#4B5563] transition-transform", collapsed && "rotate-180")}
+        />
+      </button>
+
+      <div className="flex h-full flex-col">
+        <div
+          className={cn(
+            "flex h-[64px] items-center",
+            collapsed ? "justify-center" : "justify-between px-5",
+          )}
         >
-          <Search className="h-4 w-4 text-nav-text/70" />
-        </button>
-      </div>
+          <span
+            className={cn("font-bold tracking-tight", collapsed ? "text-[16px]" : "text-[22px]")}
+          >
+            SSH
+          </span>
+          {!collapsed && (
+            <button className="rounded p-1.5 hover:bg-white/10" aria-label="Search menu">
+              <Search className="h-[18px] w-[18px] text-white/80" />
+            </button>
+          )}
+        </div>
 
-      <nav className="flex-1 overflow-y-auto nav-scroll py-2">
-        {SECTIONS.map((s) => {
-          const hasChildren = !!s.children?.length;
-          if (!hasChildren && s.to) {
-            const active = pathname === s.to;
+        <nav className="nav-scroll flex-1 overflow-y-auto pb-4">
+          {NAV.map((s) => {
+            const Icon = s.icon;
+            const active = sectionActive(pathname, s);
+            const firstLink =
+              s.to ?? s.items?.[0]?.to ?? s.items?.[0]?.children?.[0]?.to ?? "/dashboard";
+
+            if (collapsed) {
+              return (
+                <Link
+                  key={s.header}
+                  to={firstLink}
+                  title={s.header}
+                  className="mx-2 my-0.5 flex h-11 items-center justify-center rounded-md hover:bg-white/10"
+                  style={{ background: active ? NAV_ACTIVE : undefined }}
+                >
+                  <Icon className="h-[19px] w-[19px] text-white/90" strokeWidth={1.75} />
+                </Link>
+              );
+            }
+
+            if (s.to) {
+              return (
+                <Link
+                  key={s.header}
+                  to={s.to}
+                  className="mx-2 my-0.5 flex h-11 items-center gap-3 rounded-md px-3 text-[13.5px] font-semibold uppercase tracking-[0.08em] text-white/90 hover:bg-white/5 hover:text-white"
+                  style={{ background: active ? NAV_ACTIVE : undefined }}
+                >
+                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.75} />
+                  {s.header}
+                </Link>
+              );
+            }
+
+            const isOpen = openSections[s.header];
             return (
-              <Link
-                key={s.header}
-                to={s.to}
-                className={cn(
-                  "relative flex items-center px-4 py-2 text-[11px] uppercase-tracking font-semibold text-nav-text/70 hover:bg-nav-hover hover:text-nav-text",
-                  active && "bg-nav-active text-nav-text",
-                )}
-              >
-                {active && (
-                  <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
-                )}
-                {s.header}
-              </Link>
-            );
-          }
-          const isOpen = openSections[s.header];
-          return (
-            <div key={s.header}>
-              <button
-                onClick={() =>
-                  setOpenSections((p) => ({ ...p, [s.header]: !p[s.header] }))
-                }
-                className="w-full flex items-center px-4 py-2 text-[11px] uppercase-tracking font-semibold text-nav-section hover:text-nav-text"
-              >
-                {s.header}
-                <ChevronDown
-                  className={cn(
-                    "ml-auto h-3 w-3 transition-transform",
-                    !isOpen && "-rotate-90",
+              <div key={s.header} className="mt-1">
+                <button
+                  type="button"
+                  onClick={() => setOpenSections((p) => ({ ...p, [s.header]: !p[s.header] }))}
+                  className="mx-2 flex h-11 w-[calc(100%-16px)] items-center gap-3 rounded-md px-3 text-[13.5px] font-semibold uppercase tracking-[0.08em] text-white/90 hover:bg-white/5 hover:text-white"
+                  aria-expanded={isOpen}
+                >
+                  <Icon className="h-[19px] w-[19px]" strokeWidth={1.75} />
+                  {s.header}
+                  {isOpen ? (
+                    <Minus className="ml-auto h-3.5 w-3.5 text-white/80" />
+                  ) : (
+                    <Plus className="ml-auto h-3.5 w-3.5 text-white/80" />
                   )}
-                />
-              </button>
-              {isOpen &&
-                s.children?.map((g, i) => (
-                  <GroupNode key={i} group={g} pathname={pathname} />
-                ))}
-            </div>
-          );
-        })}
-      </nav>
-
-      <div className="px-4 py-3 text-[10px] text-nav-text/40 border-t border-white/5">
-        AVX SSH · v3.0 Autumn
+                </button>
+                {isOpen && (
+                  <div className="pb-1">
+                    {s.items?.map((item) =>
+                      item.children ? (
+                        <Flyout key={item.label} item={item} pathname={pathname} />
+                      ) : (
+                        <Link
+                          key={item.label}
+                          to={item.to!}
+                          className={cn(
+                            "mx-2 flex h-10 items-center rounded-md pl-[42px] pr-3 text-[14px] transition-colors hover:text-white",
+                            itemActive(pathname, item) ? "font-medium text-white" : "text-white/85",
+                          )}
+                          style={{
+                            background: itemActive(pathname, item) ? NAV_ACTIVE : undefined,
+                          }}
+                        >
+                          {item.label}
+                        </Link>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </nav>
       </div>
     </aside>
   );

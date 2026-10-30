@@ -1,31 +1,32 @@
-import { Bell, Code2, HelpCircle, LayoutGrid } from "lucide-react";
+import { Bell, CircleHelp, Grip, Moon, UserRound } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export function Topbar() {
   return (
-    <header className="h-[52px] bg-surface border-b border-border flex items-center px-4 sticky top-0 z-20">
-      <button className="p-2 rounded hover:bg-muted" title="App switcher">
-        <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+    <header className="z-40 flex h-[60px] shrink-0 items-center border-b border-border bg-white px-5">
+      <button className="rounded-md p-2 hover:bg-muted" aria-label="App switcher">
+        <Grip className="h-5 w-5 text-[#4B5563]" />
       </button>
-      <div className="ml-2 flex items-center">
-        <span className="font-semibold tracking-tight text-[15px]">
-          AppViewX <span className="text-muted-foreground font-normal">| SSH</span>
-        </span>
-      </div>
+      <Link
+        to="/dashboard"
+        className="ml-4 text-[24px] font-bold tracking-[-0.02em] text-[#111827]"
+      >
+        AppViewX
+      </Link>
 
-      <div className="ml-auto flex items-center gap-1">
-        <button className="p-2 rounded hover:bg-muted" title="Developer">
-          <Code2 className="h-4 w-4 text-muted-foreground" />
+      <div className="ml-auto flex items-center gap-2">
+        <button className="rounded-md p-2 hover:bg-muted" aria-label="Dark mode">
+          <Moon className="h-5 w-5 text-[#374151]" strokeWidth={1.75} />
         </button>
-        <button className="p-2 rounded hover:bg-muted" title="Help">
-          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+        <button className="rounded-md p-2 hover:bg-muted" aria-label="Help">
+          <CircleHelp className="h-5 w-5 text-[#374151]" strokeWidth={1.75} />
         </button>
-        <button className="relative p-2 rounded hover:bg-muted" title="Notifications">
-          <Bell className="h-4 w-4 text-muted-foreground" />
-          <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-brand-accent" />
+        <button className="rounded-md p-2 hover:bg-muted" aria-label="Notifications">
+          <Bell className="h-5 w-5 text-[#374151]" strokeWidth={1.75} />
         </button>
-        <div className="ml-2 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[12px] font-semibold">
-          AV
-        </div>
+        <button className="rounded-md p-2 hover:bg-muted" aria-label="Account">
+          <UserRound className="h-5 w-5 text-[#374151]" strokeWidth={1.75} />
+        </button>
       </div>
     </header>
   );
